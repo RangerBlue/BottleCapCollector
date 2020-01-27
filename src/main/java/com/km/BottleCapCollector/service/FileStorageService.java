@@ -2,14 +2,13 @@ package com.km.BottleCapCollector.service;
 
 import com.km.BottleCapCollector.exception.FileStorageException;
 import com.km.BottleCapCollector.exception.MyFileNotFoundException;
-import com.km.BottleCapCollector.property.FileStorageProperties;
+import com.km.BottleCapCollector.property.CustomProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.core.io.Resource;
@@ -27,8 +26,8 @@ public class FileStorageService {
     private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
 
     @Autowired
-    public FileStorageService(FileStorageProperties fileStorageProperties) {
-        fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
+    public FileStorageService(CustomProperties customProperties) {
+        fileStorageLocation = Paths.get(customProperties.getUploadDir())
                 .toAbsolutePath().normalize();
 
         try {

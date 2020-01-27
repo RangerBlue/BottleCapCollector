@@ -1,7 +1,10 @@
 package com.km.BottleCapCollector.model;
 
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.persistence.*;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,6 +18,11 @@ public class BottleCap {
     private String name;
     private String path;
     private String creationDate;
+
+    public BottleCap(String name) {
+        this.name = name;
+        this.creationDate = LocalDateTime.now().toString();
+    }
 
     public BottleCap(String name, String path) {
         this.name = name;

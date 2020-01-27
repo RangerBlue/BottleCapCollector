@@ -1,9 +1,8 @@
 package com.km.BottleCapCollector.property;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "file")
-public class FileStorageProperties {
+@org.springframework.boot.context.properties.ConfigurationProperties(prefix = "file")
+public class CustomProperties {
     private String uploadDir;
 
     public String getUploadDir() {
