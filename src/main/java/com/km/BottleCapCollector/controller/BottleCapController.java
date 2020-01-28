@@ -35,7 +35,7 @@ public class BottleCapController {
     public ResponseEntity addBottleCap(String capName, @RequestParam("file") MultipartFile file) {
         logger.debug("Entering addBottleCap method");
         BottleCap cap = new BottleCap(capName);
-        uploadFile(file);
+        cap.setPath(uploadFile(file).getFileName());
         bottleCapService.addBottleCap(cap);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -44,6 +44,12 @@ public class BottleCapController {
     public List<BottleCap> getBottleCaps() {
         logger.debug("Entering getBottleCaps method");
         return bottleCapService.getAllBottleCaps();
+    }
+
+    @GetMapping("/cap/{id}")
+    public BottleCap getBottleCap(@PathVariable Long id) {
+        logger.debug("getBottleCap");
+        return bottleCapService.getBottleCap(id);
     }
 
     @PostMapping("/uploadFile")
@@ -89,4 +95,12 @@ public class BottleCapController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
+
+    @GetMapping("/downloadCapFile/{id}")
+    public ResponseEntity<Resource> downloadFileByCapId(HttpServletRequest request, @PathVariable Long id) {
+        BottleCap cap = bottleCapService.getBottleCap(id);
+        logger.debug("downloadCapFile method");
+        return downloadFile(cap.getPath(), request);
+    }
+
 }
