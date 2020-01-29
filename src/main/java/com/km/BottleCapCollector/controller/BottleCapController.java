@@ -35,6 +35,10 @@ public class BottleCapController {
     public ResponseEntity addBottleCap(String capName, @RequestParam("file") MultipartFile file) {
         logger.debug("Entering addBottleCap method");
         BottleCap cap = new BottleCap(capName);
+        if(bottleCapService.isDuplicate(cap)){
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+
+        }
         cap.setPath(uploadFile(file).getFileName());
         bottleCapService.addBottleCap(cap);
         return new ResponseEntity<>(HttpStatus.CREATED);

@@ -32,4 +32,8 @@ public class BottleCapService {
         }
     }
 
+    public boolean isDuplicate(BottleCap newCap){
+        return getAllBottleCaps().stream().anyMatch((old) -> old.equals(newCap));
+    }
+
 }

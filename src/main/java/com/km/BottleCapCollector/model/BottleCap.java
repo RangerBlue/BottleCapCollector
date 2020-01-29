@@ -71,4 +71,21 @@ public class BottleCap {
                 ", creationDate=" + creationDate +
                 '}';
     }
+
+    @Override
+    public int hashCode() {
+        return (int) (17 * this.name.hashCode() + 31 * this.path.hashCode() + 7 * id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if(obj instanceof BottleCap){
+            BottleCap cap = (BottleCap) obj;
+            return cap.name.equals(this.name);
+        }
+        return false;
+    }
 }
