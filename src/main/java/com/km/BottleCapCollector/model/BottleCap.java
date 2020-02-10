@@ -1,6 +1,7 @@
 package com.km.BottleCapCollector.model;
 
 
+import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.persistence.*;

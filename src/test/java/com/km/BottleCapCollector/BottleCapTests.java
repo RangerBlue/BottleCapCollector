@@ -2,6 +2,7 @@ package com.km.BottleCapCollector;
 
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.repository.BottleCapRepository;
+import com.km.BottleCapCollector.util.ImageHistogram;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -12,8 +13,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @DataJpaTest
@@ -26,6 +26,9 @@ public class BottleCapTests {
 
     @Autowired
     private BottleCapRepository repository;
+
+    private final String img1 = "src/main/resources/img/captest.jpg";
+    private final String img2 = "src/main/resources/img/captest2.jpg";
 
     @Test
     public void testFindById() {
@@ -54,9 +57,27 @@ public class BottleCapTests {
     @Test
     public void testOpenCV() {
         Imgcodecs imageCodecs = new Imgcodecs();
-        Mat image1 = imageCodecs.imread(Paths.get("src/main/resources/img/captest.jpg").toString());
-        Mat image2 = imageCodecs.imread("src/main/resources/img/captest2.jpg");
+        Mat image1 = imageCodecs.imread(img1);
+        Mat image2 = imageCodecs.imread(img2);
         assertNotEquals(image1.size(), image2.size());
+    }
+
+    @Test
+    public void testMetrics() {
+        ImageHistogram hist1 = new ImageHistogram(img1);
+        ImageHistogram hist2 = new ImageHistogram(img2);
+        assertTrue(hist1.correlationMethod(hist2.getHistImage()) < ImageHistogram.CORRELATION_BASE,
+                "Correlation metric should be less than base metric");
+
+        assertTrue(hist1.chisquareMethod(hist2.getHistImage()) > ImageHistogram.CHI_SQUARE_BASE,
+                "Chi-square metric should be greater than base metric");
+
+        assertTrue(hist1.intersectionMethod(hist2.getHistImage()) < ImageHistogram.INTERSECTION_BASE,
+                "Intersection metric should be less than base metric");
+
+        assertTrue(hist1.bhattacharyyaMethod(hist2.getHistImage()) > ImageHistogram.BHATTACHARYYA_BASE,
+                "Bhattacharyya metric should be greater than base metric");
+
     }
 
 
