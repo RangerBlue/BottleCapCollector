@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
 
@@ -80,6 +82,31 @@ public class BottleCapTests {
 
     }
 
+    @Test
+    public void testSaveAndLoadHistogramAsObject() {
+        ImageHistogram hist1 = new ImageHistogram(img1);
+        ImageHistogram hist2 = new ImageHistogram(img2);
+
+        ImageHistogram.storeMatFile(img1);
+        ImageHistogram.storeMatFile(img2);
+        ImageHistogram histFromFile1 = new ImageHistogram(ImageHistogram.loadMat(img1+ImageHistogram.OBJECT_PREFIX));
+        ImageHistogram histFromFile2 = new ImageHistogram(ImageHistogram.loadMat(img2+ImageHistogram.OBJECT_PREFIX));
+
+        assertEquals(hist1.correlationMethod(hist2.getHistImage()),
+                histFromFile1.correlationMethod(histFromFile2.getHistImage()));
+
+        try {
+            Files.delete(Paths.get(img1+ImageHistogram.OBJECT_PREFIX));
+            Files.delete(Paths.get(img2+ImageHistogram.OBJECT_PREFIX));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        assertFalse(Files.exists(Paths.get(img1+ImageHistogram.OBJECT_PREFIX)));
+        assertFalse(Files.exists(Paths.get(img2+ImageHistogram.OBJECT_PREFIX)));
+
+
+    }
 
 
 
