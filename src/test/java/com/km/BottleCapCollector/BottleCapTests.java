@@ -2,7 +2,7 @@ package com.km.BottleCapCollector;
 
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.repository.BottleCapRepository;
-import com.km.BottleCapCollector.util.ImageHistogram;
+import com.km.BottleCapCollector.util.ImageHistogramFactory;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -66,44 +66,45 @@ public class BottleCapTests {
 
     @Test
     public void testMetrics() {
-        ImageHistogram hist1 = new ImageHistogram(img1);
-        ImageHistogram hist2 = new ImageHistogram(img2);
-        assertTrue(hist1.correlationMethod(hist2.getHistImage()) < ImageHistogram.CORRELATION_BASE,
+        Mat hist1 = ImageHistogramFactory.getHistogram(Paths.get(img1));
+        Mat hist2 = ImageHistogramFactory.getHistogram(Paths.get(img2));
+        assertTrue(ImageHistogramFactory.correlationMethod(hist1,hist2) < ImageHistogramFactory.CORRELATION_BASE,
                 "Correlation metric should be less than base metric");
 
-        assertTrue(hist1.chisquareMethod(hist2.getHistImage()) > ImageHistogram.CHI_SQUARE_BASE,
+        assertTrue(ImageHistogramFactory.chisquareMethod(hist1,hist2) > ImageHistogramFactory.CHI_SQUARE_BASE,
                 "Chi-square metric should be greater than base metric");
 
-        assertTrue(hist1.intersectionMethod(hist2.getHistImage()) < ImageHistogram.INTERSECTION_BASE,
+        assertTrue(ImageHistogramFactory.intersectionMethod(hist1,hist2) < ImageHistogramFactory.INTERSECTION_BASE,
                 "Intersection metric should be less than base metric");
 
-        assertTrue(hist1.bhattacharyyaMethod(hist2.getHistImage()) > ImageHistogram.BHATTACHARYYA_BASE,
+        assertTrue(ImageHistogramFactory.bhattacharyyaMethod(hist1,hist2) > ImageHistogramFactory.BHATTACHARYYA_BASE,
                 "Bhattacharyya metric should be greater than base metric");
 
     }
 
     @Test
     public void testSaveAndLoadHistogramAsObject() {
-        ImageHistogram hist1 = new ImageHistogram(img1);
-        ImageHistogram hist2 = new ImageHistogram(img2);
+        Mat hist1 = ImageHistogramFactory.getHistogram(Paths.get(img1));
+        Mat hist2 = ImageHistogramFactory.getHistogram(Paths.get(img2));
 
-        ImageHistogram.storeMatFile(img1);
-        ImageHistogram.storeMatFile(img2);
-        ImageHistogram histFromFile1 = new ImageHistogram(ImageHistogram.loadMat(img1+ImageHistogram.OBJECT_PREFIX));
-        ImageHistogram histFromFile2 = new ImageHistogram(ImageHistogram.loadMat(img2+ImageHistogram.OBJECT_PREFIX));
+        ImageHistogramFactory.storeMatFile(hist1, img1);
+        ImageHistogramFactory.storeMatFile(hist2, img2);
 
-        assertEquals(hist1.correlationMethod(hist2.getHistImage()),
-                histFromFile1.correlationMethod(histFromFile2.getHistImage()));
+        Mat histFromFile1 = ImageHistogramFactory.loadMat(img1+ImageHistogramFactory.OBJECT_PREFIX);
+        Mat histFromFile2 = ImageHistogramFactory.loadMat(img2+ImageHistogramFactory.OBJECT_PREFIX);
+
+        assertEquals(ImageHistogramFactory.correlationMethod(hist1, hist2),
+                ImageHistogramFactory.correlationMethod(histFromFile1, histFromFile2));
 
         try {
-            Files.delete(Paths.get(img1+ImageHistogram.OBJECT_PREFIX));
-            Files.delete(Paths.get(img2+ImageHistogram.OBJECT_PREFIX));
+            Files.delete(Paths.get(img1+ ImageHistogramFactory.OBJECT_PREFIX));
+            Files.delete(Paths.get(img2+ ImageHistogramFactory.OBJECT_PREFIX));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        assertFalse(Files.exists(Paths.get(img1+ImageHistogram.OBJECT_PREFIX)));
-        assertFalse(Files.exists(Paths.get(img2+ImageHistogram.OBJECT_PREFIX)));
+        assertFalse(Files.exists(Paths.get(img1+ ImageHistogramFactory.OBJECT_PREFIX)));
+        assertFalse(Files.exists(Paths.get(img2+ ImageHistogramFactory.OBJECT_PREFIX)));
 
 
     }

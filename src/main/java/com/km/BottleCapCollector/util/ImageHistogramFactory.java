@@ -12,9 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class ImageHistogram {
+public class ImageHistogramFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageHistogram.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageHistogramFactory.class);
 
 
     private static final byte CORRELATION = 0;
@@ -27,8 +27,6 @@ public class ImageHistogram {
     public static final byte BHATTACHARYYA_BASE = 0;
     public static final String OBJECT_PREFIX = "object";
 
-    private Mat hsvImage ;
-    private Mat histImage;
 
     private static final int hBins = 50, sBins = 60;
     private static final int[] histSize = { hBins, sBins };
@@ -37,65 +35,62 @@ public class ImageHistogram {
     // Use the 0-th and 1-st channels
     private static final int[] channels = { 0, 1 };
 
-    public ImageHistogram(Mat histImage) {
-        this.histImage = histImage;
+    private ImageHistogramFactory() {
     }
 
-    public ImageHistogram(String path) {
-        hsvImage = new Mat();
-        histImage = new Mat();
-        Imgproc.cvtColor( Imgcodecs.imread(path), hsvImage, Imgproc.COLOR_BGR2HSV );
+    public static Mat getHistogram(Path file) {
+        Mat hsvImage = new Mat();
+        Mat histImage = new Mat();
+        Imgproc.cvtColor( Imgcodecs.imread(file.toString()), hsvImage, Imgproc.COLOR_BGR2HSV );
         List<Mat> hsvBaseList = Arrays.asList(hsvImage);
         Imgproc.calcHist(hsvBaseList, new MatOfInt(channels), new Mat(), histImage, new MatOfInt(histSize), new MatOfFloat(ranges), false);
         Core.normalize(histImage, histImage, 0, 1, Core.NORM_MINMAX);
-    }
 
-    public Mat getHistImage() {
         return histImage;
-    }
-
-    public void setHistImage(Mat histImage) {
-        this.histImage = histImage;
     }
 
     /**
      * The higher the metric, the more accurate the match
      * {@value #@CCORRELATION_BASE} is base value
-     * @param histImage
+     * @param histImage1
+     * @param histImage2
      * @return metric result
      */
-    public double correlationMethod(Mat histImage){
-        return Imgproc.compareHist( this.histImage, histImage, CORRELATION );
+    public static double correlationMethod(Mat histImage1, Mat histImage2){
+        return Imgproc.compareHist( histImage1, histImage2, CORRELATION );
     }
 
     /**
      * The higher the metric, the more accurate the match
      * {@value #CHI_SQUARE_BASE} is base value
-     * @param histImage
+     * @param histImage1
+     * @param histImage2
      * @return metric result
      */
-    public double chisquareMethod(Mat histImage){
-        return Imgproc.compareHist( this.histImage, histImage, CHI_SQUARE );
+    public static double chisquareMethod(Mat histImage1, Mat histImage2){
+        return Imgproc.compareHist( histImage1, histImage2, CHI_SQUARE );
     }
 
     /**
      * The less the result, the better the match
      * {@value #INTERSECTION_BASE} is base value
-     * @param histImage
+     * @param histImage1
+     * @param histImage2
      * @return metric result
      */
-    public double intersectionMethod(Mat histImage){
-        return Imgproc.compareHist( this.histImage, histImage, INTERSECTION );
+    public static double intersectionMethod(Mat histImage1, Mat histImage2){
+        return Imgproc.compareHist( histImage1, histImage2, INTERSECTION );
     }
 
     /**
      * The less the result, the better the match
      * {@value #BHATTACHARYYA_BASE} is base value
-     * @param histImage
+     * @param histImage1
+     * @param histImage2
      * @return metric result
      */
-    public double bhattacharyyaMethod(Mat histImage){
-        return Imgproc.compareHist( this.histImage, histImage, BHATTACHARYYA);
+    public static double bhattacharyyaMethod(Mat histImage1, Mat histImage2){
+        return Imgproc.compareHist( histImage1, histImage2, BHATTACHARYYA);
     }
 
     public static final Mat loadMat(String path) {
@@ -116,19 +111,17 @@ public class ImageHistogram {
     }
 
 
-    public static Path storeMatFile(String path) {
-        ImageHistogram imageHistogram = new ImageHistogram(path);
-        Mat mat = imageHistogram.getHistImage();
+    public static Path storeMatFile(Mat mat, String name) {
         try {
             int cols = mat.cols();
             float[] data = new float[(int) mat.total() * mat.channels()];
             mat.get(0, 0, data);
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path+OBJECT_PREFIX))) {
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(name+OBJECT_PREFIX))) {
                 oos.writeObject(cols);
                 oos.writeObject(data);
             }
         } catch (IOException | ClassCastException ex) {
-            logger.error("ERROR: Could not save mat to file: " + path); }
+            logger.error("ERROR: Could not save mat to file: " + name); }
         return null;
     }
 
