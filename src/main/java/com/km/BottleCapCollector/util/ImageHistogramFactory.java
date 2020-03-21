@@ -1,17 +1,20 @@
 package com.km.BottleCapCollector.util;
 
+import com.km.BottleCapCollector.model.HistogramResult;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-
+@Component
 public class ImageHistogramFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageHistogramFactory.class);
@@ -93,11 +96,20 @@ public class ImageHistogramFactory {
         return Imgproc.compareHist( histImage1, histImage2, BHATTACHARYYA);
     }
 
-    public static final Mat loadMat(String path) {
+    public static HistogramResult calculateCoefficients(Mat histImage1, Mat histImage2){
+        HistogramResult result = new HistogramResult();
+        result.setCorrelation(correlationMethod(histImage1, histImage2));
+        result.setChisquare(chisquareMethod(histImage1, histImage2));
+        result.setIntersection(intersectionMethod(histImage1, histImage2));
+        result.setBhattacharyya(bhattacharyyaMethod(histImage1, histImage2));
+        return result;
+    }
+
+    public static final Mat loadMat(String name, Path location) {
         try {
             int cols;
             float[] data;
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path))) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(location.toFile(), name)))) {
                 cols = (int) ois.readObject();
                 data = (float[]) ois.readObject();
             }
@@ -105,24 +117,24 @@ public class ImageHistogramFactory {
             mat.put(0, 0, data);
             return mat;
         } catch (IOException | ClassNotFoundException | ClassCastException ex) {
-            logger.error("Could not load mat from file " + path);
+            logger.error("Could not load mat from file " + name);
         }
         return null;
     }
 
 
-    public static Path storeMatFile(Mat mat, String name) {
+    public static String storeMatFile(Mat mat, String name, Path location) {
         try {
             int cols = mat.cols();
             float[] data = new float[(int) mat.total() * mat.channels()];
             mat.get(0, 0, data);
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(name+OBJECT_PREFIX))) {
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(location.toFile(), name+OBJECT_PREFIX)))) {
                 oos.writeObject(cols);
                 oos.writeObject(data);
             }
         } catch (IOException | ClassCastException ex) {
             logger.error("ERROR: Could not save mat to file: " + name); }
-        return null;
+        return name+OBJECT_PREFIX;
     }
 
 }

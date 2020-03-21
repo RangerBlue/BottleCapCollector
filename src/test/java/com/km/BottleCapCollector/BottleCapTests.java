@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
@@ -29,8 +30,12 @@ public class BottleCapTests {
     @Autowired
     private BottleCapRepository repository;
 
+    private final Path resourceFolder = Paths.get("src/main/resources/img/");
+    private final String img1Name = "captest.jpg";
+    private final String img2Name = "captest2.jpg";
     private final String img1 = "src/main/resources/img/captest.jpg";
     private final String img2 = "src/main/resources/img/captest2.jpg";
+
 
     @Test
     public void testFindById() {
@@ -87,11 +92,11 @@ public class BottleCapTests {
         Mat hist1 = ImageHistogramFactory.getHistogram(Paths.get(img1));
         Mat hist2 = ImageHistogramFactory.getHistogram(Paths.get(img2));
 
-        ImageHistogramFactory.storeMatFile(hist1, img1);
-        ImageHistogramFactory.storeMatFile(hist2, img2);
+        ImageHistogramFactory.storeMatFile(hist1, "captest.jpg", resourceFolder);
+        ImageHistogramFactory.storeMatFile(hist2, "captest2.jpg", resourceFolder);
 
-        Mat histFromFile1 = ImageHistogramFactory.loadMat(img1+ImageHistogramFactory.OBJECT_PREFIX);
-        Mat histFromFile2 = ImageHistogramFactory.loadMat(img2+ImageHistogramFactory.OBJECT_PREFIX);
+       Mat histFromFile1 = ImageHistogramFactory.loadMat(img1Name+ImageHistogramFactory.OBJECT_PREFIX, resourceFolder);
+        Mat histFromFile2 = ImageHistogramFactory.loadMat(img2Name+ImageHistogramFactory.OBJECT_PREFIX,resourceFolder);
 
         assertEquals(ImageHistogramFactory.correlationMethod(hist1, hist2),
                 ImageHistogramFactory.correlationMethod(histFromFile1, histFromFile2));

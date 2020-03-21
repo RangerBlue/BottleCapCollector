@@ -107,4 +107,20 @@ public class BottleCapController {
         return downloadFile(cap.getPath(), request);
     }
 
+    @GetMapping("/countAll")
+    public long countAllCapsImages() {
+        return fileStorageService.countAllFiles();
+    }
+
+    @GetMapping("/processAll")
+    public ResponseEntity processAll() {
+        return new ResponseEntity<>("Elements processed " + fileStorageService.processAllFiles(), HttpStatus.OK);
+    }
+
+    @GetMapping("/calculateTwoFirst")
+    public ResponseEntity calculateEachWithEachImage() {
+       fileStorageService.calculateEachWithEachImage();
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 }
