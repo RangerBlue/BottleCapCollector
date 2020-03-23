@@ -6,6 +6,7 @@ import com.km.BottleCapCollector.repository.BottleCapRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,10 @@ public class BottleCapService {
 
     public boolean isDuplicate(BottleCap newCap){
         return getAllBottleCaps().stream().anyMatch((old) -> old.equals(newCap));
+    }
+
+    public void addBottleCap(File file){
+        repository.save(new BottleCap(file.getName()));
     }
 
 }

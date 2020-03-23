@@ -2,6 +2,7 @@ package com.km.BottleCapCollector.service;
 
 import com.km.BottleCapCollector.exception.FileStorageException;
 import com.km.BottleCapCollector.exception.MyFileNotFoundException;
+import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.property.CustomProperties;
 import com.km.BottleCapCollector.repository.HistogramResultRepository;
@@ -72,7 +73,7 @@ public class FileStorageService {
             // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            calculateAndStoreHistogram(fileName);
+            imageHistogramFactory.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
 
             return fileName;
         } catch (IOException ex) {
@@ -80,17 +81,18 @@ public class FileStorageService {
         }
     }
 
-    public String calculateAndStoreHistogram(String imageName){
-        Mat hist = ImageHistogramFactory.getHistogram(fileStorageLocation.resolve(imageName).normalize());
-         return ImageHistogramFactory.storeMatFile(hist, imageName, objectStorageLocation);
+    public void calculateAndStoreMathObject(String fileName){
+        imageHistogramFactory.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
     }
 
-    public void calculateEachWithEachImage(){
+    public void calculateEachWithEachCap(List<BottleCap> caps){
         try {
-            List<File> fileList = Files.walk(objectStorageLocation).map(path -> path.toFile()).limit(3).collect(Collectors.toList());
-            Mat histFromFile1 = imageHistogramFactory.loadMat(fileList.get(1).getName(), objectStorageLocation);
-            Mat histFromFile2 = imageHistogramFactory.loadMat(fileList.get(2).getName(), objectStorageLocation);
+            List<File> fileList = Files.walk(objectStorageLocation).map(path -> path.toFile()).skip(1).limit(2).collect(Collectors.toList());
+            Mat histFromFile1 = imageHistogramFactory.loadMat(fileList.get(0).getName(), objectStorageLocation);
+            Mat histFromFile2 = imageHistogramFactory.loadMat(fileList.get(1).getName(), objectStorageLocation);
             HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
+            result.setFirstCap(caps.get(0));
+            result.setSecondCap(caps.get(1));
             histogramResultRepository.save(result);
 
         } catch (IOException e) {
@@ -107,11 +109,20 @@ public class FileStorageService {
         return -1;
     }
 
+    public List<File> getAllPictures(){
+        try {
+            return Files.walk(fileStorageLocation).map(p->p.toFile()).skip(1).collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public long processAllFiles(){
         AtomicInteger amount = new AtomicInteger();
         try {
             Files.walk(fileStorageLocation).filter(p->p.toFile().isFile()).forEach(file ->{
-                calculateAndStoreHistogram(file.getFileName().toString());
+                imageHistogramFactory.calculateAndStoreHistogram(file.getFileName().toString(), fileStorageLocation, objectStorageLocation);
                 amount.getAndIncrement();
             });
         } catch (IOException e) {

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -137,4 +136,8 @@ public class ImageHistogramFactory {
         return name+OBJECT_PREFIX;
     }
 
+    public static String calculateAndStoreHistogram(String imageName, Path fileStorageLocation, Path objectStorageLocation){
+        Mat hist = getHistogram(fileStorageLocation.resolve(imageName).normalize());
+        return ImageHistogramFactory.storeMatFile(hist, imageName, objectStorageLocation);
+    }
 }

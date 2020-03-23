@@ -39,7 +39,7 @@ public class BottleCapTests {
 
     @Test
     public void testFindById() {
-        entityManager.persist(new BottleCap("Perła", Paths.get("testPath").toString()));
+        entityManager.persist(new BottleCap("Perła"));
         long booksSize = repository.count();
         assertEquals(1, booksSize);
         Optional<BottleCap> cap = repository.findById(4l);
@@ -48,15 +48,15 @@ public class BottleCapTests {
 
     @Test
     public void testFindByName() {
-        entityManager.persist(new BottleCap("Lech", Paths.get("testPath0").toString()));
+        entityManager.persist(new BottleCap("Lech"));
         BottleCap cap = repository.findByName("Lech").get(0);
         assertEquals("Lech", cap.getName());
     }
 
     @Test
     public void testCount() {
-        entityManager.persist(new BottleCap("Perła", Paths.get("testPath1").toString()));
-        entityManager.persist(new BottleCap("Lech", Paths.get("testPath2").toString()));
+        entityManager.persist(new BottleCap("Perła"));
+        entityManager.persist(new BottleCap("Lech"));
         long booksSize = repository.count();
         assertEquals(2, booksSize);
     }

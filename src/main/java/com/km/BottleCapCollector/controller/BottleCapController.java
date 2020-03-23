@@ -39,7 +39,8 @@ public class BottleCapController {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
         }
-        cap.setPath(uploadFile(file).getFileName());
+        String fileName = uploadFile(file).getFileName();
+        fileStorageService.calculateAndStoreMathObject(fileName);
         bottleCapService.addBottleCap(cap);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -104,7 +105,7 @@ public class BottleCapController {
     public ResponseEntity<Resource> downloadFileByCapId(HttpServletRequest request, @PathVariable Long id) {
         BottleCap cap = bottleCapService.getBottleCap(id);
         logger.debug("downloadCapFile method");
-        return downloadFile(cap.getPath(), request);
+        return downloadFile(cap.getName(), request);
     }
 
     @GetMapping("/countAll")
@@ -112,14 +113,24 @@ public class BottleCapController {
         return fileStorageService.countAllFiles();
     }
 
-    @GetMapping("/processAll")
+    @PostMapping("/processAll")
     public ResponseEntity processAll() {
         return new ResponseEntity<>("Elements processed " + fileStorageService.processAllFiles(), HttpStatus.OK);
     }
 
-    @GetMapping("/calculateTwoFirst")
-    public ResponseEntity calculateEachWithEachImage() {
-       fileStorageService.calculateEachWithEachImage();
+    @PostMapping("/calculateTwoFirst")
+    public ResponseEntity calculateEachWithEachCap() {
+        List<BottleCap> caps = bottleCapService.getAllBottleCaps().stream().collect(Collectors.toList());
+        fileStorageService.calculateEachWithEachCap(caps);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/addAndCalculateAllPictures")
+    public ResponseEntity addAndCalculateAllPictures() {
+        fileStorageService.getAllPictures().forEach(file -> {
+            bottleCapService.addBottleCap(file);
+            fileStorageService.calculateAndStoreMathObject(file.getName());
+        });
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

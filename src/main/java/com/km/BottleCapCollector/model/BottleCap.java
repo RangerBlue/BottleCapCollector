@@ -17,17 +17,10 @@ public class BottleCap {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
     private String name;
-    private String path;
     private String creationDate;
 
     public BottleCap(String name) {
         this.name = name;
-        this.creationDate = LocalDateTime.now().toString();
-    }
-
-    public BottleCap(String name, String path) {
-        this.name = name;
-        this.path = path;
         this.creationDate = LocalDateTime.now().toString();
     }
 
@@ -51,13 +44,6 @@ public class BottleCap {
         this.name = name;
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
 
     public String getCreationDate() {
         return creationDate;
@@ -68,14 +54,13 @@ public class BottleCap {
     public String toString() {
         return "BottleCap{" +
                 "name='" + name + '\'' +
-                ", path=" + path +
                 ", creationDate=" + creationDate +
                 '}';
     }
 
     @Override
     public int hashCode() {
-        return (int) (17 * this.name.hashCode() + 31 * this.path.hashCode() + 7 * id);
+        return (int) (17 * this.name.hashCode() + 31 * id);
     }
 
     @Override

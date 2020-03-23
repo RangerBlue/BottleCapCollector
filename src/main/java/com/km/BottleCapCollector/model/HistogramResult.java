@@ -9,6 +9,13 @@ public class HistogramResult {
     @Column(name="id")
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
+
+    @OneToOne
+    private BottleCap firstCap;
+
+    @OneToOne
+    private BottleCap secondCap;
+
     private double correlation;
     private double chisquare;
     private double intersection;
@@ -58,5 +65,21 @@ public class HistogramResult {
 
     public void setBhattacharyya(double bhattacharyya) {
         this.bhattacharyya = bhattacharyya;
+    }
+
+    public BottleCap getFirstCap() {
+        return firstCap;
+    }
+
+    public void setFirstCap(BottleCap firstCap) {
+        this.firstCap = firstCap;
+    }
+
+    public BottleCap getSecondCap() {
+        return secondCap;
+    }
+
+    public void setSecondCap(BottleCap secondCap) {
+        this.secondCap = secondCap;
     }
 }
