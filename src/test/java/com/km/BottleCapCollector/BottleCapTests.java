@@ -110,8 +110,6 @@ public class BottleCapTests {
 
         assertFalse(Files.exists(Paths.get(img1+ ImageHistogramFactory.OBJECT_PREFIX)));
         assertFalse(Files.exists(Paths.get(img2+ ImageHistogramFactory.OBJECT_PREFIX)));
-
-
     }
 
 

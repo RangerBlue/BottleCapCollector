@@ -35,7 +35,7 @@ public class BottleCapController {
     public ResponseEntity addBottleCap(String capName, @RequestParam("file") MultipartFile file) {
         logger.debug("Entering addBottleCap method");
         BottleCap cap = new BottleCap(capName);
-        if(bottleCapService.isDuplicate(cap)){
+        if (bottleCapService.isDuplicate(cap)) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
         }
@@ -108,24 +108,46 @@ public class BottleCapController {
         return downloadFile(cap.getName(), request);
     }
 
+    /**
+     * Counts all pictures which are in file storage folder
+     *
+     * @return amount of pictures
+     */
     @GetMapping("/countAll")
     public long countAllCapsImages() {
         return fileStorageService.countAllFiles();
     }
 
-    @PostMapping("/processAll")
+    /**
+     * Creates Mat object in object storage folder from each file picture which is right now in file storage folder
+     *
+     * @return Http status
+     */
+    @PostMapping("/admin/processAll")
     public ResponseEntity processAll() {
         return new ResponseEntity<>("Elements processed " + fileStorageService.processAllFiles(), HttpStatus.OK);
     }
 
-    @PostMapping("/calculateTwoFirst")
+    /**
+     * Calculates OpenCv coefficients of unique permutation of two pictures, each picture will be calculated against
+     * rest of them
+     *
+     * @return Http status
+     */
+    @PostMapping("/admin/calculateTwoFirst")
     public ResponseEntity calculateEachWithEachCap() {
         List<BottleCap> caps = bottleCapService.getAllBottleCaps().stream().collect(Collectors.toList());
         fileStorageService.calculateEachWithEachCap(caps);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PostMapping("/addAndCalculateAllPictures")
+    /**
+     * Adds BottleCap object and creates Mat objects in object storage folder from each file picture which is right now
+     * in file storage folder
+     *
+     * @return Http status
+     */
+    @PostMapping("/admin/addAndCalculateAllPictures")
     public ResponseEntity addAndCalculateAllPictures() {
         fileStorageService.getAllPictures().forEach(file -> {
             bottleCapService.addBottleCap(file);
