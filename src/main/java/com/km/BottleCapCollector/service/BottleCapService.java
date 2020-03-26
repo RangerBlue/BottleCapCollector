@@ -24,7 +24,7 @@ public class BottleCapService {
         return (List<BottleCap>)repository.findAll();
     }
 
-    public BottleCap getBottleCap(Long id){
+    public BottleCap getBottleCap(long id){
         Optional<BottleCap> cap = repository.findById(id);
         if(cap.isPresent()){
             return cap.get();
@@ -33,6 +33,7 @@ public class BottleCapService {
         }
     }
 
+    //TODO move it into addBottleCapMethod
     public boolean isDuplicate(BottleCap newCap){
         return getAllBottleCaps().stream().anyMatch((old) -> old.equals(newCap));
     }
