@@ -134,7 +134,7 @@ public class BottleCapController {
      *
      * @return Http status
      */
-    @PostMapping("/admin/calculateTwoFirst")
+    @PostMapping("/admin/calculateEachWithEachCap")
     public ResponseEntity calculateEachWithEachCap() {
         List<BottleCap> caps = bottleCapService.getAllBottleCaps().stream().collect(Collectors.toList());
         fileStorageService.calculateEachWithEachCap(caps);

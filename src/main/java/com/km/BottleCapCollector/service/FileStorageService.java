@@ -6,6 +6,7 @@ import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.property.CustomProperties;
 import com.km.BottleCapCollector.repository.HistogramResultRepository;
+import com.km.BottleCapCollector.util.BottleCapPair;
 import com.km.BottleCapCollector.util.ImageHistogramFactory;
 import org.opencv.core.Mat;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.core.io.Resource;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -25,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -38,13 +41,16 @@ public class FileStorageService {
     @Autowired
     private ImageHistogramFactory imageHistogramFactory;
 
-    private final Path fileStorageLocation;
-    private final Path objectStorageLocation;
+    @Autowired
+    private CustomProperties customProperties;
+
+    private Path fileStorageLocation;
+    private Path objectStorageLocation;
 
     private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
 
-    @Autowired
-    public FileStorageService(CustomProperties customProperties) {
+    @PostConstruct
+    public void setupLocations() {
         fileStorageLocation = Paths.get(customProperties.getUploadDir())
                 .toAbsolutePath().normalize();
         objectStorageLocation = Paths.get(customProperties.getObjectDir())
@@ -56,9 +62,8 @@ public class FileStorageService {
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
-        logger.debug("Directory "+ fileStorageLocation + " has been created or already exists");
-        logger.debug("Directory "+ objectStorageLocation + " has been created or already exists");
-
+        logger.debug("Directory " + fileStorageLocation + " has been created or already exists");
+        logger.debug("Directory " + objectStorageLocation + " has been created or already exists");
     }
 
     public String storeFile(MultipartFile file) {
@@ -81,26 +86,30 @@ public class FileStorageService {
         }
     }
 
-    public void calculateAndStoreMathObject(String fileName){
+    public void calculateAndStoreMathObject(String fileName) {
         imageHistogramFactory.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
     }
 
-    public void calculateEachWithEachCap(List<BottleCap> caps){
+    public void calculateEachWithEachCap(List<BottleCap> caps) {
         try {
-            List<File> fileList = Files.walk(objectStorageLocation).map(path -> path.toFile()).skip(1).limit(2).collect(Collectors.toList());
-            Mat histFromFile1 = imageHistogramFactory.loadMat(fileList.get(0).getName(), objectStorageLocation);
-            Mat histFromFile2 = imageHistogramFactory.loadMat(fileList.get(1).getName(), objectStorageLocation);
-            HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
-            result.setFirstCap(caps.get(0));
-            result.setSecondCap(caps.get(1));
-            histogramResultRepository.save(result);
+            List<BottleCapPair> dataToProcess = calculateEachWithEach(caps);
+            List<File> fileList = Files.walk(objectStorageLocation).map(path -> path.toFile()).skip(1).collect(Collectors.toList());
+            dataToProcess.stream().parallel().forEach(pair -> {
+                Mat histFromFile1 = imageHistogramFactory.loadMat(fileList.get((int) pair.getFirstCap().getId() - 1).getName(), objectStorageLocation);
+                Mat histFromFile2 = imageHistogramFactory.loadMat(fileList.get((int) pair.getSecondCap().getId() - 1).getName(), objectStorageLocation);
+                HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
+                result.setFirstCap(pair.getFirstCap());
+                result.setSecondCap(pair.getSecondCap());
+                histogramResultRepository.save(result);
+            });
+
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public long countAllFiles(){
+    public long countAllFiles() {
         try {
             return Files.list(fileStorageLocation).count();
         } catch (IOException e) {
@@ -109,19 +118,19 @@ public class FileStorageService {
         return -1;
     }
 
-    public List<File> getAllPictures(){
+    public List<File> getAllPictures() {
         try {
-            return Files.walk(fileStorageLocation).map(p->p.toFile()).skip(1).collect(Collectors.toList());
+            return Files.walk(fileStorageLocation).map(p -> p.toFile()).skip(1).collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public long processAllFiles(){
+    public long processAllFiles() {
         AtomicInteger amount = new AtomicInteger();
         try {
-            Files.walk(fileStorageLocation).filter(p->p.toFile().isFile()).forEach(file ->{
+            Files.walk(fileStorageLocation).filter(p -> p.toFile().isFile()).forEach(file -> {
                 imageHistogramFactory.calculateAndStoreHistogram(file.getFileName().toString(), fileStorageLocation, objectStorageLocation);
                 amount.getAndIncrement();
             });
@@ -143,5 +152,24 @@ public class FileStorageService {
         } catch (MalformedURLException ex) {
             throw new MyFileNotFoundException("File not found " + fileName, ex);
         }
+    }
+
+    public List<BottleCapPair> calculateEachWithEach(List<BottleCap> inputList) {
+        int inputListSize = inputList.size();
+        int outputListSize = (inputList.size() * (inputList.size() - 1) / 2);
+        List<BottleCapPair> outputList = new ArrayList<>(outputListSize);
+        for (int i = 1; i < inputListSize; i++) {
+            outputList.addAll(calculateEach(inputList.subList(0, i + 1), i));
+        }
+        return outputList;
+    }
+
+    private List<BottleCapPair> calculateEach(List<BottleCap> inputList, int size) {
+        List<BottleCapPair> result = new ArrayList<>();
+        for (int i = 0; i <= size - 1; i++) {
+            result.add(new BottleCapPair(inputList.get(i), inputList.get(size)));
+        }
+
+        return result;
     }
 }
