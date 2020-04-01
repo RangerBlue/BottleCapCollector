@@ -44,8 +44,8 @@ public class FileStorageService {
     @Autowired
     private CustomProperties customProperties;
 
-    private Path fileStorageLocation;
-    private Path objectStorageLocation;
+    public Path fileStorageLocation;
+    public Path objectStorageLocation;
 
     private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
 

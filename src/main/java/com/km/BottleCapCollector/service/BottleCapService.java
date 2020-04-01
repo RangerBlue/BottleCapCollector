@@ -4,6 +4,7 @@ package com.km.BottleCapCollector.service;
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.repository.BottleCapRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -16,8 +17,8 @@ public class BottleCapService {
     @Autowired
     private BottleCapRepository repository;
 
-    public void addBottleCap(BottleCap cap){
-        repository.save(cap);
+    public BottleCap addBottleCap(BottleCap cap){
+        return repository.save(cap);
     }
 
     public List<BottleCap> getAllBottleCaps(){
@@ -38,8 +39,9 @@ public class BottleCapService {
         return getAllBottleCaps().stream().anyMatch((old) -> old.equals(newCap));
     }
 
-    public void addBottleCap(File file){
-        repository.save(new BottleCap(file.getName()));
+    @Profile("admin")
+    public void addBottleCapForInitialUpload(File file){
+        repository.save(new BottleCap(file.getName(), file.getName()));
     }
 
 }

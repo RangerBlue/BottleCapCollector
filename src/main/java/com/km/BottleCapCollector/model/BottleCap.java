@@ -1,12 +1,8 @@
 package com.km.BottleCapCollector.model;
 
-
-import org.opencv.core.Mat;
-import org.springframework.beans.factory.annotation.Value;
-
 import javax.persistence.*;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "CAP")
@@ -16,11 +12,18 @@ public class BottleCap {
     @Column(name="id")
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
-    private String name;
+    private String fileLocation;
+    private String capName;
     private String creationDate;
 
     public BottleCap(String name) {
-        this.name = name;
+        this.capName = name;
+        this.creationDate = LocalDateTime.now().toString();
+    }
+
+    public BottleCap(String capName, String fileName) {
+        this.fileLocation = fileName;
+        this.capName = capName;
         this.creationDate = LocalDateTime.now().toString();
     }
 
@@ -32,35 +35,29 @@ public class BottleCap {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-
     public String getCreationDate() {
         return creationDate;
     }
 
+    public String getFileLocation() {
+        return fileLocation;
+    }
 
-    @Override
-    public String toString() {
-        return "BottleCap{" +
-                "name='" + name + '\'' +
-                ", creationDate=" + creationDate +
-                '}';
+    public void setFileLocation(String fileLocation) {
+        this.fileLocation = fileLocation;
+    }
+
+    public String getCapName() {
+        return capName;
+    }
+
+    public void setCapName(String capName) {
+        this.capName = capName;
     }
 
     @Override
     public int hashCode() {
-        return (int) (17 * this.name.hashCode() + 31 * id);
+        return Objects.hash(id, fileLocation, capName, creationDate);
     }
 
     @Override
@@ -70,7 +67,7 @@ public class BottleCap {
         }
         if(obj instanceof BottleCap){
             BottleCap cap = (BottleCap) obj;
-            return cap.name.equals(this.name);
+            return cap.getCapName().equals(this.getCapName());
         }
         return false;
     }

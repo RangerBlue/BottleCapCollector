@@ -22,8 +22,8 @@ public class BottleCapPair {
     @Override
     public String toString() {
         return "BottleCapPair{" +
-                "firstCap=" + firstCap.getName() +
-                ", secondCap=" + secondCap.getName() +
-                "}\n";
+                "firstCap=" + firstCap +
+                ", secondCap=" + secondCap +
+                '}';
     }
 }

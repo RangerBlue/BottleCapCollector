@@ -32,15 +32,13 @@ public class BottleCapController {
     private FileStorageService fileStorageService;
 
     @PostMapping("/addCap")
-    public ResponseEntity addBottleCap(String capName, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<BottleCap> addBottleCap(String capName, @RequestParam("file") MultipartFile file) {
         logger.debug("Entering addBottleCap method");
         BottleCap cap = new BottleCap(capName);
-        if (bottleCapService.isDuplicate(cap)) {
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-
-        }
-        String fileName = uploadFile(file).getFileName();
+        UploadFileResponse response = uploadFile(file);
+        String fileName = response.getFileName();
         fileStorageService.calculateAndStoreMathObject(fileName);
+        cap.setFileLocation(response.getFileDownloadUri());
         bottleCapService.addBottleCap(cap);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -105,7 +103,7 @@ public class BottleCapController {
     public ResponseEntity<Resource> downloadFileByCapId(HttpServletRequest request, @PathVariable Long id) {
         BottleCap cap = bottleCapService.getBottleCap(id);
         logger.debug("downloadCapFile method");
-        return downloadFile(cap.getName(), request);
+        return downloadFile(cap.getFileLocation().substring(cap.getFileLocation().lastIndexOf('/') + 1), request);
     }
 
     /**
@@ -150,9 +148,19 @@ public class BottleCapController {
     @PostMapping("/admin/addAndCalculateAllPictures")
     public ResponseEntity addAndCalculateAllPictures() {
         fileStorageService.getAllPictures().forEach(file -> {
-            bottleCapService.addBottleCap(file);
+            bottleCapService.addBottleCapForInitialUpload(file);
             fileStorageService.calculateAndStoreMathObject(file.getName());
         });
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PutMapping("/admin/updateLocationOfAllPictures")
+    public ResponseEntity updateLocationOfAllPictures() {
+        bottleCapService.getAllBottleCaps().stream().parallel()
+                .forEach(bottleCap -> {
+                    bottleCap.setFileLocation(fileStorageService.fileStorageLocation + System.getProperty("file.separator") + bottleCap.getCapName());
+                    bottleCapService.addBottleCap(bottleCap);
+                });
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

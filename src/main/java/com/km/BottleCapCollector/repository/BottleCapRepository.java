@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface BottleCapRepository extends CrudRepository<BottleCap, Long> {
 
-    List<BottleCap> findByName(String name);
+    List<BottleCap> findByCapName(String name);
 
 }

@@ -1,13 +1,14 @@
 package com.km.BottleCapCollector.repository;
 
 import com.km.BottleCapCollector.model.BottleCap;
+import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,21 +28,28 @@ public class BottleCapRepositoryTests {
     private final String img1 = "src/main/resources/img/captest.jpg";
     private final String img2 = "src/main/resources/img/captest2.jpg";
 
+    @Test
+    public void testAddCap(){
+        long id = entityManager.persist(new BottleCap("Perła", "img1234.img")).getId();
+        BottleCap cap = repository.findById(id).get();
+        assertEquals(cap.getCapName(), "Perła");
+        assertTrue(cap.getFileLocation().contains("img1234.img"));
+    }
 
     @Test
     public void testFindById() {
-        entityManager.persist(new BottleCap("Perła"));
-        long booksSize = repository.count();
-        assertEquals(1, booksSize);
-        Optional<BottleCap> cap = repository.findById(4l);
-        assertEquals("Perła", cap.get().getName());
+        long id = entityManager.persist(new BottleCap("Perła", "img1234.img")).getId();
+        BottleCap cap = repository.findById(id).get();
+        assertEquals("Perła", cap.getCapName());
+        assertTrue(cap.getFileLocation().contains("img1234.img"));
     }
 
     @Test
     public void testFindByName() {
-        entityManager.persist(new BottleCap("Lech"));
-        BottleCap cap = repository.findByName("Lech").get(0);
-        assertEquals("Lech", cap.getName());
+        entityManager.persist(new BottleCap("Lech", "img321.img"));
+        BottleCap cap = repository.findByCapName("Lech").get(0);
+        assertEquals("Lech", cap.getCapName());
+        assertTrue(cap.getFileLocation().contains("img321.img"));
     }
 
     @Test
