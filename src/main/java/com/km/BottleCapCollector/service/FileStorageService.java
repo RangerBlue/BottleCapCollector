@@ -172,4 +172,8 @@ public class FileStorageService {
 
         return result;
     }
+
+    public List<HistogramResult> getAllHistogramResults() {
+        return (List<HistogramResult>) histogramResultRepository.findAll();
+    }
 }

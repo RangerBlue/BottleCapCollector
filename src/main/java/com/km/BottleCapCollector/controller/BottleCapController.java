@@ -1,8 +1,10 @@
 package com.km.BottleCapCollector.controller;
 
 import com.km.BottleCapCollector.model.BottleCap;
+import com.km.BottleCapCollector.model.ComparisonRange;
 import com.km.BottleCapCollector.payload.UploadFileResponse;
 import com.km.BottleCapCollector.service.BottleCapService;
+import com.km.BottleCapCollector.service.ComparisonRangeService;
 import com.km.BottleCapCollector.service.FileStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,8 +33,12 @@ public class BottleCapController {
 
     @Autowired
     private BottleCapService bottleCapService;
+
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private ComparisonRangeService comparisonRangeService;
 
     @PostMapping("/addCap")
     public ResponseEntity<BottleCap> addBottleCap(String capName, @RequestParam("file") MultipartFile file) {
@@ -162,6 +171,34 @@ public class BottleCapController {
                     bottleCapService.addBottleCap(bottleCap);
                 });
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/admin/prepareData")
+    public ResponseEntity prepareData() {
+        try {
+            Files.walk(fileStorageService.objectStorageLocation).map(Path::toFile).forEach(File::delete);
+        } catch (IOException e) {
+            return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        addAndCalculateAllPictures();
+        calculateEachWithEachCap();
+        updateLocationOfAllPictures();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/admin/calculateMethodMaxMinValues")
+    public ResponseEntity calculateMethodMinMaxValues() {
+        try {
+            comparisonRangeService.calculateMinMaxValuesOfAllComparisonMethods(fileStorageService.getAllHistogramResults());
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/comparisonRangeValues")
+    public List<ComparisonRange> getRangeValues() {
+        return comparisonRangeService.getAll();
     }
 
 }
