@@ -2,6 +2,7 @@ package com.km.BottleCapCollector.controller;
 
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.model.ComparisonRange;
+import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.payload.UploadFileResponse;
 import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,6 +53,15 @@ public class BottleCapController {
         bottleCapService.addBottleCap(cap);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+
+    @PostMapping("/calculate/cap/{id}")
+    public List<HistogramResult> calculateBottleCap(@PathVariable Long id) {
+        BottleCap cap = bottleCapService.getBottleCap(id);
+        List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
+        return fileStorageService.calculateOneAgainstAllCaps(cap, caps);
+    }
+
 
     @GetMapping("/caps")
     public List<BottleCap> getBottleCaps() {

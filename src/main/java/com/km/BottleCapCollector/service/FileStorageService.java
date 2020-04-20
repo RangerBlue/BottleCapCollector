@@ -91,22 +91,17 @@ public class FileStorageService {
     }
 
     public void calculateEachWithEachCap(List<BottleCap> caps) {
-        try {
             List<BottleCapPair> dataToProcess = calculateEachWithEach(caps);
-            List<File> fileList = Files.walk(objectStorageLocation).map(path -> path.toFile()).skip(1).collect(Collectors.toList());
-            dataToProcess.stream().parallel().forEach(pair -> {
-                Mat histFromFile1 = imageHistogramFactory.loadMat(fileList.get((int) pair.getFirstCap().getId() - 1).getName(), objectStorageLocation);
-                Mat histFromFile2 = imageHistogramFactory.loadMat(fileList.get((int) pair.getSecondCap().getId() - 1).getName(), objectStorageLocation);
-                HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
-                result.setFirstCap(pair.getFirstCap());
-                result.setSecondCap(pair.getSecondCap());
-                histogramResultRepository.save(result);
-            });
+            dataToProcess.stream().parallel().forEach(pair -> histogramResultRepository.save(prepareHistogram(pair)));
+    }
 
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public HistogramResult prepareHistogram(BottleCapPair pair) {
+        Mat histFromFile1 = imageHistogramFactory.loadMat(pair.getFirstCap().getCapName(), objectStorageLocation);
+        Mat histFromFile2 = imageHistogramFactory.loadMat(pair.getSecondCap().getCapName(), objectStorageLocation);
+        HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
+        result.setFirstCap(pair.getFirstCap());
+        result.setSecondCap(pair.getSecondCap());
+        return result;
     }
 
     public long countAllFiles() {
@@ -152,6 +147,13 @@ public class FileStorageService {
         } catch (MalformedURLException ex) {
             throw new MyFileNotFoundException("File not found " + fileName, ex);
         }
+    }
+
+    public List<HistogramResult> calculateOneAgainstAllCaps(BottleCap cap, List<BottleCap> inputList) {
+        List<BottleCapPair> outputList = new ArrayList<>();
+        inputList.stream().parallel().forEach(listCap -> outputList.add(new BottleCapPair(cap, listCap)));
+        List<HistogramResult> histogramList = outputList.stream().map(this::prepareHistogram).collect(Collectors.toList());
+        return histogramList;
     }
 
     public List<BottleCapPair> calculateEachWithEach(List<BottleCap> inputList) {

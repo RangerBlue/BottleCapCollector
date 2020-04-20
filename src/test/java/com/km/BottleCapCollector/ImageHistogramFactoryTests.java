@@ -56,8 +56,8 @@ public class ImageHistogramFactoryTests {
         ImageHistogramFactory.storeMatFile(hist1, "captest.jpg", resourceFolder);
         ImageHistogramFactory.storeMatFile(hist2, "captest2.jpg", resourceFolder);
 
-        Mat histFromFile1 = ImageHistogramFactory.loadMat(img1Name + ImageHistogramFactory.OBJECT_PREFIX, resourceFolder);
-        Mat histFromFile2 = ImageHistogramFactory.loadMat(img2Name + ImageHistogramFactory.OBJECT_PREFIX, resourceFolder);
+        Mat histFromFile1 = ImageHistogramFactory.loadMat(img1Name, resourceFolder);
+        Mat histFromFile2 = ImageHistogramFactory.loadMat(img2Name, resourceFolder);
 
         assertEquals(ImageHistogramFactory.correlationMethod(hist1, hist2),
                 ImageHistogramFactory.correlationMethod(histFromFile1, histFromFile2));

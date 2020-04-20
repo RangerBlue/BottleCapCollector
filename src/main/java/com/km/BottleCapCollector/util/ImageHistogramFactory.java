@@ -112,7 +112,7 @@ public class ImageHistogramFactory {
         try {
             int cols;
             float[] data;
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(location.toFile(), name)))) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(location.toFile(), name+OBJECT_PREFIX)))) {
                 cols = (int) ois.readObject();
                 data = (float[]) ois.readObject();
             }
