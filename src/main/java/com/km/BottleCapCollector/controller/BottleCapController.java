@@ -7,6 +7,7 @@ import com.km.BottleCapCollector.payload.UploadFileResponse;
 import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
 import com.km.BottleCapCollector.service.FileStorageService;
+import org.opencv.core.Mat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,12 +55,16 @@ public class BottleCapController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-
-    @PostMapping("/calculate/cap/{id}")
-    public List<HistogramResult> calculateBottleCap(@PathVariable Long id) {
-        BottleCap cap = bottleCapService.getBottleCap(id);
+    @PostMapping("/validateCap")
+    public List<HistogramResult>  validateBottleCap(String capName, @RequestParam("file") MultipartFile file) {
+        BottleCap cap = new BottleCap(capName);
+        UploadFileResponse response = uploadTemporaryFile(file);
+        String fileName = response.getFileName();
+        Mat mat = fileStorageService.calculateAndReturnMathObject(fileName);
+        cap.setFileLocation(response.getFileDownloadUri());
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
-        return fileStorageService.calculateOneAgainstAllCaps(cap, caps);
+        BottleCap savedCap = bottleCapService.addBottleCap(cap);
+        return fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
     }
 
 
@@ -78,7 +83,22 @@ public class BottleCapController {
     @PostMapping("/uploadFile")
     public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
         logger.debug("Entering uploadFile method");
-        String fileName = fileStorageService.storeFile(file);
+        String fileName = fileStorageService.storeFileInPicturesFolder(file);
+
+
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/downloadFile/")
+                .path(fileName)
+                .toUriString();
+
+        logger.debug("Exiting to uploadFile method");
+        return new UploadFileResponse(fileName, fileDownloadUri,
+                file.getContentType(), file.getSize());
+    }
+
+    @PostMapping("/uploadTemporaryFile")
+    public UploadFileResponse uploadTemporaryFile(@RequestParam("file") MultipartFile file) {
+        String fileName = fileStorageService.storeFileInTemporaryPicturesFolder(file);
 
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()

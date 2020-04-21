@@ -32,8 +32,8 @@ public class ImageHistogramFactoryTests {
 
     @Test
     public void testMetrics() {
-        Mat hist1 = ImageHistogramFactory.getHistogram(Paths.get(img1));
-        Mat hist2 = ImageHistogramFactory.getHistogram(Paths.get(img2));
+        Mat hist1 = ImageHistogramFactory.calculateHistogram(img1Name, resourceFolder);
+        Mat hist2 = ImageHistogramFactory.calculateHistogram(img2Name, resourceFolder);
         assertTrue(ImageHistogramFactory.correlationMethod(hist1, hist2) < ImageHistogramFactory.CORRELATION_BASE,
                 "Correlation metric should be less than base metric");
 
@@ -50,8 +50,8 @@ public class ImageHistogramFactoryTests {
 
     @Test
     public void testSaveAndLoadHistogramAsObject() {
-        Mat hist1 = ImageHistogramFactory.getHistogram(Paths.get(img1));
-        Mat hist2 = ImageHistogramFactory.getHistogram(Paths.get(img2));
+        Mat hist1 = ImageHistogramFactory.calculateHistogram(img1Name, resourceFolder);
+        Mat hist2 = ImageHistogramFactory.calculateHistogram(img2Name, resourceFolder);
 
         ImageHistogramFactory.storeMatFile(hist1, "captest.jpg", resourceFolder);
         ImageHistogramFactory.storeMatFile(hist2, "captest2.jpg", resourceFolder);

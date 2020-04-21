@@ -40,10 +40,11 @@ public class ImageHistogramFactory {
     private ImageHistogramFactory() {
     }
 
-    public static Mat getHistogram(Path file) {
+    public static Mat calculateHistogram(String file, Path folder) {
+        Path location = folder.resolve(file).normalize();
         Mat hsvImage = new Mat();
         Mat histImage = new Mat();
-        Imgproc.cvtColor(Imgcodecs.imread(file.toString()), hsvImage, Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(Imgcodecs.imread(location.toString()), hsvImage, Imgproc.COLOR_BGR2HSV);
         List<Mat> hsvBaseList = Arrays.asList(hsvImage);
         Imgproc.calcHist(hsvBaseList, new MatOfInt(channels), new Mat(), histImage, new MatOfInt(histSize), new MatOfFloat(ranges), false);
         Core.normalize(histImage, histImage, 0, 1, Core.NORM_MINMAX);
@@ -142,7 +143,7 @@ public class ImageHistogramFactory {
     }
 
     public static String calculateAndStoreHistogram(String imageName, Path fileStorageLocation, Path objectStorageLocation) {
-        Mat hist = getHistogram(fileStorageLocation.resolve(imageName).normalize());
+        Mat hist = calculateHistogram(imageName, fileStorageLocation);
         return ImageHistogramFactory.storeMatFile(hist, imageName, objectStorageLocation);
     }
 }

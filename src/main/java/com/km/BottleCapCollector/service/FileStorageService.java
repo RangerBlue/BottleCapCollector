@@ -45,6 +45,7 @@ public class FileStorageService {
     private CustomProperties customProperties;
 
     public Path fileStorageLocation;
+    public Path temporaryFileStorageLocation;
     public Path objectStorageLocation;
 
     private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
@@ -55,18 +56,30 @@ public class FileStorageService {
                 .toAbsolutePath().normalize();
         objectStorageLocation = Paths.get(customProperties.getObjectDir())
                 .toAbsolutePath().normalize();
+        temporaryFileStorageLocation = Paths.get(customProperties.getTemporaryDir())
+                .toAbsolutePath().normalize();
 
         try {
             Files.createDirectories(fileStorageLocation);
             Files.createDirectories(objectStorageLocation);
+            Files.createDirectories(temporaryFileStorageLocation);
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
         logger.debug("Directory " + fileStorageLocation + " has been created or already exists");
         logger.debug("Directory " + objectStorageLocation + " has been created or already exists");
+        logger.debug("Directory " + temporaryFileStorageLocation + " has been created or already exists");
     }
 
-    public String storeFile(MultipartFile file) {
+    public String storeFileInPicturesFolder(MultipartFile file) {
+        return storeFile(file, fileStorageLocation, true);
+    }
+
+    public String storeFileInTemporaryPicturesFolder(MultipartFile file) {
+        return storeFile(file, temporaryFileStorageLocation, false);
+    }
+
+    private String storeFile(MultipartFile file, Path fileStorageLocation, boolean saveMath) {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 
         try {
@@ -78,7 +91,9 @@ public class FileStorageService {
             // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            imageHistogramFactory.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
+            if(saveMath){
+                imageHistogramFactory.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
+            }
 
             return fileName;
         } catch (IOException ex) {
@@ -89,6 +104,9 @@ public class FileStorageService {
     public void calculateAndStoreMathObject(String fileName) {
         imageHistogramFactory.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
     }
+    public Mat calculateAndReturnMathObject(String fileName) {
+        return imageHistogramFactory.calculateHistogram(fileName, temporaryFileStorageLocation);
+    }
 
     public void calculateEachWithEachCap(List<BottleCap> caps) {
             List<BottleCapPair> dataToProcess = calculateEachWithEach(caps);
@@ -97,6 +115,15 @@ public class FileStorageService {
 
     public HistogramResult prepareHistogram(BottleCapPair pair) {
         Mat histFromFile1 = imageHistogramFactory.loadMat(pair.getFirstCap().getCapName(), objectStorageLocation);
+        Mat histFromFile2 = imageHistogramFactory.loadMat(pair.getSecondCap().getCapName(), objectStorageLocation);
+        HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
+        result.setFirstCap(pair.getFirstCap());
+        result.setSecondCap(pair.getSecondCap());
+        return result;
+    }
+
+    public HistogramResult prepareHistogram(Mat firstCapMat, BottleCapPair pair) {
+        Mat histFromFile1 = firstCapMat;
         Mat histFromFile2 = imageHistogramFactory.loadMat(pair.getSecondCap().getCapName(), objectStorageLocation);
         HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
         result.setFirstCap(pair.getFirstCap());
@@ -149,10 +176,10 @@ public class FileStorageService {
         }
     }
 
-    public List<HistogramResult> calculateOneAgainstAllCaps(BottleCap cap, List<BottleCap> inputList) {
+    public List<HistogramResult> calculateOneAgainstAllCaps(BottleCap cap, Mat mat, List<BottleCap> inputList) {
         List<BottleCapPair> outputList = new ArrayList<>();
         inputList.stream().parallel().forEach(listCap -> outputList.add(new BottleCapPair(cap, listCap)));
-        List<HistogramResult> histogramList = outputList.stream().map(this::prepareHistogram).collect(Collectors.toList());
+        List<HistogramResult> histogramList = outputList.stream().map(pair ->prepareHistogram(mat,pair)).collect(Collectors.toList());
         return histogramList;
     }
 
