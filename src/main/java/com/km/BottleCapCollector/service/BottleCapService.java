@@ -34,6 +34,10 @@ public class BottleCapService {
         }
     }
 
+    public void deleteBottleCapWithId(Long id){
+        repository.deleteById(id);
+    }
+
     //TODO move it into addBottleCapMethod
     public boolean isDuplicate(BottleCap newCap){
         return getAllBottleCaps().stream().anyMatch((old) -> old.equals(newCap));

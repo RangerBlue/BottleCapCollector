@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ComparisonRangeServiceTests {
@@ -26,7 +27,7 @@ public class ComparisonRangeServiceTests {
     private ComparisonRangeRepository repository;
 
     @Test
-    public void calculateMethodMaxMinValues() {
+    public void testCalculateMethodMaxMinValues() {
         HistogramResult result1 = new HistogramResult(1, 2, 3, 4);
         result1.setFirstCap(new BottleCap());
         result1.setSecondCap(new BottleCap());
@@ -42,17 +43,136 @@ public class ComparisonRangeServiceTests {
         histogramList.add(result3);
 
         List<ComparisonRange> result = service.calculateMinMaxValuesOfAllComparisonMethods(histogramList);
-        assertEquals(1, result.stream().filter(item ->item.getMethodName().equals(ComparisonMethod.CORRELATION)).findFirst().get().getMinValue());
-        assertEquals(9, result.stream().filter(item ->item.getMethodName().equals(ComparisonMethod.CORRELATION)).findFirst().get().getMaxValue());
+        assertEquals(1, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.CORRELATION)).findFirst().get().getMinValue());
+        assertEquals(9, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.CORRELATION)).findFirst().get().getMaxValue());
 
-        assertEquals(2, result.stream().filter(item ->item.getMethodName().equals(ComparisonMethod.CHI_SQUARE)).findFirst().get().getMinValue());
-        assertEquals(10, result.stream().filter(item ->item.getMethodName().equals(ComparisonMethod.CHI_SQUARE)).findFirst().get().getMaxValue());
+        assertEquals(2, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.CHI_SQUARE)).findFirst().get().getMinValue());
+        assertEquals(10, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.CHI_SQUARE)).findFirst().get().getMaxValue());
 
-        assertEquals(3, result.stream().filter(item ->item.getMethodName().equals(ComparisonMethod.INTERSECTION)).findFirst().get().getMinValue());
-        assertEquals(11, result.stream().filter(item ->item.getMethodName().equals(ComparisonMethod.INTERSECTION)).findFirst().get().getMaxValue());
+        assertEquals(3, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.INTERSECTION)).findFirst().get().getMinValue());
+        assertEquals(11, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.INTERSECTION)).findFirst().get().getMaxValue());
 
-        assertEquals(4, result.stream().filter(item ->item.getMethodName().equals(ComparisonMethod.BHATTACHARYYA)).findFirst().get().getMinValue());
-        assertEquals(12, result.stream().filter(item ->item.getMethodName().equals(ComparisonMethod.BHATTACHARYYA)).findFirst().get().getMaxValue());
+        assertEquals(4, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.BHATTACHARYYA)).findFirst().get().getMinValue());
+        assertEquals(12, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.BHATTACHARYYA)).findFirst().get().getMaxValue());
+    }
 
+    @Test
+    public void testCalculateSimilarityForCorrelationSuccess() {
+        HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
+        ComparisonRange range = new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        double result = service.calculateSimilarityForCorrelation(histogramResult, range);
+        assertEquals(0.8, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCalculateSimilarityForCorrelationFail() {
+        HistogramResult histogramResult = new HistogramResult(1.2, 401, 8, 0.3);
+        ComparisonRange range = new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        service.calculateSimilarityForCorrelation(histogramResult, range);
+    }
+
+    @Test
+    public void testCalculateSimilarityForChisquareSuccess() {
+        HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
+        ComparisonRange range = new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        double result = service.calculateSimilarityForChisquare(histogramResult, range);
+        assertEquals(0.6, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCalculateSimilarityForChisquareFail() {
+        HistogramResult histogramResult = new HistogramResult(1.2, -1, 8, 0.3);
+        ComparisonRange range = new ComparisonRange(ComparisonMethod.CHI_SQUARE, 0.4, 0.9);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        service.calculateSimilarityForChisquare(histogramResult, range);
+    }
+
+    @Test
+    public void testCalculateSimilarityForIntersectionSuccess() {
+        HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
+        ComparisonRange range = new ComparisonRange(ComparisonMethod.INTERSECTION, 2, 10);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        double result = service.calculateSimilarityForIntersection(histogramResult, range);
+        assertEquals(0.75, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCalculateSimilarityForIntersectionFail() {
+        HistogramResult histogramResult = new HistogramResult(1.2, 401, 19, 0.3);
+        ComparisonRange range = new ComparisonRange(ComparisonMethod.INTERSECTION, 0.4, 0.9);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        service.calculateSimilarityForIntersection(histogramResult, range);
+    }
+
+    @Test
+    public void testCalculateSimilarityForBhattacharyyaSuccess() {
+        HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
+        ComparisonRange range = new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        double result = service.calculateSimilarityForBhattacharyya(histogramResult, range);
+        assertEquals(0.75, result, 0.00001);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCalculateSimilarityForBhattacharyyaFail() {
+        HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 1.2);
+        ComparisonRange range = new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        double result = service.calculateSimilarityForBhattacharyya(histogramResult, range);
+    }
+
+    @Test
+    public void testCalculateSimilarityForAllMethods() {
+        List<ComparisonRange> range = new ArrayList<>();
+        range.add(new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9));
+        range.add(new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001));
+        range.add(new ComparisonRange(ComparisonMethod.INTERSECTION, 2, 10));
+        range.add(new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9));
+
+        HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        double result = service.calculateSimilarityForAllMethods(histogramResult, range);
+        assertEquals(0.725, result, 0.00001);
+    }
+
+    @Test()
+    public void testCalculateSimilarityForCap() {
+        List<ComparisonRange> range = new ArrayList<>();
+        range.add(new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9));
+        range.add(new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001));
+        range.add(new ComparisonRange(ComparisonMethod.INTERSECTION, 2, 10));
+        range.add(new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9));
+        when(repository.findAll()).thenReturn(range);
+
+
+        List<HistogramResult> histogramResults = new ArrayList<>();
+        HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
+        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setSecondCap(new BottleCap());
+        HistogramResult histogramResult1 = new HistogramResult(0.2, 201, 4, 0.2);
+        histogramResult1.setFirstCap(new BottleCap());
+        histogramResult1.setSecondCap(new BottleCap());
+        HistogramResult histogramResult2 = new HistogramResult(0.3, 333, 5, 0.6);
+        histogramResult2.setFirstCap(new BottleCap());
+        histogramResult2.setSecondCap(new BottleCap());
+
+        histogramResults.add(histogramResult);
+        histogramResults.add(histogramResult1);
+        histogramResults.add(histogramResult2);
+
+        double result = service.calculateSimilarityForCap(histogramResults);
+        assertEquals(0.47025, result, 0.00001);
     }
 }

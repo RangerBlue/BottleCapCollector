@@ -4,6 +4,7 @@ import com.km.BottleCapCollector.model.ComparisonRange;
 import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.repository.ComparisonRangeRepository;
 import com.km.BottleCapCollector.util.ComparisonMethod;
+import com.km.BottleCapCollector.util.ImageHistogramFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,72 @@ public class ComparisonRangeService {
             return range;
         } else {
             throw new IllegalArgumentException("There is no data in table");
+        }
+    }
+
+    public double calculateSimilarityForCap(List<HistogramResult> histogramCalculation) {
+        List<ComparisonRange> range = getAll();
+        try {
+            double sum = histogramCalculation.stream().parallel()
+                    .map(histogramResult -> calculateSimilarityForAllMethods(histogramResult, range))
+                    .mapToDouble(Double::doubleValue).sum();
+            return sum / (histogramCalculation.size());
+        } catch (IllegalArgumentException e) {
+            return 1;
+        }
+    }
+
+    public double calculateSimilarityForAllMethods(HistogramResult histogramCalculation, List<ComparisonRange> range) {
+        double correlation = calculateSimilarityForCorrelation(histogramCalculation, range.get(0));
+        double chisquare = calculateSimilarityForChisquare(histogramCalculation, range.get(1));
+        double intersection = calculateSimilarityForIntersection(histogramCalculation, range.get(2));
+        double bhattacharyya = calculateSimilarityForBhattacharyya(histogramCalculation, range.get(3));
+        System.out.println(correlation + " " + chisquare + " " + intersection + " " + bhattacharyya);
+        return (correlation + chisquare + intersection + bhattacharyya) / 4;
+    }
+
+    public double calculateSimilarityForCorrelation(HistogramResult histogramCalculation, ComparisonRange range) {
+        double min = range.getMinValue();
+        double max = range.getMaxValue();
+        double value = histogramCalculation.getCorrelation();
+        if (value < ImageHistogramFactory.CORRELATION_BASE && value > 0) {
+            return (value - min) / (max - min);
+        } else {
+            throw new IllegalArgumentException("You have already got this picture");
+        }
+    }
+
+
+    public double calculateSimilarityForChisquare(HistogramResult histogramCalculation, ComparisonRange range) {
+        double min = range.getMinValue();
+        double max = range.getMaxValue();
+        double value = histogramCalculation.getChisquare();
+        if (value > ImageHistogramFactory.CHI_SQUARE_BASE) {
+            return (max - value) / (max - min);
+        } else {
+            throw new IllegalArgumentException("You have already got this picture");
+        }
+    }
+
+    public double calculateSimilarityForIntersection(HistogramResult histogramCalculation, ComparisonRange range) {
+        double min = range.getMinValue();
+        double max = range.getMaxValue();
+        double value = histogramCalculation.getIntersection();
+        if (value > 0 && value < ImageHistogramFactory.INTERSECTION_BASE) {
+            return (value - min) / (max - min);
+        } else {
+            throw new IllegalArgumentException("You have already got this picture");
+        }
+    }
+
+    public double calculateSimilarityForBhattacharyya(HistogramResult histogramCalculation, ComparisonRange range) {
+        double min = range.getMinValue();
+        double max = range.getMaxValue();
+        double value = histogramCalculation.getBhattacharyya();
+        if (value < 1 && value > ImageHistogramFactory.BHATTACHARYYA_BASE) {
+            return (max - value) / (max - min);
+        } else {
+            throw new IllegalArgumentException("You have already got this picture");
         }
     }
 }

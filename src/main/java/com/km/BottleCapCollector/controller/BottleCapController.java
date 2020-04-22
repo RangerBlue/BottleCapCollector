@@ -56,7 +56,7 @@ public class BottleCapController {
     }
 
     @PostMapping("/validateCap")
-    public List<HistogramResult>  validateBottleCap(String capName, @RequestParam("file") MultipartFile file) {
+    public double validateBottleCap(String capName, @RequestParam("file") MultipartFile file) {
         BottleCap cap = new BottleCap(capName);
         UploadFileResponse response = uploadTemporaryFile(file);
         String fileName = response.getFileName();
@@ -64,7 +64,9 @@ public class BottleCapController {
         cap.setFileLocation(response.getFileDownloadUri());
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         BottleCap savedCap = bottleCapService.addBottleCap(cap);
-        return fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
+        List<HistogramResult> histogramResults =  fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
+        bottleCapService.deleteBottleCapWithId(savedCap.getId());
+        return comparisonRangeService.calculateSimilarityForCap(histogramResults);
     }
 
 
@@ -214,6 +216,7 @@ public class BottleCapController {
         addAndCalculateAllPictures();
         calculateEachWithEachCap();
         updateLocationOfAllPictures();
+        calculateMethodMinMaxValues();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
