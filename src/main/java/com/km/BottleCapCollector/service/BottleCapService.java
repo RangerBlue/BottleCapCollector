@@ -4,6 +4,8 @@ package com.km.BottleCapCollector.service;
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.repository.BottleCapRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 

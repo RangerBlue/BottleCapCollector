@@ -61,7 +61,6 @@ public class ComparisonRangeService {
         double chisquare = calculateSimilarityForChisquare(histogramCalculation, range.get(1));
         double intersection = calculateSimilarityForIntersection(histogramCalculation, range.get(2));
         double bhattacharyya = calculateSimilarityForBhattacharyya(histogramCalculation, range.get(3));
-        System.out.println(correlation + " " + chisquare + " " + intersection + " " + bhattacharyya);
         return (correlation + chisquare + intersection + bhattacharyya) / 4;
     }
 
