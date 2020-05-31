@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.cloud.CloudPlatform;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.system.JavaVersion;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,10 +27,13 @@ import org.springframework.context.annotation.Configuration;
 public class BottleCapConfiguration implements CommandLineRunner, ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(BottleCapConfiguration.class);
 
+    @Autowired
+    private ApplicationContext context;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         args.getNonOptionArgs().forEach(logger::info);
+        ImageHistogramFactory imageHistogramFactory = context.getBean(ImageHistogramFactory.class);
     }
 
     @Override
