@@ -1,8 +1,6 @@
 package com.km.BottleCapCollector.repository;
 
 import com.km.BottleCapCollector.model.BottleCap;
-import org.junit.After;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -11,7 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 
 @DataJpaTest
 public class BottleCapRepositoryTests {

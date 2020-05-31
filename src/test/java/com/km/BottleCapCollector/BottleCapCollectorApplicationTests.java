@@ -20,7 +20,10 @@ class BottleCapCollectorApplicationTests {
 	private int port;
 
 	@Value("${test-value}")
-	String testValue;
+	String testValue$;
+
+	@Value("#{'${test-value}'}")
+	String testValueHash;
 
 	@Test
 	void portDefinedTest() {
@@ -34,8 +37,13 @@ class BottleCapCollectorApplicationTests {
 	}
 
 	@Test
-	void test(){
-		assertThat(testValue).isEqualTo("test");
+	void valueFromProperties$Test(){
+		assertThat(testValue$).isEqualTo("test");
+	}
+
+	@Test
+	void valueFromPropertiesHashTest(){
+		assertThat(testValueHash).isEqualTo("test");
 	}
 
 }
