@@ -19,6 +19,9 @@ class BottleCapCollectorApplicationTests {
 	@LocalServerPort
 	private int port;
 
+	@Value("${local.management.port}")
+	private int actuatorPort;
+
 	@Value("${test-value}")
 	String testValue$;
 
@@ -28,6 +31,11 @@ class BottleCapCollectorApplicationTests {
 	@Test
 	void portDefinedTest() {
 		assertEquals(8080, port);
+	}
+
+	@Test
+	void actuatorPortDefinedTest() {
+		assertEquals(8081, actuatorPort);
 	}
 
 	@Test

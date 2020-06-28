@@ -15,6 +15,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .httpBasic()
                 .and()
+                .headers().frameOptions().sameOrigin()
+                .and()
                 .authorizeRequests()
                 .antMatchers("/caps").authenticated()
                 .antMatchers("/admin/prepareData").hasRole("ADMIN")
