@@ -7,6 +7,7 @@ import com.km.BottleCapCollector.payload.UploadFileResponse;
 import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
 import com.km.BottleCapCollector.service.FileStorageService;
+import com.km.BottleCapCollector.util.SimilarityModel;
 import org.opencv.core.Mat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class BottleCapController {
     }
 
     @PostMapping("/validateCap")
-    public double validateBottleCap(String capName, @RequestParam("file") MultipartFile file) {
+    public SimilarityModel validateBottleCap(String capName, @RequestParam("file") MultipartFile file) {
         BottleCap cap = new BottleCap(capName);
         UploadFileResponse response = uploadTemporaryFile(file);
         String fileName = response.getFileName();
@@ -66,7 +67,7 @@ public class BottleCapController {
         BottleCap savedCap = bottleCapService.addBottleCap(cap);
         List<HistogramResult> histogramResults =  fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
         bottleCapService.deleteBottleCapWithId(savedCap.getId());
-        return comparisonRangeService.calculateSimilarityForCap(histogramResults);
+        return comparisonRangeService.calculateSimilarityModelForCap(histogramResults);
     }
 
 

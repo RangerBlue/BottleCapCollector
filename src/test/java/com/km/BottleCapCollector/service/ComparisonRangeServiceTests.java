@@ -1,10 +1,13 @@
 package com.km.BottleCapCollector.service;
 
+import com.km.BottleCapCollector.exception.DuplicateCapException;
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.model.ComparisonRange;
 import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.repository.ComparisonRangeRepository;
 import com.km.BottleCapCollector.util.ComparisonMethod;
+import com.km.BottleCapCollector.util.ImageHistogramFactory;
+import com.km.BottleCapCollector.util.SimilarityModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -66,7 +69,7 @@ public class ComparisonRangeServiceTests {
         assertEquals(0.8, result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = DuplicateCapException.class)
     public void testCalculateSimilarityForCorrelationFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9);
@@ -85,7 +88,7 @@ public class ComparisonRangeServiceTests {
         assertEquals(0.6, result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = DuplicateCapException.class)
     public void testCalculateSimilarityForChisquareFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, -1, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CHI_SQUARE, 0.4, 0.9);
@@ -104,7 +107,7 @@ public class ComparisonRangeServiceTests {
         assertEquals(0.75, result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = DuplicateCapException.class)
     public void testCalculateSimilarityForIntersectionFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, 401, 19, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.INTERSECTION, 0.4, 0.9);
@@ -123,7 +126,7 @@ public class ComparisonRangeServiceTests {
         assertEquals(0.75, result, 0.00001);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = DuplicateCapException.class)
     public void testCalculateSimilarityForBhattacharyyaFail() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 1.2);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9);
@@ -149,6 +152,51 @@ public class ComparisonRangeServiceTests {
 
     @Test()
     public void testCalculateSimilarityForCap() {
+        List<HistogramResult> histogramResults = prepareData();
+        double result = service.calculateSimilarityForCap(histogramResults);
+        assertEquals(0.47025, result, 0.00001);
+    }
+
+    @Test()
+    public void testCalculateSimilarityModelForCap() {
+        List<HistogramResult> histogramResults = prepareData();
+        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults);
+        assertEquals(0, model.getFrom00To10());
+        assertEquals(0, model.getFrom10To20());
+        assertEquals(0, model.getFrom20To30());
+        assertEquals(2, model.getFrom30To40());
+        assertEquals(0, model.getFrom50To60());
+        assertEquals(0, model.getFrom60To70());
+        assertEquals(1, model.getFrom70To80());
+        assertEquals(0, model.getFrom80To90());
+        assertEquals(0, model.getFrom90To100());
+    }
+
+    @Test()
+    public void testCalculateSimilarityModelForCap2() {
+        List<HistogramResult> histogramResults = prepareData();
+        HistogramResult histogramResult = new HistogramResult(
+                ImageHistogramFactory.CORRELATION_BASE,
+                ImageHistogramFactory.CHI_SQUARE_BASE,
+                ImageHistogramFactory.INTERSECTION_BASE,
+                ImageHistogramFactory.BHATTACHARYYA_BASE);
+        histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());
+        histogramResult.setSecondCap(new BottleCap());
+        histogramResults.add(histogramResult);
+        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults);
+
+        assertEquals(0, model.getFrom00To10());
+        assertEquals(0, model.getFrom10To20());
+        assertEquals(0, model.getFrom20To30());
+        assertEquals(0, model.getFrom30To40());
+        assertEquals(0, model.getFrom50To60());
+        assertEquals(0, model.getFrom60To70());
+        assertEquals(0, model.getFrom70To80());
+        assertEquals(0, model.getFrom80To90());
+        assertEquals(4, model.getFrom90To100());
+    }
+
+    private List<HistogramResult> prepareData() {
         List<ComparisonRange> range = new ArrayList<>();
         range.add(new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9));
         range.add(new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001));
@@ -156,23 +204,23 @@ public class ComparisonRangeServiceTests {
         range.add(new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9));
         when(repository.findAll()).thenReturn(range);
 
+        BottleCap newCap = new BottleCap();
 
         List<HistogramResult> histogramResults = new ArrayList<>();
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
-        histogramResult.setFirstCap(new BottleCap());
+        histogramResult.setFirstCap(newCap);
         histogramResult.setSecondCap(new BottleCap());
         HistogramResult histogramResult1 = new HistogramResult(0.2, 201, 4, 0.2);
-        histogramResult1.setFirstCap(new BottleCap());
+        histogramResult1.setFirstCap(newCap);
         histogramResult1.setSecondCap(new BottleCap());
         HistogramResult histogramResult2 = new HistogramResult(0.3, 333, 5, 0.6);
-        histogramResult2.setFirstCap(new BottleCap());
+        histogramResult2.setFirstCap(newCap);
         histogramResult2.setSecondCap(new BottleCap());
 
         histogramResults.add(histogramResult);
         histogramResults.add(histogramResult1);
         histogramResults.add(histogramResult2);
 
-        double result = service.calculateSimilarityForCap(histogramResults);
-        assertEquals(0.47025, result, 0.00001);
+        return histogramResults;
     }
 }

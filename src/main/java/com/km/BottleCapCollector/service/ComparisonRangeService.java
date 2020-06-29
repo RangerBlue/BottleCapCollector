@@ -1,10 +1,12 @@
 package com.km.BottleCapCollector.service;
 
+import com.km.BottleCapCollector.exception.DuplicateCapException;
 import com.km.BottleCapCollector.model.ComparisonRange;
 import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.repository.ComparisonRangeRepository;
 import com.km.BottleCapCollector.util.ComparisonMethod;
 import com.km.BottleCapCollector.util.ImageHistogramFactory;
+import com.km.BottleCapCollector.util.SimilarityModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,8 +53,20 @@ public class ComparisonRangeService {
                     .map(histogramResult -> calculateSimilarityForAllMethods(histogramResult, range))
                     .mapToDouble(Double::doubleValue).sum();
             return sum / (histogramCalculation.size());
-        } catch (IllegalArgumentException e) {
+        } catch (DuplicateCapException e) {
             return 1;
+        }
+    }
+
+    public SimilarityModel calculateSimilarityModelForCap(List<HistogramResult> histogramCalculation) {
+        List<ComparisonRange> range = getAll();
+        SimilarityModel model = new SimilarityModel();
+        try {
+            histogramCalculation.stream().parallel().forEach(histogramResult -> model.addValue(calculateSimilarityForAllMethods(histogramResult, range)));
+        } catch (DuplicateCapException e) {
+            model.markModelAsDuplicate(histogramCalculation.size());
+        } finally {
+            return model;
         }
     }
 
@@ -71,7 +85,7 @@ public class ComparisonRangeService {
         if (value < ImageHistogramFactory.CORRELATION_BASE && value > 0) {
             return (value - min) / (max - min);
         } else {
-            throw new IllegalArgumentException("You have already got this picture");
+            throw new DuplicateCapException("You have already got this picture");
         }
     }
 
@@ -83,7 +97,7 @@ public class ComparisonRangeService {
         if (value > ImageHistogramFactory.CHI_SQUARE_BASE) {
             return (max - value) / (max - min);
         } else {
-            throw new IllegalArgumentException("You have already got this picture");
+            throw new DuplicateCapException("You have already got this picture");
         }
     }
 
@@ -94,7 +108,7 @@ public class ComparisonRangeService {
         if (value > 0 && value < ImageHistogramFactory.INTERSECTION_BASE) {
             return (value - min) / (max - min);
         } else {
-            throw new IllegalArgumentException("You have already got this picture");
+            throw new DuplicateCapException("You have already got this picture");
         }
     }
 
@@ -105,7 +119,7 @@ public class ComparisonRangeService {
         if (value < 1 && value > ImageHistogramFactory.BHATTACHARYYA_BASE) {
             return (max - value) / (max - min);
         } else {
-            throw new IllegalArgumentException("You have already got this picture");
+            throw new DuplicateCapException("You have already got this picture");
         }
     }
 }
