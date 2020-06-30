@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.Set;
 import java.util.function.Function;
 
 @Service
@@ -51,7 +52,7 @@ public class ComparisonRangeService {
         try {
             double sum = histogramCalculation.stream().parallel()
                     .map(histogramResult -> calculateSimilarityForAllMethods(histogramResult, range))
-                    .mapToDouble(Double::doubleValue).sum();
+                    .mapToDouble(HistogramResult::getSimilarity).sum();
             return sum / (histogramCalculation.size());
         } catch (DuplicateCapException e) {
             return 1;
@@ -66,16 +67,19 @@ public class ComparisonRangeService {
         } catch (DuplicateCapException e) {
             model.markModelAsDuplicate(histogramCalculation.size());
         } finally {
+            Set<HistogramResult> top = model.calculateTopSimilar();
+            model.setSimilarCaps(top);
             return model;
         }
     }
 
-    public double calculateSimilarityForAllMethods(HistogramResult histogramCalculation, List<ComparisonRange> range) {
+    public HistogramResult calculateSimilarityForAllMethods(HistogramResult histogramCalculation, List<ComparisonRange> range) {
         double correlation = calculateSimilarityForCorrelation(histogramCalculation, range.get(0));
         double chisquare = calculateSimilarityForChisquare(histogramCalculation, range.get(1));
         double intersection = calculateSimilarityForIntersection(histogramCalculation, range.get(2));
         double bhattacharyya = calculateSimilarityForBhattacharyya(histogramCalculation, range.get(3));
-        return (correlation + chisquare + intersection + bhattacharyya) / 4;
+        histogramCalculation.setSimilarity((correlation + chisquare + intersection + bhattacharyya) / 4);
+        return histogramCalculation;
     }
 
     public double calculateSimilarityForCorrelation(HistogramResult histogramCalculation, ComparisonRange range) {

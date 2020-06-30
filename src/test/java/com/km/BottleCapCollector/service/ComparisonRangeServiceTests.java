@@ -146,8 +146,8 @@ public class ComparisonRangeServiceTests {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         histogramResult.setFirstCap(new BottleCap());
         histogramResult.setSecondCap(new BottleCap());
-        double result = service.calculateSimilarityForAllMethods(histogramResult, range);
-        assertEquals(0.725, result, 0.00001);
+        HistogramResult result = service.calculateSimilarityForAllMethods(histogramResult, range);
+        assertEquals(0.725, result.getSimilarity(), 0.00001);
     }
 
     @Test()
@@ -165,15 +165,17 @@ public class ComparisonRangeServiceTests {
         assertEquals(0, model.getFrom10To20());
         assertEquals(0, model.getFrom20To30());
         assertEquals(2, model.getFrom30To40());
+        assertEquals(0, model.getFrom40To50());
         assertEquals(0, model.getFrom50To60());
         assertEquals(0, model.getFrom60To70());
         assertEquals(1, model.getFrom70To80());
         assertEquals(0, model.getFrom80To90());
         assertEquals(0, model.getFrom90To100());
+        assertEquals(3, model.getSimilarCaps().size());
     }
 
     @Test()
-    public void testCalculateSimilarityModelForCap2() {
+    public void testCalculateSimilarityModelForTwoIdenticalCaps() {
         List<HistogramResult> histogramResults = prepareData();
         HistogramResult histogramResult = new HistogramResult(
                 ImageHistogramFactory.CORRELATION_BASE,
@@ -189,11 +191,39 @@ public class ComparisonRangeServiceTests {
         assertEquals(0, model.getFrom10To20());
         assertEquals(0, model.getFrom20To30());
         assertEquals(0, model.getFrom30To40());
+        assertEquals(0, model.getFrom40To50());
         assertEquals(0, model.getFrom50To60());
         assertEquals(0, model.getFrom60To70());
         assertEquals(0, model.getFrom70To80());
         assertEquals(0, model.getFrom80To90());
         assertEquals(4, model.getFrom90To100());
+        assertEquals(4, model.getSimilarCaps().size());
+    }
+
+    @Test()
+    public void testSimilarCapsEquals4() {
+        List<HistogramResult> histogramResults = prepareData();
+        HistogramResult histogramResult = new HistogramResult(0.5, 333, 5, 0.2);
+        histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());
+        histogramResult.setSecondCap(new BottleCap());
+        histogramResults.add(histogramResult);
+        HistogramResult histogramResult2 = new HistogramResult(0.4, 323, 4, 0.65);
+        histogramResult2.setFirstCap(histogramResults.get(0).getFirstCap());
+        histogramResult2.setSecondCap(new BottleCap());
+        histogramResults.add(histogramResult2);
+        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults);
+
+        assertEquals(0, model.getFrom00To10());
+        assertEquals(0, model.getFrom10To20());
+        assertEquals(0, model.getFrom20To30());
+        assertEquals(3, model.getFrom30To40());
+        assertEquals(0, model.getFrom40To50());
+        assertEquals(1, model.getFrom50To60());
+        assertEquals(0, model.getFrom60To70());
+        assertEquals(1, model.getFrom70To80());
+        assertEquals(0, model.getFrom80To90());
+        assertEquals(0, model.getFrom90To100());
+        assertEquals(4, model.getSimilarCaps().size());
     }
 
     private List<HistogramResult> prepareData() {

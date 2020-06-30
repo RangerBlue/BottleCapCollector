@@ -1,5 +1,13 @@
 package com.km.BottleCapCollector.util;
 
+import com.km.BottleCapCollector.model.HistogramResult;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 public class SimilarityModel {
     private int from00To10;
     private int from10To20;
@@ -11,6 +19,58 @@ public class SimilarityModel {
     private int from70To80;
     private int from80To90;
     private int from90To100;
+
+    @Value("{$cap.similar.amount}")
+    private int similarCapAmount;
+
+    private Set<HistogramResult> similarCaps = new CapTreeSet(
+            Comparator.comparingDouble(o -> ((HistogramResult) o).getSimilarity()).reversed()
+    );
+
+    public class CapTreeSet<E> extends TreeSet<E> {
+
+        public CapTreeSet(Comparator<E> comparator) {
+            super(comparator);
+        }
+
+        @Override
+        public synchronized boolean add(E e) {
+            switch ((int)(((HistogramResult)e).getSimilarity()*10)){
+                case 0:
+                    from00To10++;
+                    break;
+                case 1:
+                    from10To20++;
+                    break;
+                case 2:
+                    from20To30++;
+                    break;
+                case 3:
+                    from30To40++;
+                    break;
+                case 4:
+                    from40To50++;
+                    break;
+                case 5:
+                    from50To60++;
+                    break;
+                case 6:
+                    from60To70++;
+                    break;
+                case 7:
+                    from70To80++;
+                    break;
+                case 8:
+                    from80To90++;
+                    break;
+                case 9:
+                    from90To100++;
+                    break;
+                default:
+            }
+            return super.add(e);
+        }
+    }
 
     public int getFrom00To10() {
         return from00To10;
@@ -92,40 +152,19 @@ public class SimilarityModel {
         this.from90To100 = from90To100;
     }
 
-    public void addValue(double value){
-        switch ((int)(value*10)){
-            case 0:
-                from00To10++;
-                break;
-            case 1:
-                from10To20++;
-                break;
-            case 2:
-                from20To30++;
-                break;
-            case 3:
-                from30To40++;
-                break;
-            case 4:
-                from40To50++;
-                break;
-            case 5:
-                from50To60++;
-                break;
-            case 6:
-                from60To70++;
-                break;
-            case 7:
-                from70To80++;
-                break;
-            case 8:
-                from80To90++;
-                break;
-            case 9:
-                from90To100++;
-                break;
-            default:
-        }
+    public Set<HistogramResult> getSimilarCaps() {
+        return similarCaps;
+    }
+
+    public void setSimilarCaps(Set<HistogramResult> similarCaps) {
+        this.similarCaps = similarCaps;
+    }
+
+    public void addValue(HistogramResult result){
+        similarCaps.add(result);
+    }
+    public Set<HistogramResult> calculateTopSimilar(){
+       return similarCaps.stream().limit(4).collect(Collectors.toSet());
     }
 
     public void markModelAsDuplicate(int capCount){
