@@ -27,15 +27,18 @@ public class SimilarityModel {
             Comparator.comparingDouble(o -> ((HistogramResult) o).getSimilarity()).reversed()
     );
 
-    public class CapTreeSet<E> extends TreeSet<E> {
+    public class CapTreeSet extends TreeSet<HistogramResult> {
 
-        public CapTreeSet(Comparator<E> comparator) {
+        private static final long serialVersionUID = 1L;
+
+        public CapTreeSet(Comparator<Object> comparator) {
             super(comparator);
         }
+    
 
         @Override
-        public synchronized boolean add(E e) {
-            switch ((int)(((HistogramResult)e).getSimilarity()*10)){
+        public synchronized boolean add(HistogramResult e) {
+            switch ((int)(e.getSimilarity()*10)){
                 case 0:
                     from00To10++;
                     break;

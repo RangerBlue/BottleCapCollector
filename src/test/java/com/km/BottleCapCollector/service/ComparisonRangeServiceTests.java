@@ -6,12 +6,13 @@ import com.km.BottleCapCollector.model.ComparisonRange;
 import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.repository.ComparisonRangeRepository;
 import com.km.BottleCapCollector.util.ComparisonMethod;
-import com.km.BottleCapCollector.util.ImageHistogramFactory;
+import com.km.BottleCapCollector.util.ImageHistogramUtil;
 import com.km.BottleCapCollector.util.SimilarityModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -28,6 +29,9 @@ public class ComparisonRangeServiceTests {
 
     @Mock
     private ComparisonRangeRepository repository;
+
+    @Spy
+    private ImageHistogramUtil imageHistogramUtil;
 
     @Test
     public void testCalculateMethodMaxMinValues() {
@@ -132,7 +136,7 @@ public class ComparisonRangeServiceTests {
         ComparisonRange range = new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9);
         histogramResult.setFirstCap(new BottleCap());
         histogramResult.setSecondCap(new BottleCap());
-        double result = service.calculateSimilarityForBhattacharyya(histogramResult, range);
+        service.calculateSimilarityForBhattacharyya(histogramResult, range);
     }
 
     @Test
@@ -178,10 +182,10 @@ public class ComparisonRangeServiceTests {
     public void testCalculateSimilarityModelForTwoIdenticalCaps() {
         List<HistogramResult> histogramResults = prepareData();
         HistogramResult histogramResult = new HistogramResult(
-                ImageHistogramFactory.CORRELATION_BASE,
-                ImageHistogramFactory.CHI_SQUARE_BASE,
-                ImageHistogramFactory.INTERSECTION_BASE,
-                ImageHistogramFactory.BHATTACHARYYA_BASE);
+                imageHistogramUtil.CORRELATION_BASE(),
+                imageHistogramUtil.CHI_SQUARE_BASE(),
+                imageHistogramUtil.INTERSECTION_BASE(),
+                imageHistogramUtil.BHATTACHARYYA_BASE());
         histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());
         histogramResult.setSecondCap(new BottleCap());
         histogramResults.add(histogramResult);

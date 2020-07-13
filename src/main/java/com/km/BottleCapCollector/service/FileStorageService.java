@@ -7,7 +7,7 @@ import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.property.CustomProperties;
 import com.km.BottleCapCollector.repository.HistogramResultRepository;
 import com.km.BottleCapCollector.util.BottleCapPair;
-import com.km.BottleCapCollector.util.ImageHistogramFactory;
+import com.km.BottleCapCollector.util.ImageHistogramUtil;
 import org.opencv.core.Mat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class FileStorageService {
     private HistogramResultRepository histogramResultRepository;
 
     @Autowired
-    private ImageHistogramFactory imageHistogramFactory;
+    private ImageHistogramUtil imageHistogramUtil;
 
     @Autowired
     private CustomProperties customProperties;
@@ -92,7 +92,7 @@ public class FileStorageService {
             Path targetLocation = fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             if(saveMath){
-                imageHistogramFactory.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
+                imageHistogramUtil.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
             }
 
             return fileName;
@@ -102,10 +102,10 @@ public class FileStorageService {
     }
 
     public void calculateAndStoreMathObject(String fileName) {
-        imageHistogramFactory.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
+        imageHistogramUtil.calculateAndStoreHistogram(fileName, fileStorageLocation, objectStorageLocation);
     }
     public Mat calculateAndReturnMathObject(String fileName) {
-        return imageHistogramFactory.calculateHistogram(fileName, temporaryFileStorageLocation);
+        return imageHistogramUtil.calculateHistogram(fileName, temporaryFileStorageLocation);
     }
 
     public void calculateEachWithEachCap(List<BottleCap> caps) {
@@ -114,9 +114,9 @@ public class FileStorageService {
     }
 
     public HistogramResult prepareHistogram(BottleCapPair pair) {
-        Mat histFromFile1 = imageHistogramFactory.loadMat(pair.getFirstCap().getCapName(), objectStorageLocation);
-        Mat histFromFile2 = imageHistogramFactory.loadMat(pair.getSecondCap().getCapName(), objectStorageLocation);
-        HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
+        Mat histFromFile1 = imageHistogramUtil.loadMat(pair.getFirstCap().getCapName(), objectStorageLocation);
+        Mat histFromFile2 = imageHistogramUtil.loadMat(pair.getSecondCap().getCapName(), objectStorageLocation);
+        HistogramResult result = imageHistogramUtil.calculateCoefficients(histFromFile1, histFromFile2);
         result.setFirstCap(pair.getFirstCap());
         result.setSecondCap(pair.getSecondCap());
         return result;
@@ -124,8 +124,8 @@ public class FileStorageService {
 
     public HistogramResult prepareHistogram(Mat firstCapMat, BottleCapPair pair) {
         Mat histFromFile1 = firstCapMat;
-        Mat histFromFile2 = imageHistogramFactory.loadMat(pair.getSecondCap().getCapName(), objectStorageLocation);
-        HistogramResult result = imageHistogramFactory.calculateCoefficients(histFromFile1, histFromFile2);
+        Mat histFromFile2 = imageHistogramUtil.loadMat(pair.getSecondCap().getCapName(), objectStorageLocation);
+        HistogramResult result = imageHistogramUtil.calculateCoefficients(histFromFile1, histFromFile2);
         result.setFirstCap(pair.getFirstCap());
         result.setSecondCap(pair.getSecondCap());
         return result;
@@ -153,7 +153,7 @@ public class FileStorageService {
         AtomicInteger amount = new AtomicInteger();
         try {
             Files.walk(fileStorageLocation).filter(p -> p.toFile().isFile()).forEach(file -> {
-                imageHistogramFactory.calculateAndStoreHistogram(file.getFileName().toString(), fileStorageLocation, objectStorageLocation);
+                imageHistogramUtil.calculateAndStoreHistogram(file.getFileName().toString(), fileStorageLocation, objectStorageLocation);
                 amount.getAndIncrement();
             });
         } catch (IOException e) {

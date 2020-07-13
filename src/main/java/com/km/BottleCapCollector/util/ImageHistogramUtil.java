@@ -6,6 +6,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -14,33 +15,56 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class ImageHistogramFactory {
+@Scope("singleton")
+public class ImageHistogramUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageHistogramFactory.class);
-
-
-    private static final byte CORRELATION = 0;
-    public static final double CORRELATION_BASE = 1;
-    private static final byte CHI_SQUARE = 1;
-    public static final double CHI_SQUARE_BASE = 0;
-    private static final byte INTERSECTION = 2;
-    public static final double INTERSECTION_BASE = 18.8947;
-    private static final byte BHATTACHARYYA = 3;
-    public static final byte BHATTACHARYYA_BASE = 0;
-    public static final String OBJECT_PREFIX = "object";
+    private static final Logger logger = LoggerFactory.getLogger(ImageHistogramUtil.class);
 
 
-    private static final int hBins = 50, sBins = 60;
-    private static final int[] histSize = {hBins, sBins};
+    private final byte CORRELATION = 0;
+    private final double CORRELATION_BASE = 1;
+    private final byte CHI_SQUARE = 1;
+    private final double CHI_SQUARE_BASE = 0;
+    private final byte INTERSECTION = 2;
+    private final double INTERSECTION_BASE = 18.8947;
+    private final byte BHATTACHARYYA = 3;
+    private final byte BHATTACHARYYA_BASE = 0;
+    private final String OBJECT_PREFIX = "object";
+
+
+    private final int hBins = 50, sBins = 60;
+    private final int[] histSize = {hBins, sBins};
     // hue varies from 0 to 179, saturation from 0 to 255
-    private static final float[] ranges = {0, 180, 0, 256};
+    private final float[] ranges = {0, 180, 0, 256};
     // Use the 0-th and 1-st channels
-    private static final int[] channels = {0, 1};
+    private final int[] channels = {0, 1};
 
-    private ImageHistogramFactory() {
+    public ImageHistogramUtil() {
     }
 
-    public static Mat calculateHistogram(String file, Path folder) {
+
+    public double CORRELATION_BASE() {
+        return this.CORRELATION_BASE;
+    }
+
+    public double CHI_SQUARE_BASE() {
+        return this.CHI_SQUARE_BASE;
+    }
+
+    public double INTERSECTION_BASE() {
+        return this.INTERSECTION_BASE;
+    }
+
+    public byte BHATTACHARYYA_BASE() {
+        return this.BHATTACHARYYA_BASE;
+    }
+
+    public String OBJECT_PREFIX() {
+        return this.OBJECT_PREFIX;
+    }
+
+
+    public Mat calculateHistogram(String file, Path folder) {
         Path location = folder.resolve(file).normalize();
         Mat hsvImage = new Mat();
         Mat histImage = new Mat();
@@ -60,7 +84,7 @@ public class ImageHistogramFactory {
      * @param histImage2
      * @return metric result
      */
-    public static double correlationMethod(Mat histImage1, Mat histImage2) {
+    public double correlationMethod(Mat histImage1, Mat histImage2) {
         return Imgproc.compareHist(histImage1, histImage2, CORRELATION);
     }
 
@@ -72,7 +96,7 @@ public class ImageHistogramFactory {
      * @param histImage2
      * @return metric result
      */
-    public static double chisquareMethod(Mat histImage1, Mat histImage2) {
+    public double chisquareMethod(Mat histImage1, Mat histImage2) {
         return Imgproc.compareHist(histImage1, histImage2, CHI_SQUARE);
     }
 
@@ -84,7 +108,7 @@ public class ImageHistogramFactory {
      * @param histImage2
      * @return metric result
      */
-    public static double intersectionMethod(Mat histImage1, Mat histImage2) {
+    public double intersectionMethod(Mat histImage1, Mat histImage2) {
         return Imgproc.compareHist(histImage1, histImage2, INTERSECTION);
     }
 
@@ -96,11 +120,11 @@ public class ImageHistogramFactory {
      * @param histImage2
      * @return metric result
      */
-    public static double bhattacharyyaMethod(Mat histImage1, Mat histImage2) {
+    public double bhattacharyyaMethod(Mat histImage1, Mat histImage2) {
         return Imgproc.compareHist(histImage1, histImage2, BHATTACHARYYA);
     }
 
-    public static HistogramResult calculateCoefficients(Mat histImage1, Mat histImage2) {
+    public HistogramResult calculateCoefficients(Mat histImage1, Mat histImage2) {
         HistogramResult result = new HistogramResult();
         result.setCorrelation(correlationMethod(histImage1, histImage2));
         result.setChisquare(chisquareMethod(histImage1, histImage2));
@@ -109,7 +133,7 @@ public class ImageHistogramFactory {
         return result;
     }
 
-    public static final Mat loadMat(String name, Path location) {
+    public final Mat loadMat(String name, Path location) {
         try {
             int cols;
             float[] data;
@@ -127,7 +151,7 @@ public class ImageHistogramFactory {
     }
 
 
-    public static String storeMatFile(Mat mat, String name, Path location) {
+    public String storeMatFile(Mat mat, String name, Path location) {
         try {
             int cols = mat.cols();
             float[] data = new float[(int) mat.total() * mat.channels()];
@@ -142,8 +166,8 @@ public class ImageHistogramFactory {
         return name + OBJECT_PREFIX;
     }
 
-    public static String calculateAndStoreHistogram(String imageName, Path fileStorageLocation, Path objectStorageLocation) {
+    public String calculateAndStoreHistogram(String imageName, Path fileStorageLocation, Path objectStorageLocation) {
         Mat hist = calculateHistogram(imageName, fileStorageLocation);
-        return ImageHistogramFactory.storeMatFile(hist, imageName, objectStorageLocation);
+        return storeMatFile(hist, imageName, objectStorageLocation);
     }
 }

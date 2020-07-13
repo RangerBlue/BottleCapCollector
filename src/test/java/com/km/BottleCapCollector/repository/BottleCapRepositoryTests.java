@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,12 +16,6 @@ public class BottleCapRepositoryTests {
 
     @Autowired
     private BottleCapRepository repository;
-
-    private final Path resourceFolder = Paths.get("src/main/resources/img/");
-    private final String img1Name = "captest.jpg";
-    private final String img2Name = "captest2.jpg";
-    private final String img1 = "src/main/resources/img/captest.jpg";
-    private final String img2 = "src/main/resources/img/captest2.jpg";
 
     @Test
     public void testAddCap(){

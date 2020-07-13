@@ -1,7 +1,8 @@
 package com.km.BottleCapCollector;
 
 import com.km.BottleCapCollector.property.CustomProperties;
-import com.km.BottleCapCollector.util.ImageHistogramFactory;
+import com.km.BottleCapCollector.util.ImageHistogramUtil;
+
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public class BottleCapConfiguration implements CommandLineRunner, ApplicationRun
     @Override
     public void run(ApplicationArguments args) throws Exception {
         args.getNonOptionArgs().forEach(logger::info);
-        ImageHistogramFactory imageHistogramFactory = context.getBean(ImageHistogramFactory.class);
+        context.getBean(ImageHistogramUtil.class);
     }
 
     @Override
@@ -49,21 +50,21 @@ public class BottleCapConfiguration implements CommandLineRunner, ApplicationRun
     }
 
     @Bean
-    @ConditionalOnBean(name = "imageHistogramFactory")
+    @ConditionalOnBean(name = "imageHistogramUtil")
     public void conditionalOnBean(){
-        logger.info("ImageHistogramFactory is available, name");
+        logger.info("ImageHistogramUtil is available, name");
     }
 
     @Bean
-    @ConditionalOnBean(ImageHistogramFactory.class)
+    @ConditionalOnBean(ImageHistogramUtil.class)
     public void conditionalOnBeanClass(){
         logger.info("ImageHistogramFactory is available class");
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "histogramImageFactory")
+    @ConditionalOnMissingBean(name = "ImageHistogramUtil")
     public void conditionalOnMissingBean(){
-        logger.info("HistogramImageFactory is not available");
+        logger.info("ImageHistogramUtil is not available");
     }
 
     @Bean

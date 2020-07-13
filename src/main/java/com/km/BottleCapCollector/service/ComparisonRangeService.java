@@ -5,7 +5,7 @@ import com.km.BottleCapCollector.model.ComparisonRange;
 import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.repository.ComparisonRangeRepository;
 import com.km.BottleCapCollector.util.ComparisonMethod;
-import com.km.BottleCapCollector.util.ImageHistogramFactory;
+import com.km.BottleCapCollector.util.ImageHistogramUtil;
 import com.km.BottleCapCollector.util.SimilarityModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,9 @@ public class ComparisonRangeService {
 
     @Autowired
     private ComparisonRangeRepository repository;
+
+    @Autowired
+    private ImageHistogramUtil imageHistogramUtil;
 
     public List<ComparisonRange> getAll() {
         return (List<ComparisonRange>) repository.findAll();
@@ -86,7 +89,7 @@ public class ComparisonRangeService {
         double min = range.getMinValue();
         double max = range.getMaxValue();
         double value = histogramCalculation.getCorrelation();
-        if (value < ImageHistogramFactory.CORRELATION_BASE && value > 0) {
+        if (value < imageHistogramUtil.CORRELATION_BASE() && value > 0) {
             return (value - min) / (max - min);
         } else {
             throw new DuplicateCapException("You have already got this picture");
@@ -98,7 +101,7 @@ public class ComparisonRangeService {
         double min = range.getMinValue();
         double max = range.getMaxValue();
         double value = histogramCalculation.getChisquare();
-        if (value > ImageHistogramFactory.CHI_SQUARE_BASE) {
+        if (value > imageHistogramUtil.CHI_SQUARE_BASE()) {
             return (max - value) / (max - min);
         } else {
             throw new DuplicateCapException("You have already got this picture");
@@ -109,7 +112,7 @@ public class ComparisonRangeService {
         double min = range.getMinValue();
         double max = range.getMaxValue();
         double value = histogramCalculation.getIntersection();
-        if (value > 0 && value < ImageHistogramFactory.INTERSECTION_BASE) {
+        if (value > 0 && value < imageHistogramUtil.INTERSECTION_BASE()) {
             return (value - min) / (max - min);
         } else {
             throw new DuplicateCapException("You have already got this picture");
@@ -120,7 +123,7 @@ public class ComparisonRangeService {
         double min = range.getMinValue();
         double max = range.getMaxValue();
         double value = histogramCalculation.getBhattacharyya();
-        if (value < 1 && value > ImageHistogramFactory.BHATTACHARYYA_BASE) {
+        if (value < 1 && value > imageHistogramUtil.BHATTACHARYYA_BASE()) {
             return (max - value) / (max - min);
         } else {
             throw new DuplicateCapException("You have already got this picture");
