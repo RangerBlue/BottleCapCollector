@@ -9,6 +9,8 @@ import com.km.BottleCapCollector.util.ComparisonMethod;
 import com.km.BottleCapCollector.util.ImageHistogramUtil;
 import com.km.BottleCapCollector.util.SimilarityModel;
 import org.junit.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -16,9 +18,12 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -158,7 +163,7 @@ public class ComparisonRangeServiceTests {
     public void testCalculateSimilarityForCap() {
         List<HistogramResult> histogramResults = prepareData();
         double result = service.calculateSimilarityForCap(histogramResults);
-        assertEquals(0.47025, result, 0.00001);
+        assertEquals(0.4364375, result, 0.00001);
     }
 
     @Test()
@@ -168,17 +173,19 @@ public class ComparisonRangeServiceTests {
         assertEquals(0, model.getFrom00To10());
         assertEquals(0, model.getFrom10To20());
         assertEquals(0, model.getFrom20To30());
-        assertEquals(2, model.getFrom30To40());
+        assertEquals(3, model.getFrom30To40());
         assertEquals(0, model.getFrom40To50());
         assertEquals(0, model.getFrom50To60());
         assertEquals(0, model.getFrom60To70());
         assertEquals(1, model.getFrom70To80());
         assertEquals(0, model.getFrom80To90());
         assertEquals(0, model.getFrom90To100());
-        assertEquals(3, model.getSimilarCaps().size());
+        assertEquals(4, model.getSimilarCaps().size());
+        assertFalse(model.isDuplicate());
     }
 
     @Test()
+    @Execution(ExecutionMode.CONCURRENT)
     public void testCalculateSimilarityModelForTwoIdenticalCaps() {
         List<HistogramResult> histogramResults = prepareData();
         HistogramResult histogramResult = new HistogramResult(
@@ -201,7 +208,8 @@ public class ComparisonRangeServiceTests {
         assertEquals(0, model.getFrom70To80());
         assertEquals(0, model.getFrom80To90());
         assertEquals(4, model.getFrom90To100());
-        assertEquals(4, model.getSimilarCaps().size());
+        assertEquals(0, model.getSimilarCaps().size());
+        assertTrue(model.isDuplicate());
     }
 
     @Test()
@@ -220,7 +228,7 @@ public class ComparisonRangeServiceTests {
         assertEquals(0, model.getFrom00To10());
         assertEquals(0, model.getFrom10To20());
         assertEquals(0, model.getFrom20To30());
-        assertEquals(3, model.getFrom30To40());
+        assertEquals(4, model.getFrom30To40());
         assertEquals(0, model.getFrom40To50());
         assertEquals(1, model.getFrom50To60());
         assertEquals(0, model.getFrom60To70());
@@ -228,6 +236,7 @@ public class ComparisonRangeServiceTests {
         assertEquals(0, model.getFrom80To90());
         assertEquals(0, model.getFrom90To100());
         assertEquals(4, model.getSimilarCaps().size());
+        assertFalse(model.isDuplicate());
     }
 
     private List<HistogramResult> prepareData() {
@@ -250,10 +259,11 @@ public class ComparisonRangeServiceTests {
         HistogramResult histogramResult2 = new HistogramResult(0.3, 333, 5, 0.6);
         histogramResult2.setFirstCap(newCap);
         histogramResult2.setSecondCap(new BottleCap());
+        HistogramResult histogramResult3 = new HistogramResult(0.35, 311, 3, 0.4);
+        histogramResult3.setFirstCap(newCap);
+        histogramResult3.setSecondCap(new BottleCap());
 
-        histogramResults.add(histogramResult);
-        histogramResults.add(histogramResult1);
-        histogramResults.add(histogramResult2);
+        histogramResults.addAll(Arrays.asList(histogramResult, histogramResult1, histogramResult2, histogramResult3));
 
         return histogramResults;
     }

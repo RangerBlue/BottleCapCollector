@@ -19,8 +19,9 @@ public class SimilarityModel {
     private int from70To80;
     private int from80To90;
     private int from90To100;
+    private boolean duplicate;
 
-    @Value("{$cap.similar.amount}")
+    @Value("${cap.similar.amount}")
     private int similarCapAmount;
 
     private Set<HistogramResult> similarCaps = new CapTreeSet(
@@ -163,11 +164,26 @@ public class SimilarityModel {
         this.similarCaps = similarCaps;
     }
 
-    public void addValue(HistogramResult result){
+    public boolean isDuplicate() {
+        return duplicate;
+    }
+
+    public void setDuplicate(boolean duplicate) {
+        this.duplicate = duplicate;
+    }
+
+    public void addValue(HistogramResult result) {
         similarCaps.add(result);
     }
-    public Set<HistogramResult> calculateTopSimilar(){
-       return similarCaps.stream().limit(4).collect(Collectors.toSet());
+
+    public Set<HistogramResult> calculateTopSimilar() {
+        synchronized (similarCaps) {
+            if (isDuplicate()) {
+                markModelAsDuplicate(similarCaps.size());
+                return new TreeSet<>();
+            }
+            return similarCaps.stream().limit(4).collect(Collectors.toSet());
+        }
     }
 
     public void markModelAsDuplicate(int capCount){

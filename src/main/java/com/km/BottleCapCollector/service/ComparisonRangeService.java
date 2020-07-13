@@ -65,15 +65,18 @@ public class ComparisonRangeService {
     public SimilarityModel calculateSimilarityModelForCap(List<HistogramResult> histogramCalculation) {
         List<ComparisonRange> range = getAll();
         SimilarityModel model = new SimilarityModel();
-        try {
-            histogramCalculation.stream().parallel().forEach(histogramResult -> model.addValue(calculateSimilarityForAllMethods(histogramResult, range)));
-        } catch (DuplicateCapException e) {
-            model.markModelAsDuplicate(histogramCalculation.size());
-        } finally {
-            Set<HistogramResult> top = model.calculateTopSimilar();
-            model.setSimilarCaps(top);
-            return model;
-        }
+
+        histogramCalculation.stream().parallel().forEach(
+                histogramResult -> {
+                    try {
+                        model.addValue(calculateSimilarityForAllMethods(histogramResult, range));
+                    } catch (DuplicateCapException e) {
+                        model.setDuplicate(true);
+                    }
+                });
+        Set<HistogramResult> top = model.calculateTopSimilar();
+        model.setSimilarCaps(top);
+        return model;
     }
 
     public HistogramResult calculateSimilarityForAllMethods(HistogramResult histogramCalculation, List<ComparisonRange> range) {
