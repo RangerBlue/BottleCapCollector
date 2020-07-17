@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@CrossOrigin
 public class BottleCapController {
     private static final Logger logger = LoggerFactory.getLogger(BottleCapController.class);
 
