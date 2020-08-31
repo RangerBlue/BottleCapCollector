@@ -1,8 +1,8 @@
 package com.km.BottleCapCollector.controller;
 
-import com.km.BottleCapCollector.model.BottleCap;
-import com.km.BottleCapCollector.model.ComparisonRange;
-import com.km.BottleCapCollector.model.HistogramResult;
+import com.km.BottleCapCollector.google.GoogleDriveService;
+import com.km.BottleCapCollector.google.GoogleDriveUploadItem;
+import com.km.BottleCapCollector.model.*;
 import com.km.BottleCapCollector.payload.UploadFileResponse;
 import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
@@ -13,10 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -26,9 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.security.GeneralSecurityException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -44,6 +40,9 @@ public class BottleCapController {
 
     @Autowired
     private ComparisonRangeService comparisonRangeService;
+
+    @Autowired
+    private GoogleDriveService googleDriveService;
 
     @PostMapping("/addCap")
     public ResponseEntity<BottleCap> addBottleCap(String capName, @RequestParam("file") MultipartFile file) {
@@ -98,6 +97,23 @@ public class BottleCapController {
         logger.debug("Exiting to uploadFile method");
         return new UploadFileResponse(fileName, fileDownloadUri,
                 file.getContentType(), file.getSize());
+    }
+
+    @PostMapping("/uploadFileToDrive")
+    public String uploadFileToDrive(@RequestParam("file") MultipartFile multipartFile) throws IOException {
+
+        String contentType = multipartFile.getContentType();
+        String originalFilename = multipartFile.getOriginalFilename();
+        byte[] byteArray = multipartFile.getBytes();
+        String fileName = multipartFile.getName();
+        GoogleDriveUploadItem uploadItem = new GoogleDriveUploadItem(contentType, originalFilename, fileName, byteArray);
+        return googleDriveService.uploadFile(uploadItem);
+    }
+
+    @GetMapping(value = "/capDrive/{id}")
+    public String getFile(@PathVariable String id) throws GeneralSecurityException, IOException {
+        return googleDriveService.getFile(id);
+
     }
 
     @PostMapping("/uploadTemporaryFile")

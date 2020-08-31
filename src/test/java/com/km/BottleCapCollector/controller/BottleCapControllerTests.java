@@ -1,5 +1,6 @@
 package com.km.BottleCapCollector.controller;
 
+import com.km.BottleCapCollector.google.GoogleDriveService;
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
@@ -39,6 +40,8 @@ public class BottleCapControllerTests {
     @MockBean
     private ComparisonRangeService comparisonRangeService;
 
+    @MockBean
+    private GoogleDriveService googleDriveService;
     @Test
     public void addBottleCap() throws Exception {
         String fileName = "captest1.jpg";

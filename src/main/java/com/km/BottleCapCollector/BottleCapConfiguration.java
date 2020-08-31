@@ -1,6 +1,7 @@
 package com.km.BottleCapCollector;
 
 import com.km.BottleCapCollector.property.CustomProperties;
+import com.km.BottleCapCollector.google.GoogleDriveProperties;
 import com.km.BottleCapCollector.util.ImageHistogramUtil;
 
 import org.opencv.imgproc.Imgproc;
@@ -22,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 
 
 @EnableConfigurationProperties({
-        CustomProperties.class
+        CustomProperties.class, GoogleDriveProperties.class
 })
 @Configuration
 public class BottleCapConfiguration implements CommandLineRunner, ApplicationRunner {
