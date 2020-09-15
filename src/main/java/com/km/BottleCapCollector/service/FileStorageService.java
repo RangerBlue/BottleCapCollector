@@ -6,6 +6,7 @@ import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.model.HistogramResult;
 import com.km.BottleCapCollector.property.CustomProperties;
 import com.km.BottleCapCollector.repository.HistogramResultRepository;
+import com.km.BottleCapCollector.util.BottleCapMat;
 import com.km.BottleCapCollector.util.BottleCapPair;
 import com.km.BottleCapCollector.util.ImageHistogramUtil;
 import org.opencv.core.Mat;
@@ -106,6 +107,11 @@ public class FileStorageService {
     }
     public Mat calculateAndReturnMathObject(String fileName) {
         return imageHistogramUtil.calculateHistogram(fileName, temporaryFileStorageLocation);
+    }
+
+    public BottleCapMat calculateAndReturnMathObjectAsBottleCapMat(MultipartFile file) throws IOException {
+        Mat mat = imageHistogramUtil.calculateHistogram(file);
+        return imageHistogramUtil.convertMatToBottleCapMat(mat);
     }
 
     public void calculateEachWithEachCap(List<BottleCap> caps) {

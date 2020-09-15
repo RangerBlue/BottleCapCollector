@@ -1,14 +1,24 @@
 package com.km.BottleCapCollector.repository;
 
+import com.km.BottleCapCollector.ImageHistogramFactoryTests;
 import com.km.BottleCapCollector.model.BottleCap;
+import com.km.BottleCapCollector.util.BottleCapMat;
+import com.km.BottleCapCollector.util.ImageHistogramUtil;
 import org.junit.jupiter.api.Test;
+import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@Import({ImageHistogramUtil.class})
 public class BottleCapRepositoryTests {
 
     @Autowired
@@ -17,12 +27,21 @@ public class BottleCapRepositoryTests {
     @Autowired
     private BottleCapRepository repository;
 
+    @Autowired
+    ImageHistogramUtil imageHistogramUtil;
+
+    private final Path resourceFolder = Paths.get("src/main/resources/img/");
+    private final String img1Name = "captest.jpg";
+
     @Test
-    public void testAddCap(){
-        long id = entityManager.persist(new BottleCap("Perła", "img1234.img")).getId();
-        BottleCap cap = repository.findById(id).get();
-        assertEquals(cap.getCapName(), "Perła");
-        assertTrue(cap.getFileLocation().contains("img1234.img"));
+    public void testAddCap() throws IOException, ClassNotFoundException {
+        Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
+        BottleCap cap = new BottleCap("Perła",imageHistogramUtil.convertMatToBottleCapMat(hist1), "testLocation");
+        long id = entityManager.persist(cap).getId();
+        BottleCap cap1 = repository.findById(id).get();
+        assertEquals(cap1.getCapName(), "Perła");
+        Mat hist2 = imageHistogramUtil.convertBottleCapMatToMat(new BottleCapMat(cap1.getData(), cap1.getCols(), cap1.getRows()));
+        ImageHistogramFactoryTests.assertHistogramsConversion1x1(hist1, hist2, imageHistogramUtil);
     }
 
     @Test
@@ -48,5 +67,4 @@ public class BottleCapRepositoryTests {
         long booksSize = repository.count();
         assertEquals(2, booksSize);
     }
-
 }

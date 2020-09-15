@@ -1,5 +1,6 @@
 package com.km.BottleCapCollector.controller;
 
+import com.km.BottleCapCollector.exception.FileStorageException;
 import com.km.BottleCapCollector.google.GoogleDriveService;
 import com.km.BottleCapCollector.google.GoogleDriveUploadItem;
 import com.km.BottleCapCollector.model.*;
@@ -7,6 +8,7 @@ import com.km.BottleCapCollector.payload.UploadFileResponse;
 import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
 import com.km.BottleCapCollector.service.FileStorageService;
+import com.km.BottleCapCollector.util.BottleCapMat;
 import com.km.BottleCapCollector.util.SimilarityModel;
 import org.opencv.core.Mat;
 import org.slf4j.Logger;
@@ -53,6 +55,23 @@ public class BottleCapController {
         fileStorageService.calculateAndStoreMathObject(fileName);
         cap.setFileLocation(response.getFileDownloadUri());
         bottleCapService.addBottleCap(cap);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/addCapV2")
+    public ResponseEntity<BottleCap> addBottleCapNewWay(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) {
+        logger.debug("Entering addBottleCap method");
+        BottleCap cap = null;
+        BottleCapMat matFile  = null;
+        String fileLocation = "";
+        try {
+            fileLocation = uploadFileToDrive(file);
+            matFile = fileStorageService.calculateAndReturnMathObjectAsBottleCapMat(file);
+            cap = new BottleCap(capName, matFile, fileLocation);
+            bottleCapService.addBottleCap(cap);
+        } catch (IOException e) {
+            throw new FileStorageException("Could not store file " + file.getName() + ". Please try again!", e);
+        }
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

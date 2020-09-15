@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -72,13 +73,23 @@ public class ImageHistogramUtil {
         List<Mat> hsvBaseList = Arrays.asList(hsvImage);
         Imgproc.calcHist(hsvBaseList, new MatOfInt(channels), new Mat(), histImage, new MatOfInt(histSize), new MatOfFloat(ranges), false);
         Core.normalize(histImage, histImage, 0, 1, Core.NORM_MINMAX);
+        return histImage;
+    }
 
+    public Mat calculateHistogram(MultipartFile file) throws IOException {
+        Mat hsvImage = new Mat();
+        Mat histImage = new Mat();
+        Mat inputImage = Imgcodecs.imdecode(new MatOfByte(file.getBytes()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+        Imgproc.cvtColor(inputImage, hsvImage, Imgproc.COLOR_BGR2HSV);
+        List<Mat> hsvBaseList = Arrays.asList(hsvImage);
+        Imgproc.calcHist(hsvBaseList, new MatOfInt(channels), new Mat(), histImage, new MatOfInt(histSize), new MatOfFloat(ranges), false);
+        Core.normalize(histImage, histImage, 0, histImage.rows(), Core.NORM_MINMAX);
         return histImage;
     }
 
     /**
      * The higher the metric, the more accurate the match
-     * {@value #@CCORRELATION_BASE} is base value
+     * {@link #CORRELATION_BASE} is base value
      *
      * @param histImage1
      * @param histImage2
@@ -90,7 +101,7 @@ public class ImageHistogramUtil {
 
     /**
      * The higher the metric, the more accurate the match
-     * {@value #CHI_SQUARE_BASE} is base value
+     * {@link #CHI_SQUARE_BASE} is base value
      *
      * @param histImage1
      * @param histImage2
@@ -102,7 +113,7 @@ public class ImageHistogramUtil {
 
     /**
      * The less the result, the better the match
-     * {@value #INTERSECTION_BASE} is base value
+     * {@link #INTERSECTION_BASE} is base value
      *
      * @param histImage1
      * @param histImage2
@@ -114,7 +125,7 @@ public class ImageHistogramUtil {
 
     /**
      * The less the result, the better the match
-     * {@value #BHATTACHARYYA_BASE} is base value
+     * {@link #BHATTACHARYYA_BASE} is base value
      *
      * @param histImage1
      * @param histImage2
@@ -137,7 +148,7 @@ public class ImageHistogramUtil {
         try {
             int cols;
             float[] data;
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(location.toFile(), name+OBJECT_PREFIX)))) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(location.toFile(), name + OBJECT_PREFIX)))) {
                 cols = (int) ois.readObject();
                 data = (float[]) ois.readObject();
             }
@@ -164,6 +175,29 @@ public class ImageHistogramUtil {
             logger.error("ERROR: Could not save mat to file: " + name);
         }
         return name + OBJECT_PREFIX;
+    }
+
+    public BottleCapMat convertMatToBottleCapMat(Mat mat) throws IOException {
+        float[] image = new float[(int) (mat.total() * mat.elemSize())];
+        mat.get(0, 0, image);
+        ByteArrayOutputStream bas = new ByteArrayOutputStream();
+        DataOutputStream ds = new DataOutputStream(bas);
+        for (float f : image)
+            ds.writeFloat(f);
+        byte[] bytes = bas.toByteArray();
+        return new BottleCapMat(bytes, mat.cols(), mat.rows());
+    }
+
+    public Mat convertBottleCapMatToMat(BottleCapMat data) throws IOException{
+        ByteArrayInputStream bas = new ByteArrayInputStream(data.getMatArray());
+        DataInputStream ds = new DataInputStream(bas);
+        float[] fArr = new float[data.getMatArray().length / 4];
+        for (int i = 0; i < fArr.length; i++) {
+            fArr[i] = ds.readFloat();
+        }
+        Mat imageMat = new Mat(data.getRows(), data.getCols(), CvType.CV_32FC1);
+        imageMat.put(0, 0, fArr);
+        return imageMat;
     }
 
     public String calculateAndStoreHistogram(String imageName, Path fileStorageLocation, Path objectStorageLocation) {

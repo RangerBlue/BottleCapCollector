@@ -1,5 +1,8 @@
 package com.km.BottleCapCollector.model;
 
+import com.km.BottleCapCollector.util.BottleCapMat;
+import org.hibernate.annotations.TypeDef;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -15,9 +18,22 @@ public class BottleCap {
     private String fileLocation;
     private String capName;
     private String creationDate;
+    @Lob
+    private byte[] data;
+    private int cols;
+    private int rows;
 
     public BottleCap(String name) {
         this.capName = name;
+        this.creationDate = LocalDateTime.now().toString();
+    }
+
+    public BottleCap(String capName, BottleCapMat mat, String fileLocation) {
+        this.capName = capName;
+        this.data = mat.getMatArray();
+        this.cols = mat.getCols();
+        this.rows = mat.getRows();
+        this.fileLocation = fileLocation;
         this.creationDate = LocalDateTime.now().toString();
     }
 
@@ -53,6 +69,30 @@ public class BottleCap {
 
     public void setCapName(String capName) {
         this.capName = capName;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
+    public int getCols() {
+        return cols;
+    }
+
+    public void setCols(int cols) {
+        this.cols = cols;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
     }
 
     @Override
