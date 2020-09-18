@@ -4,27 +4,25 @@ import com.km.BottleCapCollector.exception.FileStorageException;
 import com.km.BottleCapCollector.google.GoogleDriveService;
 import com.km.BottleCapCollector.google.GoogleDriveUploadItem;
 import com.km.BottleCapCollector.model.*;
-import com.km.BottleCapCollector.payload.UploadFileResponse;
+import com.km.BottleCapCollector.payload.ValidateBottleCapResponse;
 import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
 import com.km.BottleCapCollector.service.FileStorageService;
 import com.km.BottleCapCollector.util.BottleCapMat;
 import com.km.BottleCapCollector.util.SimilarityModel;
+import org.apache.http.entity.ContentType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.opencv.core.Mat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.*;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,7 +30,8 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin
 public class BottleCapController {
-    private static final Logger logger = LoggerFactory.getLogger(BottleCapController.class);
+
+    private static final Logger logger = LogManager.getLogger(BottleCapController.class);
 
     @Autowired
     private BottleCapService bottleCapService;
@@ -47,22 +46,10 @@ public class BottleCapController {
     private GoogleDriveService googleDriveService;
 
     @PostMapping("/addCap")
-    public ResponseEntity<BottleCap> addBottleCap(String capName, @RequestParam("file") MultipartFile file) {
-        logger.debug("Entering addBottleCap method");
-        BottleCap cap = new BottleCap(capName);
-        UploadFileResponse response = uploadFile(file);
-        String fileName = response.getFileName();
-        fileStorageService.calculateAndStoreMathObject(fileName);
-        cap.setFileLocation(response.getFileDownloadUri());
-        bottleCapService.addBottleCap(cap);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PostMapping("/addCapV2")
-    public ResponseEntity<BottleCap> addBottleCapNewWay(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) {
-        logger.debug("Entering addBottleCap method");
+    public ResponseEntity<BottleCap> addBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) {
+        logger.info("Entering addBottleCap method");
         BottleCap cap = null;
-        BottleCapMat matFile  = null;
+        BottleCapMat matFile = null;
         String fileLocation = "";
         try {
             fileLocation = uploadFileToDrive(file);
@@ -76,17 +63,17 @@ public class BottleCapController {
     }
 
     @PostMapping("/validateCap")
-    public SimilarityModel validateBottleCap(String capName, @RequestParam("file") MultipartFile file) {
-        BottleCap cap = new BottleCap(capName);
-        UploadFileResponse response = uploadTemporaryFile(file);
-        String fileName = response.getFileName();
-        Mat mat = fileStorageService.calculateAndReturnMathObject(fileName);
-        cap.setFileLocation(response.getFileDownloadUri());
+    public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) throws IOException {
+        logger.debug("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
-        BottleCap savedCap = bottleCapService.addBottleCap(cap);
-        List<HistogramResult> histogramResults =  fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
-        bottleCapService.deleteBottleCapWithId(savedCap.getId());
-        return comparisonRangeService.calculateSimilarityModelForCap(histogramResults);
+        Mat mat = fileStorageService.calculateAndReturnMathObject(file);
+        BottleCapMat bottleCapMat = fileStorageService.convertMathObjectToBottleCapMat(mat);
+        BottleCap savedCap = new BottleCap(capName, bottleCapMat);
+        List<HistogramResult> histogramResults = fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
+        SimilarityModel similarityModel = comparisonRangeService.calculateSimilarityModelForCap(histogramResults);
+        ArrayList<BottleCap> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Long> similarCapsIDs = similarCaps.stream().map(BottleCap::getId).collect(Collectors.toCollection(ArrayList::new));
+        return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs);
     }
 
 
@@ -100,22 +87,6 @@ public class BottleCapController {
     public BottleCap getBottleCap(@PathVariable Long id) {
         logger.debug("getBottleCap");
         return bottleCapService.getBottleCap(id);
-    }
-
-    @PostMapping("/uploadFile")
-    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
-        logger.debug("Entering uploadFile method");
-        String fileName = fileStorageService.storeFileInPicturesFolder(file);
-
-
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/downloadFile/")
-                .path(fileName)
-                .toUriString();
-
-        logger.debug("Exiting to uploadFile method");
-        return new UploadFileResponse(fileName, fileDownloadUri,
-                file.getContentType(), file.getSize());
     }
 
     @PostMapping("/uploadFileToDrive")
@@ -133,56 +104,6 @@ public class BottleCapController {
     public String getFile(@PathVariable String id) throws GeneralSecurityException, IOException {
         return googleDriveService.getFile(id);
 
-    }
-
-    @PostMapping("/uploadTemporaryFile")
-    public UploadFileResponse uploadTemporaryFile(@RequestParam("file") MultipartFile file) {
-        String fileName = fileStorageService.storeFileInTemporaryPicturesFolder(file);
-
-
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/downloadFile/")
-                .path(fileName)
-                .toUriString();
-
-        logger.debug("Exiting to uploadFile method");
-        return new UploadFileResponse(fileName, fileDownloadUri,
-                file.getContentType(), file.getSize());
-    }
-
-    @PostMapping("/uploadMultipleFiles")
-    public List<UploadFileResponse> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
-        logger.debug("Entering uploadMultipleFiles method");
-        return Arrays.asList(files)
-                .stream()
-                .map(file -> uploadFile(file))
-                .collect(Collectors.toList());
-    }
-
-    @GetMapping("/downloadFile/{fileName:.+}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
-        logger.debug("Entering downloadFile method");
-        Resource resource = fileStorageService.loadFileAsResource(fileName);
-
-        String contentType = null;
-        try {
-            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-        } catch (IOException ex) {
-            logger.debug("Could not determine file type.");
-        }
-
-        logger.debug("Exiting downloadFile method");
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-    }
-
-    @GetMapping("/downloadCapFile/{id}")
-    public ResponseEntity<Resource> downloadFileByCapId(HttpServletRequest request, @PathVariable Long id) {
-        BottleCap cap = bottleCapService.getBottleCap(id);
-        logger.debug("downloadCapFile method");
-        return downloadFile(cap.getFileLocation().substring(cap.getFileLocation().lastIndexOf('/') + 1), request);
     }
 
     /**
@@ -227,32 +148,26 @@ public class BottleCapController {
     @PostMapping("/admin/addAndCalculateAllPictures")
     public ResponseEntity addAndCalculateAllPictures() {
         fileStorageService.getAllPictures().forEach(file -> {
-            bottleCapService.addBottleCapForInitialUpload(file);
-            fileStorageService.calculateAndStoreMathObject(file.getName());
-        });
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
+            FileInputStream fileInputStream = null;
+            try {
+                fileInputStream = new FileInputStream(file);
+                MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(),
+                        ContentType.IMAGE_JPEG.toString(), fileInputStream);
+                addBottleCap(file.getName(), multipartFile);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-    @PutMapping("/admin/updateLocationOfAllPictures")
-    public ResponseEntity updateLocationOfAllPictures() {
-        bottleCapService.getAllBottleCaps().stream().parallel()
-                .forEach(bottleCap -> {
-                    bottleCap.setFileLocation(fileStorageService.fileStorageLocation + System.getProperty("file.separator") + bottleCap.getCapName());
-                    bottleCapService.addBottleCap(bottleCap);
-                });
+        });
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PostMapping("/admin/prepareData")
     public ResponseEntity prepareData() {
-        try {
-            Files.walk(fileStorageService.objectStorageLocation).map(Path::toFile).forEach(File::delete);
-        } catch (IOException e) {
-            return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
         addAndCalculateAllPictures();
         calculateEachWithEachCap();
-        updateLocationOfAllPictures();
         calculateMethodMinMaxValues();
         return new ResponseEntity<>(HttpStatus.OK);
     }

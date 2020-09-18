@@ -34,7 +34,7 @@ public class BottleCapRepositoryTests {
     private final String img1Name = "captest.jpg";
 
     @Test
-    public void testAddCap() throws IOException, ClassNotFoundException {
+    public void testAddCap() throws IOException {
         Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
         BottleCap cap = new BottleCap("Perła",imageHistogramUtil.convertMatToBottleCapMat(hist1), "testLocation");
         long id = entityManager.persist(cap).getId();

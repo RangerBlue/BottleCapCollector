@@ -7,6 +7,8 @@ import com.km.BottleCapCollector.repository.ComparisonRangeRepository;
 import com.km.BottleCapCollector.util.ComparisonMethod;
 import com.km.BottleCapCollector.util.ImageHistogramUtil;
 import com.km.BottleCapCollector.util.SimilarityModel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import java.util.function.Function;
 
 @Service
 public class ComparisonRangeService {
+
+    private static final Logger logger = LogManager.getLogger(ComparisonRangeService.class);
 
     @Autowired
     private ComparisonRangeRepository repository;
@@ -63,6 +67,7 @@ public class ComparisonRangeService {
     }
 
     public SimilarityModel calculateSimilarityModelForCap(List<HistogramResult> histogramCalculation) {
+        logger.info("Calculating similarity in calculateSimilarityModelForCap() method");
         List<ComparisonRange> range = getAll();
         SimilarityModel model = new SimilarityModel();
 
@@ -76,10 +81,23 @@ public class ComparisonRangeService {
                 });
         Set<HistogramResult> top = model.calculateTopSimilar();
         model.setSimilarCaps(top);
+        logger.info("Calculated similarity for cap ID : " + histogramCalculation.get(0).getFirstCap().getId() +
+                " Duplicate " + model.isDuplicate() +
+                " | 0-10% " + model.getFrom00To10() +
+                "| 10-20% " + model.getFrom10To20() +
+                "| 30-40% " + model.getFrom30To40() +
+                "| 40-50% " + model.getFrom40To50() +
+                "| 50-60% " + model.getFrom50To60() +
+                "| 60-70% " + model.getFrom60To70() +
+                "| 70-80% " + model.getFrom70To80() +
+                "| 80-90% " + model.getFrom80To90() +
+                "| 90-100% " + model.getFrom90To100()
+        );
         return model;
     }
 
     public HistogramResult calculateSimilarityForAllMethods(HistogramResult histogramCalculation, List<ComparisonRange> range) {
+        logger.info("Entering calculateSimilarityForAllMethods() method");
         double correlation = calculateSimilarityForCorrelation(histogramCalculation, range.get(0));
         double chisquare = calculateSimilarityForChisquare(histogramCalculation, range.get(1));
         double intersection = calculateSimilarityForIntersection(histogramCalculation, range.get(2));
@@ -95,6 +113,9 @@ public class ComparisonRangeService {
         if (value < imageHistogramUtil.CORRELATION_BASE() && value > 0) {
             return (value - min) / (max - min);
         } else {
+            logger.info("DuplicateCapException in calculateSimilarityForCorrelation method, range min: " + min +
+                    "range max: " + max + "value: " + value + "in cap " + histogramCalculation.getFirstCap().getId() +
+                    " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
         }
     }
@@ -107,6 +128,9 @@ public class ComparisonRangeService {
         if (value > imageHistogramUtil.CHI_SQUARE_BASE()) {
             return (max - value) / (max - min);
         } else {
+            logger.info("DuplicateCapException in calculateSimilarityForChisquare method, range min: " + min +
+                    "range max: " + max + "value: " + value + "in cap " + histogramCalculation.getFirstCap().getId() +
+                    " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
         }
     }
@@ -115,9 +139,12 @@ public class ComparisonRangeService {
         double min = range.getMinValue();
         double max = range.getMaxValue();
         double value = histogramCalculation.getIntersection();
-        if (value > 0 && value < imageHistogramUtil.INTERSECTION_BASE()) {
+        if (value > 0) {
             return (value - min) / (max - min);
         } else {
+            logger.info("DuplicateCapException in calculateSimilarityForIntersection method, range min: " + min +
+                    "range max: " + max + "value: " + value + "in cap " + histogramCalculation.getFirstCap().getId() +
+                    " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
         }
     }
@@ -129,6 +156,9 @@ public class ComparisonRangeService {
         if (value < 1 && value > imageHistogramUtil.BHATTACHARYYA_BASE()) {
             return (max - value) / (max - min);
         } else {
+            logger.info("DuplicateCapException in calculateSimilarityForBhattacharyya method, range min: " + min +
+                    "range max: " + max + "value: " + value + "in cap " + histogramCalculation.getFirstCap().getId() +
+                    " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
         }
     }

@@ -118,7 +118,7 @@ public class ComparisonRangeServiceTests {
 
     @Test(expected = DuplicateCapException.class)
     public void testCalculateSimilarityForIntersectionFail() {
-        HistogramResult histogramResult = new HistogramResult(1.2, 401, 19, 0.3);
+        HistogramResult histogramResult = new HistogramResult(1.2, 401, -19, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.INTERSECTION, 0.4, 0.9);
         histogramResult.setFirstCap(new BottleCap());
         histogramResult.setSecondCap(new BottleCap());
@@ -191,7 +191,7 @@ public class ComparisonRangeServiceTests {
         HistogramResult histogramResult = new HistogramResult(
                 imageHistogramUtil.CORRELATION_BASE(),
                 imageHistogramUtil.CHI_SQUARE_BASE(),
-                imageHistogramUtil.INTERSECTION_BASE(),
+                18.8947,
                 imageHistogramUtil.BHATTACHARYYA_BASE());
         histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());
         histogramResult.setSecondCap(new BottleCap());

@@ -1,7 +1,8 @@
 package com.km.BottleCapCollector.util;
 
 import com.km.BottleCapCollector.model.HistogramResult;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Comparator;
 import java.util.Set;
@@ -9,6 +10,9 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class SimilarityModel {
+
+    private static final Logger logger = LogManager.getLogger(SimilarityModel.class);
+
     private int from00To10;
     private int from10To20;
     private int from20To30;
@@ -21,8 +25,8 @@ public class SimilarityModel {
     private int from90To100;
     private boolean duplicate;
 
-    @Value("${cap.similar.amount}")
-    private int similarCapAmount;
+    private final int similarCapAmount = 4;
+
 
     private Set<HistogramResult> similarCaps = new CapTreeSet(
             Comparator.comparingDouble(o -> ((HistogramResult) o).getSimilarity()).reversed()
@@ -35,11 +39,11 @@ public class SimilarityModel {
         public CapTreeSet(Comparator<Object> comparator) {
             super(comparator);
         }
-    
+
 
         @Override
         public synchronized boolean add(HistogramResult e) {
-            switch ((int)(e.getSimilarity()*10)){
+            switch ((int) (e.getSimilarity() * 10)) {
                 case 0:
                     from00To10++;
                     break;
@@ -177,16 +181,17 @@ public class SimilarityModel {
     }
 
     public Set<HistogramResult> calculateTopSimilar() {
+        logger.info("Entering calculateTopSimilar() method");
         synchronized (similarCaps) {
             if (isDuplicate()) {
                 markModelAsDuplicate(similarCaps.size());
                 return new TreeSet<>();
             }
-            return similarCaps.stream().limit(4).collect(Collectors.toSet());
+            return similarCaps.stream().limit(similarCapAmount).collect(Collectors.toSet());
         }
     }
 
-    public void markModelAsDuplicate(int capCount){
+    public void markModelAsDuplicate(int capCount) {
         this.setFrom00To10(0);
         this.setFrom10To20(0);
         this.setFrom20To30(0);
@@ -197,5 +202,6 @@ public class SimilarityModel {
         this.setFrom70To80(0);
         this.setFrom80To90(0);
         this.setFrom90To100(capCount);
+        logger.info("Cap marked as duplicate");
     }
 }

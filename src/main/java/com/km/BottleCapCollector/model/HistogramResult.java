@@ -114,4 +114,18 @@ public class HistogramResult {
     public int hashCode() {
         return Objects.hash(id, firstCap, secondCap, correlation, chisquare, intersection, bhattacharyya, similarity);
     }
+
+    @Override
+    public String toString() {
+        return "HistogramResult{" +
+                "id=" + id +
+                ", firstCap=" + firstCap.getId() +
+                ", secondCap=" + secondCap.getId() +
+                ", correlation=" + correlation +
+                ", chisquare=" + chisquare +
+                ", intersection=" + intersection +
+                ", bhattacharyya=" + bhattacharyya +
+                ", similarity=" + similarity +
+                '}';
+    }
 }

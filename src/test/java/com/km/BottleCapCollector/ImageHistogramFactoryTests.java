@@ -80,7 +80,7 @@ public class ImageHistogramFactoryTests {
     }
 
     @Test
-    public void testMetricsWithoutUpload() throws IOException, ClassNotFoundException {
+    public void testMetricsWithoutUpload() throws IOException {
         Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
         Mat hist2 = imageHistogramUtil.calculateHistogram(img2Name, resourceFolder);
         BottleCapMat byteFromMat1 = imageHistogramUtil.convertMatToBottleCapMat(hist1);
@@ -113,10 +113,10 @@ public class ImageHistogramFactoryTests {
 
         assertEquals(imageHistogramUtil.intersectionMethod(hist1Before, hist2Before),
                 imageHistogramUtil.intersectionMethod(hist1After, hist2After), "Results should be the same");
-        assertNotEquals(imageHistogramUtil.INTERSECTION_BASE(), imageHistogramUtil.intersectionMethod(hist1Before, hist1After),
-                "Intersection metric should not be equal with base metric");
-        assertNotEquals(imageHistogramUtil.INTERSECTION_BASE(), imageHistogramUtil.intersectionMethod(hist2Before, hist2After),
-                "Intersection metric should not be equal with base metric");
+        assertTrue(imageHistogramUtil.intersectionMethod(hist1Before, hist1After) > 0,
+                "Intersection metric should be more than 0");
+        assertTrue(imageHistogramUtil.intersectionMethod(hist2Before, hist2After) > 0,
+                "Intersection metric should be more than 0");
         assertEquals(imageHistogramUtil.intersectionMethod(hist1Before, hist2After),
                 imageHistogramUtil.intersectionMethod(hist1After, hist2Before), "Results should be the same");
 
@@ -141,10 +141,10 @@ public class ImageHistogramFactoryTests {
         assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), imageHistogramUtil.chisquareMethod(histBefore, histAfter),
                 "Chi-square metric should be equal with base metric");
 
-        assertNotEquals(imageHistogramUtil.INTERSECTION_BASE(), imageHistogramUtil.intersectionMethod(histBefore, histAfter),
-                "Intersection metric should not be equal with base metric");
-        assertNotEquals(imageHistogramUtil.INTERSECTION_BASE(), imageHistogramUtil.intersectionMethod(histBefore, histAfter),
-                "Intersection metric should not be equal with base metric");
+        assertTrue(imageHistogramUtil.intersectionMethod(histBefore, histAfter) > 0,
+                "Intersection metric should be more than 0");
+        assertTrue(imageHistogramUtil.intersectionMethod(histBefore, histAfter) > 0,
+                "Intersection metric should be more than 0");
 
         assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), imageHistogramUtil.bhattacharyyaMethod(histBefore, histAfter),
                 "Bhattacharyya metric should be equal with base metric");
