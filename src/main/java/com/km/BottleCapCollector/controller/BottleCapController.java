@@ -48,13 +48,15 @@ public class BottleCapController {
     @PostMapping("/addCap")
     public ResponseEntity<BottleCap> addBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) {
         logger.info("Entering addBottleCap method");
-        BottleCap cap = null;
-        BottleCapMat matFile = null;
-        String fileLocation = "";
+        BottleCap cap;
+        BottleCapMat matFile;
+        String googleDriveID ;
+        String fileLocation;
         try {
-            fileLocation = uploadFileToDrive(file);
+            googleDriveID = uploadFileToDrive(file);
+            fileLocation = googleDriveService.getFileUrl(googleDriveID);
             matFile = fileStorageService.calculateAndReturnMathObjectAsBottleCapMat(file);
-            cap = new BottleCap(capName, matFile, fileLocation);
+            cap = new BottleCap(capName, matFile, fileLocation, googleDriveID);
             bottleCapService.addBottleCap(cap);
         } catch (IOException e) {
             throw new FileStorageException("Could not store file " + file.getName() + ". Please try again!", e);
@@ -64,7 +66,7 @@ public class BottleCapController {
 
     @PostMapping("/validateCap")
     public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) throws IOException {
-        logger.debug("Entering validateBottleCap method");
+        logger.info("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         Mat mat = fileStorageService.calculateAndReturnMathObject(file);
         BottleCapMat bottleCapMat = fileStorageService.convertMathObjectToBottleCapMat(mat);
@@ -79,13 +81,13 @@ public class BottleCapController {
 
     @GetMapping("/caps")
     public List<BottleCap> getBottleCaps() {
-        logger.debug("Entering getBottleCaps method");
+        logger.info("Entering getBottleCaps method");
         return bottleCapService.getAllBottleCaps();
     }
 
     @GetMapping("/cap/{id}")
     public BottleCap getBottleCap(@PathVariable Long id) {
-        logger.debug("getBottleCap");
+        logger.info("getBottleCap");
         return bottleCapService.getBottleCap(id);
     }
 
@@ -102,7 +104,7 @@ public class BottleCapController {
 
     @GetMapping(value = "/capDrive/{id}")
     public String getFile(@PathVariable String id) throws GeneralSecurityException, IOException {
-        return googleDriveService.getFile(id);
+        return googleDriveService.getFileUrl(id);
 
     }
 
@@ -116,15 +118,6 @@ public class BottleCapController {
         return fileStorageService.countAllFiles();
     }
 
-    /**
-     * Creates Mat object in object storage folder from each file picture which is right now in file storage folder
-     *
-     * @return Http status
-     */
-    @PostMapping("/admin/processAll")
-    public ResponseEntity processAll() {
-        return new ResponseEntity<>("Elements processed " + fileStorageService.processAllFiles(), HttpStatus.OK);
-    }
 
     /**
      * Calculates OpenCv coefficients of unique permutation of two pictures, each picture will be calculated against

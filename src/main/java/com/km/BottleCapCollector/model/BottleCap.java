@@ -15,25 +15,29 @@ public class BottleCap {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
     private String fileLocation;
+    private String googleDriveID;
     private String capName;
-    private String creationDate;
+    private final LocalDateTime creationDate;
     @Lob
     private byte[] data;
     private int cols;
     private int rows;
+    private LocalDateTime lastPreviewLinkUpdate;
 
     public BottleCap(String name) {
         this.capName = name;
-        this.creationDate = LocalDateTime.now().toString();
+        this.creationDate = LocalDateTime.now();
     }
 
-    public BottleCap(String capName, BottleCapMat mat, String fileLocation) {
+    public BottleCap(String capName, BottleCapMat mat, String fileLocation, String googleDriveID) {
         this.capName = capName;
         this.data = mat.getMatArray();
         this.cols = mat.getCols();
         this.rows = mat.getRows();
         this.fileLocation = fileLocation;
-        this.creationDate = LocalDateTime.now().toString();
+        this.googleDriveID = googleDriveID;
+        this.creationDate = LocalDateTime.now();
+        this.lastPreviewLinkUpdate = LocalDateTime.now();
     }
 
     public BottleCap(String capName, BottleCapMat mat) {
@@ -41,24 +45,24 @@ public class BottleCap {
         this.data = mat.getMatArray();
         this.cols = mat.getCols();
         this.rows = mat.getRows();
-        this.creationDate = LocalDateTime.now().toString();
+        this.creationDate = LocalDateTime.now();
     }
 
     public BottleCap(String capName, String fileName) {
         this.fileLocation = fileName;
         this.capName = capName;
-        this.creationDate = LocalDateTime.now().toString();
+        this.creationDate = LocalDateTime.now();
     }
 
     public BottleCap(){
-        this.creationDate = LocalDateTime.now().toString();
+        this.creationDate = LocalDateTime.now();
     }
 
     public long getId() {
         return id;
     }
 
-    public String getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
@@ -100,6 +104,18 @@ public class BottleCap {
 
     public void setRows(int rows) {
         this.rows = rows;
+    }
+
+    public LocalDateTime getLastPreviewLinkUpdate() {
+        return lastPreviewLinkUpdate;
+    }
+
+    public void setLastPreviewLinkUpdate(LocalDateTime lastPreviewLinkUpdate) {
+        this.lastPreviewLinkUpdate = lastPreviewLinkUpdate;
+    }
+
+    public String getGoogleDriveID() {
+        return googleDriveID;
     }
 
     @Override

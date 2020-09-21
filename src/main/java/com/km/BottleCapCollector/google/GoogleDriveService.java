@@ -13,13 +13,14 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
@@ -28,6 +29,8 @@ import java.util.*;
 
 @Component
 public class GoogleDriveService {
+
+    private static final Logger logger = LogManager.getLogger(GoogleDriveService.class);
 
     @Autowired
     GoogleDriveProperties properties;
@@ -92,6 +95,7 @@ public class GoogleDriveService {
     }
 
     public String uploadFile(GoogleDriveUploadItem googleUploadItemDto) {
+        logger.info("Entering method uploadFile with "+googleUploadItemDto.getFileName() + " file");
         ObjectMapper mapper = new ObjectMapper();
         HttpHeaders headers = new HttpHeaders();
 
@@ -127,11 +131,12 @@ public class GoogleDriveService {
         map.set("file", contentsAsResource);
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<MultiValueMap<String, Object>>(map, headers);
         ResponseEntity<GoogleDriveItemResponse> response = template.postForEntity("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", entity, GoogleDriveItemResponse.class);
+        logger.info("File "+googleUploadItemDto.getFileName() + " has been uploaded");
 
         return response.getBody().getId();
     }
 
-    public String getFile(@PathVariable String id) {
+    public String getFileUrl(String id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(getAccessToken());
 
