@@ -36,7 +36,6 @@ public class FileStorageService {
 
     private static final Logger logger = LogManager.getLogger(FileStorageService.class);
 
-
     @Autowired
     private HistogramResultRepository histogramResultRepository;
 
@@ -47,14 +46,12 @@ public class FileStorageService {
     private CustomProperties customProperties;
 
     public Path fileStorageLocation;
-    public Path temporaryFileStorageLocation;
     public Path objectStorageLocation;
 
 
     @PostConstruct
     public void setupLocations() {
-        fileStorageLocation = Paths.get(customProperties.getUploadDir())
-                .toAbsolutePath().normalize();
+        fileStorageLocation = Paths.get(customProperties.getUploadDir()).toAbsolutePath().normalize();
 
         try {
             Files.createDirectories(fileStorageLocation);
@@ -80,22 +77,26 @@ public class FileStorageService {
         return imageHistogramUtil.calculateHistogram(file);
     }
 
-    public void calculateEachWithEachCap(List<BottleCap> caps) {
+    public List<HistogramResult> calculateEachWithEachCap(List<BottleCap> caps) {
         List<BottleCapPair> dataToProcess = calculateEachWithEach(caps);
-        dataToProcess.stream().parallel().forEach(pair -> {
-            try {
-                histogramResultRepository.save(prepareHistogram(pair));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        logger.info("Processed "+caps.size() + " caps with " + dataToProcess.size() + " pair output");
+        List<HistogramResult> results = dataToProcess.stream().parallel().map(bottleCapPair -> prepareHistogram(bottleCapPair)).collect(Collectors.toList());
+        logger.info("Created "+results.size() + " histogram results");
+        return results;
     }
 
-    public HistogramResult prepareHistogram(BottleCapPair pair) throws IOException {
-        Mat histFromFile1 = imageHistogramUtil.convertBottleCapMatToMat(new BottleCapMat(pair.getFirstCap().getData(),
-                pair.getFirstCap().getCols(), pair.getFirstCap().getRows()));
-        Mat histFromFile2 = imageHistogramUtil.convertBottleCapMatToMat(new BottleCapMat(pair.getSecondCap().getData(),
-                pair.getSecondCap().getCols(), pair.getSecondCap().getRows()));
+    public HistogramResult prepareHistogram(BottleCapPair pair){
+        Mat histFromFile1 = null;
+        Mat histFromFile2 = null;
+        try {
+            histFromFile1 = imageHistogramUtil.convertBottleCapMatToMat(new BottleCapMat(pair.getFirstCap().getData(),
+                    pair.getFirstCap().getCols(), pair.getFirstCap().getRows()));
+            histFromFile2 = imageHistogramUtil.convertBottleCapMatToMat(new BottleCapMat(pair.getSecondCap().getData(),
+                    pair.getSecondCap().getCols(), pair.getSecondCap().getRows()));
+        } catch (IOException e) {
+            logger.info("Exception occurred during preparing histogram: " + e.getStackTrace());
+        }
+
         HistogramResult result = imageHistogramUtil.calculateCoefficients(histFromFile1, histFromFile2);
         result.setFirstCap(pair.getFirstCap());
         result.setSecondCap(pair.getSecondCap());
@@ -103,8 +104,6 @@ public class FileStorageService {
     }
 
     public HistogramResult prepareHistogram(Mat firstCapMat, BottleCapPair pair) {
-        logger.info("Preparing histogram of cap ID: " + pair.getFirstCap().getId() + " and cap ID "
-                + pair.getSecondCap().getId());
         Mat secondCapMat = null;
         try {
             secondCapMat = imageHistogramUtil.convertBottleCapMatToMat(

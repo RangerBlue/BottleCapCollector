@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.cloud.CloudPlatform;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.system.JavaVersion;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
         CustomProperties.class, GoogleDriveProperties.class
 })
 @Configuration
+@EnableCaching
 public class BottleCapConfiguration implements CommandLineRunner, ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(BottleCapConfiguration.class);
 

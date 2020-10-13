@@ -24,7 +24,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @RestController
@@ -50,7 +52,7 @@ public class BottleCapController {
         logger.info("Entering addBottleCap method");
         BottleCap cap;
         BottleCapMat matFile;
-        String googleDriveID ;
+        String googleDriveID;
         String fileLocation;
         try {
             googleDriveID = uploadFileToDrive(file);
@@ -87,13 +89,12 @@ public class BottleCapController {
 
     @GetMapping("/cap/{id}")
     public BottleCap getBottleCap(@PathVariable Long id) {
-        logger.info("getBottleCap");
+        logger.info("Entering getBottleCap method");
         return bottleCapService.getBottleCap(id);
     }
 
     @PostMapping("/uploadFileToDrive")
     public String uploadFileToDrive(@RequestParam("file") MultipartFile multipartFile) throws IOException {
-
         String contentType = multipartFile.getContentType();
         String originalFilename = multipartFile.getOriginalFilename();
         byte[] byteArray = multipartFile.getBytes();
@@ -128,7 +129,8 @@ public class BottleCapController {
     @PostMapping("/admin/calculateEachWithEachCap")
     public ResponseEntity calculateEachWithEachCap() {
         List<BottleCap> caps = bottleCapService.getAllBottleCaps().stream().collect(Collectors.toList());
-        fileStorageService.calculateEachWithEachCap(caps);
+        List<HistogramResult> histogramResults = fileStorageService.calculateEachWithEachCap(caps);
+        comparisonRangeService.calculateMinMaxValuesOfAllComparisonMethods(histogramResults);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -161,17 +163,6 @@ public class BottleCapController {
     public ResponseEntity prepareData() {
         addAndCalculateAllPictures();
         calculateEachWithEachCap();
-        calculateMethodMinMaxValues();
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PostMapping("/admin/calculateMethodMaxMinValues")
-    public ResponseEntity calculateMethodMinMaxValues() {
-        try {
-            comparisonRangeService.calculateMinMaxValuesOfAllComparisonMethods(fileStorageService.getAllHistogramResults());
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, null, HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -180,4 +171,20 @@ public class BottleCapController {
         return comparisonRangeService.getAll();
     }
 
+    @PutMapping("/admin/updateThumbnailsURL")
+    public ResponseEntity updateCapLocations() {
+        logger.info("Entering updateCapLocations method");
+        List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
+        AtomicInteger counter = new AtomicInteger();
+        caps.forEach(bottleCap -> {
+            logger.info("Updating cap with ID " + bottleCap.getId() + " and google drive ID " +
+                    bottleCap.getGoogleDriveID() + " file location");
+            bottleCap.setFileLocation(googleDriveService.getFileUrl(bottleCap.getGoogleDriveID()));
+            bottleCap.setLastPreviewLinkUpdate(LocalDateTime.now());
+            bottleCapService.addBottleCap(bottleCap);
+            counter.getAndIncrement();
+        });
+        logger.info("Updated " + counter + " locations");
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

@@ -1,29 +1,15 @@
 package com.km.BottleCapCollector.google;
 
-import com.google.api.client.util.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties
 public class GoogleDriveProperties {
-    @Value("${CLIENT_ID}")
     private String clientID;
-
-    @Value("${PROJECT_ID}")
     private String projectID;
-
-    @Value("${AUTH_URI}")
     private String authUri;
-
-    @Value("${TOKEN_URI}")
     private String tokenUri;
-
-    @Value("${AUTH_PROVIDER_X509_CERT_URL}")
     private String authProviderX509CertUrl;
-
-    @Value("${CLIENT_SECRET}")
     private String clientSecret;
-
-    @Value("${FOLDER_ID}")
     private String folderID;
 
     public String getClientID() {

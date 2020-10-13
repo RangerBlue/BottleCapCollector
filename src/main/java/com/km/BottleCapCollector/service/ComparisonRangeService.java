@@ -34,11 +34,17 @@ public class ComparisonRangeService {
     }
 
     public List<ComparisonRange> calculateMinMaxValuesOfAllComparisonMethods(List<HistogramResult> list) throws IllegalArgumentException {
+        logger.info("Calculating min and max values in calculateMinMaxValuesOfAllComparisonMethods() method");
         List<ComparisonRange> result = new ArrayList<>();
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.CORRELATION, HistogramResult::getCorrelation));
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.CHI_SQUARE, HistogramResult::getChisquare));
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.INTERSECTION, HistogramResult::getIntersection));
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.BHATTACHARYYA, HistogramResult::getBhattacharyya));
+        logger.info("Calculated values for methods : CORRELATION - MIN:" + result.get(0).getMinValue() + " MAX:" + result.get(0).getMaxValue());
+        logger.info("Calculated values for methods : CHI_SQUARE - MIN:" + result.get(1).getMinValue() + " MAX:" + result.get(1).getMaxValue());
+        logger.info("Calculated values for methods : INTERSECTION - MIN:" + result.get(2).getMinValue() + " MAX:" + result.get(2).getMaxValue());
+        logger.info("Calculated values for methods : BHATTACHARYYA - MIN:" + result.get(3).getMinValue() + " MAX:" + result.get(3).getMaxValue());
+
         return result;
     }
 

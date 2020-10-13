@@ -4,6 +4,7 @@ package com.km.BottleCapCollector.service;
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.repository.BottleCapRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -21,15 +22,16 @@ public class BottleCapService {
         return repository.save(cap);
     }
 
+    @Cacheable(value = "caps")
     public List<BottleCap> getAllBottleCaps(){
         return (List<BottleCap>)repository.findAll();
     }
 
-    public BottleCap getBottleCap(long id){
+    public BottleCap getBottleCap(long id) {
         Optional<BottleCap> cap = repository.findById(id);
-        if(cap.isPresent()){
+        if (cap.isPresent()) {
             return cap.get();
-        } else{
+        } else {
             throw new IllegalArgumentException("Couldn't find record with given id");
         }
     }
