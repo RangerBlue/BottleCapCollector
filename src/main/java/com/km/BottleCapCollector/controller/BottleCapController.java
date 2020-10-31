@@ -18,12 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +47,7 @@ public class BottleCapController {
     @Autowired
     private GoogleDriveService googleDriveService;
 
-    @PostMapping("/addCap")
+    @PostMapping("/caps")
     public ResponseEntity<BottleCap> addBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) {
         logger.info("Entering addBottleCap method");
         BottleCap cap;
@@ -64,6 +64,53 @@ public class BottleCapController {
             throw new FileStorageException("Could not store file " + file.getName() + ". Please try again!", e);
         }
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+
+    @DeleteMapping("/caps/{id}")
+    public ResponseEntity<String> deleteBottleCap(@PathVariable Long id) {
+        logger.info("Entering deleteBottleCap method");
+        BottleCap capToDelete;
+        try {
+            capToDelete = bottleCapService.getBottleCap(id);
+            googleDriveService.deleteFile(capToDelete.getGoogleDriveID());
+        } catch (HttpClientErrorException e) {
+            logger.info("Could not remove cap " + id + " from drive");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        logger.info("Cap with ID " + id + " has been removed from drive");
+        bottleCapService.deleteBottleCapWithId(capToDelete.getId());
+        logger.info("Cap with ID " + id + " has been removed from database");
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/caps/{id}")
+    public ResponseEntity<BottleCap> getBottleCap(@PathVariable Long id) {
+        logger.info("Entering getBottleCap method");
+        BottleCap cap;
+        try {
+            cap = bottleCapService.getBottleCap(id);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok().body(cap);
+    }
+
+    @PutMapping("/caps/{id}")
+    public ResponseEntity<BottleCap> updateCap(@PathVariable Long id, @RequestParam("newName") String newName) {
+        logger.info("Entering updateCap method");
+        BottleCap capToUpdate;
+        try {
+            capToUpdate = bottleCapService.getBottleCap(id);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        logger.info("Updating cap with name: " + capToUpdate.getCapName() + " to " + newName);
+        capToUpdate.setCapName(newName);
+        bottleCapService.addBottleCap(capToUpdate);
+        return ResponseEntity.ok().body(capToUpdate);
     }
 
     @PostMapping("/validateCap")
@@ -87,12 +134,6 @@ public class BottleCapController {
         return bottleCapService.getAllBottleCaps();
     }
 
-    @GetMapping("/cap/{id}")
-    public BottleCap getBottleCap(@PathVariable Long id) {
-        logger.info("Entering getBottleCap method");
-        return bottleCapService.getBottleCap(id);
-    }
-
     @PostMapping("/uploadFileToDrive")
     public String uploadFileToDrive(@RequestParam("file") MultipartFile multipartFile) throws IOException {
         String contentType = multipartFile.getContentType();
@@ -104,7 +145,7 @@ public class BottleCapController {
     }
 
     @GetMapping(value = "/capDrive/{id}")
-    public String getFile(@PathVariable String id) throws GeneralSecurityException, IOException {
+    public String getFile(@PathVariable String id) {
         return googleDriveService.getFileUrl(id);
 
     }

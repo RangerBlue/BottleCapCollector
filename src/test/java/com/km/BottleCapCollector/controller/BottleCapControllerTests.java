@@ -11,19 +11,21 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -48,7 +50,7 @@ public class BottleCapControllerTests {
     @Test
     public void addFileToDriveTest() throws Exception {
         String fileName = "captest1.jpg";
-        MockMultipartFile file = new MockMultipartFile("file",fileName,
+        MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
         given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
 
@@ -58,14 +60,15 @@ public class BottleCapControllerTests {
     }
 
     @Test
+    @WithMockUser("user")
     public void addBottleCapTest() throws Exception {
         String fileName = "captest1.jpg";
-        MockMultipartFile file = new MockMultipartFile("file",fileName,
+        MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
         given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
         given(fileStorageService.calculateAndReturnMathObjectAsBottleCapMat(any())).willReturn(new BottleCapMat("test".getBytes(), 50, 60));
 
-        this.mvc.perform(MockMvcRequestBuilders.multipart("/addCap")
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
                 .file(file)
                 .param("name", "Beer"))
                 .andExpect(status().is(201));
@@ -83,13 +86,65 @@ public class BottleCapControllerTests {
         mvc.perform(get("/caps")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-
     }
 
     @Test
     public void getBottleCap() throws Exception {
-        this.mvc.perform(get("/cap/1"))
+        BottleCap cap = new BottleCap("cap1");
+        given(service.getBottleCap(anyLong())).willReturn(cap);
+        this.mvc.perform(get("/caps/1"))
                 .andExpect(status().is(200));
+    }
+
+    @Test
+    public void getBottleCapWrongID() throws Exception {
+        given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
+        this.mvc.perform(put("/caps/1")
+                .param("newName", "Beer"))
+                .andExpect(status().is(404));
+    }
+
+    @Test
+    public void updateBottleCap() throws Exception {
+        BottleCap cap = new BottleCap("cap1");
+        given(service.getBottleCap(anyLong())).willReturn(cap);
+        this.mvc.perform(put("/caps/1")
+                .param("newName", "Beer"))
+                .andExpect(status().is(200));
+    }
+
+    @Test
+    public void updateBottleCapWrongID() throws Exception {
+        given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
+        this.mvc.perform(put("/caps/1")
+                .param("newName", "Beer"))
+                .andExpect(status().is(404));
+    }
+
+    @Test
+    public void deleteBottleCap() throws Exception {
+        BottleCap cap = new BottleCap("cap1");
+        given(service.getBottleCap(anyLong())).willReturn(cap);
+        given(googleDriveService.deleteFile(anyString())).willReturn("");
+        this.mvc.perform(delete("/caps/1"))
+                .andExpect(status().is(200));
+
+    }
+
+    @Test
+    public void deleteBottleCapNotFound() throws Exception {
+        given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
+        this.mvc.perform(delete("/caps/1"))
+                .andExpect(status().is(404));
+    }
+
+    @Test
+    public void deleteBottleCapWrongDriveID() throws Exception {
+        BottleCap cap = new BottleCap("cap1");
+        given(service.getBottleCap(anyLong())).willReturn(cap);
+        given(googleDriveService.deleteFile(any())).willThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+        this.mvc.perform(delete("/caps/1"))
+                .andExpect(status().is(400));
     }
 
 
