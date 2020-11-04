@@ -1,8 +1,7 @@
 package com.km.BottleCapCollector.service;
 
 import com.km.BottleCapCollector.model.BottleCap;
-import com.km.BottleCapCollector.model.HistogramResult;
-import com.km.BottleCapCollector.repository.HistogramResultRepository;
+import com.km.BottleCapCollector.util.HistogramResult;
 import com.km.BottleCapCollector.util.BottleCapPair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +23,6 @@ public class FileStorageServiceTests {
     @InjectMocks
     private FileStorageService service;
 
-    @Mock
-    private HistogramResultRepository repository;
 
     @Test
     public void calculateEachWithEach() {
@@ -44,26 +41,6 @@ public class FileStorageServiceTests {
         List<BottleCapPair> result = service.calculateEachWithEach(list);
         assertEquals(10, result.size());
         assertEquals(4, result.stream().filter(pair -> pair.getFirstCap().equals(cap0) || pair.getSecondCap().equals(cap0)).count());
-    }
-
-    @Test
-    public void getAllHistogramResults() {
-        HistogramResult result1 = new HistogramResult(1, 2, 3, 4);
-        result1.setFirstCap(new BottleCap());
-        result1.setSecondCap(new BottleCap());
-        HistogramResult result2 = new HistogramResult(5, 6, 7, 8);
-        result2.setFirstCap(new BottleCap());
-        result2.setSecondCap(new BottleCap());
-
-        List<HistogramResult> histogramList = new ArrayList<>();
-        histogramList.add(result1);
-        histogramList.add(result2);
-
-        when(repository.findAll()).thenReturn(histogramList);
-        List<HistogramResult> result = service.getAllHistogramResults();
-
-        assertEquals(2, result.size());
-        Mockito.verify(repository, times(1)).findAll();
     }
 
 }

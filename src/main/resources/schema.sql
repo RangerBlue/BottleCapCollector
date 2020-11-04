@@ -1,18 +1,15 @@
-DROP TABLE IF EXISTS HISTOGRAMRESULT;
-DROP TABLE IF EXISTS CAP;
-CREATE TABLE CAP (
-  id INT AUTO_INCREMENT  PRIMARY KEY,
-  fileName VARCHAR(250) NOT NULL,
-  capName VARCHAR(250) NOT NULL,
-  create_time TIMESTAMP NOT NULL
-);
+CREATE TABLE users (
+	  username VARCHAR(50) NOT NULL,
+	  password VARCHAR(100) NOT NULL,
+	  enabled TINYINT NOT NULL DEFAULT 1,
+	  PRIMARY KEY (username)
+	);
 
-CREATE TABLE HISTOGRAMRESULT (
-  id INT AUTO_INCREMENT  PRIMARY KEY,
-  firstCapId INT NOT NULL,
-  secondCapId INT NOT NULL,
-  correlation FLOAT NOT NULL,
-  chisquare FLOAT NOT NULL,
-  intersection FLOAT NOT NULL,
-  bhattacharyya FLOAT NOT NULL
-);
+	CREATE TABLE authorities (
+	  username VARCHAR(50) NOT NULL,
+	  authority VARCHAR(50) NOT NULL,
+	  FOREIGN KEY (username) REFERENCES users(username)
+	);
+
+	CREATE UNIQUE INDEX ix_auth_username
+	  on authorities (username,authority);
