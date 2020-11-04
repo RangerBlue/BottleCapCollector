@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.HttpClientErrorException;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
 
@@ -47,20 +48,24 @@ public class BottleCapControllerTests {
     @MockBean
     private GoogleDriveService googleDriveService;
 
+    @MockBean
+    private DataSource dataSource;
+
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void addFileToDriveTest() throws Exception {
         String fileName = "captest1.jpg";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
         given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
 
-        this.mvc.perform(MockMvcRequestBuilders.multipart("/uploadFileToDrive")
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/admin/uploadFileToDrive")
                 .file(file))
                 .andExpect(status().is(200));
     }
 
     @Test
-    @WithMockUser("user")
+    @WithMockUser(roles = "ADMIN")
     public void addBottleCapTest() throws Exception {
         String fileName = "captest1.jpg";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
@@ -75,7 +80,6 @@ public class BottleCapControllerTests {
     }
 
     @Test
-    @WithMockUser("user")
     public void getBottleCaps() throws Exception {
 
         BottleCap cap = new BottleCap("cap1");
@@ -99,12 +103,12 @@ public class BottleCapControllerTests {
     @Test
     public void getBottleCapWrongID() throws Exception {
         given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
-        this.mvc.perform(put("/caps/1")
-                .param("newName", "Beer"))
+        this.mvc.perform(get("/caps/1"))
                 .andExpect(status().is(404));
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void updateBottleCap() throws Exception {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);
@@ -114,6 +118,7 @@ public class BottleCapControllerTests {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void updateBottleCapWrongID() throws Exception {
         given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
         this.mvc.perform(put("/caps/1")
@@ -122,6 +127,7 @@ public class BottleCapControllerTests {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void deleteBottleCap() throws Exception {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);
@@ -132,6 +138,7 @@ public class BottleCapControllerTests {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void deleteBottleCapNotFound() throws Exception {
         given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
         this.mvc.perform(delete("/caps/1"))
@@ -139,6 +146,7 @@ public class BottleCapControllerTests {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void deleteBottleCapWrongDriveID() throws Exception {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);

@@ -1,6 +1,5 @@
 package com.km.BottleCapCollector.util;
 
-import com.km.BottleCapCollector.model.HistogramResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -3,9 +3,8 @@ package com.km.BottleCapCollector.service;
 import com.km.BottleCapCollector.exception.FileStorageException;
 import com.km.BottleCapCollector.exception.MyFileNotFoundException;
 import com.km.BottleCapCollector.model.BottleCap;
-import com.km.BottleCapCollector.model.HistogramResult;
+import com.km.BottleCapCollector.util.HistogramResult;
 import com.km.BottleCapCollector.property.CustomProperties;
-import com.km.BottleCapCollector.repository.HistogramResultRepository;
 import com.km.BottleCapCollector.util.BottleCapMat;
 import com.km.BottleCapCollector.util.BottleCapPair;
 import com.km.BottleCapCollector.util.ImageHistogramUtil;
@@ -35,9 +34,6 @@ import java.util.stream.Collectors;
 public class FileStorageService {
 
     private static final Logger logger = LogManager.getLogger(FileStorageService.class);
-
-    @Autowired
-    private HistogramResultRepository histogramResultRepository;
 
     @Autowired
     private ImageHistogramUtil imageHistogramUtil;
@@ -79,13 +75,13 @@ public class FileStorageService {
 
     public List<HistogramResult> calculateEachWithEachCap(List<BottleCap> caps) {
         List<BottleCapPair> dataToProcess = calculateEachWithEach(caps);
-        logger.info("Processed "+caps.size() + " caps with " + dataToProcess.size() + " pair output");
+        logger.info("Processed " + caps.size() + " caps with " + dataToProcess.size() + " pair output");
         List<HistogramResult> results = dataToProcess.stream().parallel().map(bottleCapPair -> prepareHistogram(bottleCapPair)).collect(Collectors.toList());
-        logger.info("Created "+results.size() + " histogram results");
+        logger.info("Created " + results.size() + " histogram results");
         return results;
     }
 
-    public HistogramResult prepareHistogram(BottleCapPair pair){
+    public HistogramResult prepareHistogram(BottleCapPair pair) {
         Mat histFromFile1 = null;
         Mat histFromFile2 = null;
         try {
@@ -191,9 +187,5 @@ public class FileStorageService {
         }
 
         return result;
-    }
-
-    public List<HistogramResult> getAllHistogramResults() {
-        return (List<HistogramResult>) histogramResultRepository.findAll();
     }
 }

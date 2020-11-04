@@ -3,7 +3,7 @@ package com.km.BottleCapCollector.service;
 import com.km.BottleCapCollector.exception.DuplicateCapException;
 import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.model.ComparisonRange;
-import com.km.BottleCapCollector.model.HistogramResult;
+import com.km.BottleCapCollector.util.HistogramResult;
 import com.km.BottleCapCollector.repository.ComparisonRangeRepository;
 import com.km.BottleCapCollector.util.ComparisonMethod;
 import com.km.BottleCapCollector.util.ImageHistogramUtil;

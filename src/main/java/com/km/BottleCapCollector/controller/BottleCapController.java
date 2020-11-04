@@ -9,6 +9,7 @@ import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
 import com.km.BottleCapCollector.service.FileStorageService;
 import com.km.BottleCapCollector.util.BottleCapMat;
+import com.km.BottleCapCollector.util.HistogramResult;
 import com.km.BottleCapCollector.util.SimilarityModel;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.LogManager;
@@ -113,7 +114,7 @@ public class BottleCapController {
         return ResponseEntity.ok().body(capToUpdate);
     }
 
-    @PostMapping("/validateCap")
+    @GetMapping("/validateCap")
     public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) throws IOException {
         logger.info("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
@@ -134,7 +135,7 @@ public class BottleCapController {
         return bottleCapService.getAllBottleCaps();
     }
 
-    @PostMapping("/uploadFileToDrive")
+    @PostMapping("/admin/uploadFileToDrive")
     public String uploadFileToDrive(@RequestParam("file") MultipartFile multipartFile) throws IOException {
         String contentType = multipartFile.getContentType();
         String originalFilename = multipartFile.getOriginalFilename();
@@ -227,5 +228,10 @@ public class BottleCapController {
         });
         logger.info("Updated " + counter + " locations");
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/admin/test")
+    public void test() {
+        System.out.println("test");
     }
 }

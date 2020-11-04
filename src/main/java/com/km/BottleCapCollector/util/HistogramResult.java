@@ -1,28 +1,17 @@
-package com.km.BottleCapCollector.model;
+package com.km.BottleCapCollector.util;
 
-import javax.persistence.*;
+import com.km.BottleCapCollector.model.BottleCap;
+
 import java.util.Objects;
 
-@Entity
-@Table(name = "HISTOGRAMRESULT")
 public class HistogramResult {
-    @Id
-    @Column(name="id")
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private long id;
-
-    @OneToOne
     private BottleCap firstCap;
-
-    @OneToOne
     private BottleCap secondCap;
 
     private double correlation;
     private double chisquare;
     private double intersection;
     private double bhattacharyya;
-
-    @Transient
     private Double similarity;
 
     public HistogramResult() {
@@ -33,10 +22,6 @@ public class HistogramResult {
         this.chisquare = chisquare;
         this.intersection = intersection;
         this.bhattacharyya = bhattacharyya;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public double getCorrelation() {
@@ -100,8 +85,7 @@ public class HistogramResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HistogramResult that = (HistogramResult) o;
-        return id == that.id &&
-                Double.compare(that.correlation, correlation) == 0 &&
+        return  Double.compare(that.correlation, correlation) == 0 &&
                 Double.compare(that.chisquare, chisquare) == 0 &&
                 Double.compare(that.intersection, intersection) == 0 &&
                 Double.compare(that.bhattacharyya, bhattacharyya) == 0 &&
@@ -112,14 +96,13 @@ public class HistogramResult {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstCap, secondCap, correlation, chisquare, intersection, bhattacharyya, similarity);
+        return Objects.hash(firstCap, secondCap, correlation, chisquare, intersection, bhattacharyya, similarity);
     }
 
     @Override
     public String toString() {
         return "HistogramResult{" +
-                "id=" + id +
-                ", firstCap=" + firstCap.getId() +
+                "firstCap=" + firstCap.getId() +
                 ", secondCap=" + secondCap.getId() +
                 ", correlation=" + correlation +
                 ", chisquare=" + chisquare +
