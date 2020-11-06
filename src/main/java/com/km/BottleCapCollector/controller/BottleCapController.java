@@ -18,6 +18,7 @@ import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
@@ -213,8 +214,9 @@ public class BottleCapController {
         return comparisonRangeService.getAll();
     }
 
+    @Async()
     @PutMapping("/admin/updateThumbnailsURL")
-    public ResponseEntity updateCapLocations() {
+    public void updateCapLocations() {
         logger.info("Entering updateCapLocations method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         AtomicInteger counter = new AtomicInteger();
@@ -227,6 +229,5 @@ public class BottleCapController {
             counter.getAndIncrement();
         });
         logger.info("Updated " + counter + " locations");
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
