@@ -21,13 +21,14 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @EnableConfigurationProperties({
         CustomProperties.class, GoogleDriveProperties.class
 })
 @Configuration
 @EnableCaching
+@EnableAsync
 public class BottleCapConfiguration implements CommandLineRunner, ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(BottleCapConfiguration.class);
 
