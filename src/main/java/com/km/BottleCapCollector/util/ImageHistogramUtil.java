@@ -136,7 +136,6 @@ public class ImageHistogramUtil {
     }
 
     public HistogramResult calculateCoefficients(Mat histImage1, Mat histImage2) {
-        logger.info("Calculating coefficients in calculateCoefficients method");
         HistogramResult result = new HistogramResult();
         result.setCorrelation(correlationMethod(histImage1, histImage2));
         result.setChisquare(chisquareMethod(histImage1, histImage2));
@@ -190,8 +189,7 @@ public class ImageHistogramUtil {
         return new BottleCapMat(bytes, mat.cols(), mat.rows());
     }
 
-    public Mat convertBottleCapMatToMat(BottleCapMat data) throws IOException{
-        logger.info("Converting BottleCapMat object to Mat object ...");
+    public Mat convertBottleCapMatToMat(BottleCapMat data) throws IOException {
         ByteArrayInputStream bas = new ByteArrayInputStream(data.getMatArray());
         DataInputStream ds = new DataInputStream(bas);
         float[] fArr = new float[data.getMatArray().length / 4];

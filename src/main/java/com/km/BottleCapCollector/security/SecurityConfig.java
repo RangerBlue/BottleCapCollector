@@ -32,6 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/caps/*").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/caps/*").hasRole("ADMIN")
                 .antMatchers("/admin/*").hasRole("ADMIN")
+                .antMatchers("/management/*").hasRole("ADMIN")
                 .anyRequest().permitAll()
                 .and()
                 .csrf().disable()
