@@ -31,9 +31,9 @@ public class BottleCapService {
     }
 
     @Cacheable(value = "caps")
-    public List<BottleCap> getAllBottleCaps(){
+    public List<BottleCap> getAllBottleCaps() {
         logger.info("Entering getAllBottleCap method in service layer");
-        return (List<BottleCap>)repository.findAll();
+        return (List<BottleCap>) repository.findAll();
     }
 
     public BottleCap getBottleCap(long id) {
@@ -45,17 +45,12 @@ public class BottleCapService {
         }
     }
 
-    public void deleteBottleCapWithId(Long id){
+    public void deleteBottleCapWithId(Long id) {
         repository.deleteById(id);
     }
 
-    //TODO move it into addBottleCapMethod
-    public boolean isDuplicate(BottleCap newCap){
-        return getAllBottleCaps().stream().anyMatch((old) -> old.equals(newCap));
-    }
-
     @Profile("admin")
-    public void addBottleCapForInitialUpload(File file){
+    public void addBottleCapForInitialUpload(File file) {
         repository.save(new BottleCap(file.getName(), file.getName()));
     }
 

@@ -1,6 +1,7 @@
 package com.km.BottleCapCollector.service;
 
 import com.km.BottleCapCollector.exception.DuplicateCapException;
+import com.km.BottleCapCollector.model.BottleCap;
 import com.km.BottleCapCollector.model.ComparisonRange;
 import com.km.BottleCapCollector.util.HistogramResult;
 import com.km.BottleCapCollector.repository.ComparisonRangeRepository;
@@ -12,10 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalDouble;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -31,6 +29,10 @@ public class ComparisonRangeService {
 
     public List<ComparisonRange> getAll() {
         return (List<ComparisonRange>) repository.findAll();
+    }
+
+    public ComparisonRange getByComparisonMethod(ComparisonMethod method) {
+        return repository.findComparisonRangeByComparisonMethod(method);
     }
 
     public List<ComparisonRange> calculateMinMaxValuesOfAllComparisonMethods(List<HistogramResult> list) throws IllegalArgumentException {
@@ -52,11 +54,28 @@ public class ComparisonRangeService {
         OptionalDouble minValue = list.stream().mapToDouble(v -> toMethod.apply(v)).min();
         if (minValue.isPresent()) {
             OptionalDouble maxValue = list.stream().mapToDouble(v -> toMethod.apply(v)).max();
-            ComparisonRange range = new ComparisonRange(method, minValue.getAsDouble(), maxValue.getAsDouble());
-            repository.save(range);
-            return range;
+            Optional<ComparisonRange> existingValue = Optional.ofNullable(getByComparisonMethod(method));
+            if (existingValue.isPresent()) {
+                logger.info("There are comparison ranges in table for method " + method.name());
+                ComparisonRange rangeToUpdate = existingValue.get();
+                if (existingValue.get().getMinValue() > minValue.getAsDouble()) {
+                    rangeToUpdate.setMinValue(minValue.getAsDouble());
+                    logger.info("Updating new minimum for " + method.name() + " with value " + minValue.getAsDouble());
+                }
+                if (existingValue.get().getMaxValue() < maxValue.getAsDouble()) {
+                    rangeToUpdate.setMaxValue(maxValue.getAsDouble());
+                    logger.info("Updating new maximum for " + method.name() + " with value " + maxValue.getAsDouble());
+                }
+                repository.save(rangeToUpdate);
+                return rangeToUpdate;
+            } else {
+                logger.info("Comparison ranges table is empty, adding new values");
+                ComparisonRange range = new ComparisonRange(method, minValue.getAsDouble(), maxValue.getAsDouble());
+                repository.save(range);
+                return range;
+            }
         } else {
-            throw new IllegalArgumentException("There is no data in table");
+            throw new IllegalArgumentException("There is no data to perform calculations");
         }
     }
 
@@ -99,11 +118,17 @@ public class ComparisonRangeService {
                 "| 80-90% " + model.getFrom80To90() +
                 "| 90-100% " + model.getFrom90To100()
         );
+        if (!model.isDuplicate()) {
+            Set<HistogramResult> similarCaps = model.getSimilarCaps();
+            logger.info("Similar caps:");
+            similarCaps.forEach(histogramResult -> {
+                logger.info("ID " + histogramResult.getSecondCap().getId() + ", name " + histogramResult.getSecondCap().getCapName());
+            });
+        }
         return model;
     }
 
     public HistogramResult calculateSimilarityForAllMethods(HistogramResult histogramCalculation, List<ComparisonRange> range) {
-        logger.info("Entering calculateSimilarityForAllMethods() method");
         double correlation = calculateSimilarityForCorrelation(histogramCalculation, range.get(0));
         double chisquare = calculateSimilarityForChisquare(histogramCalculation, range.get(1));
         double intersection = calculateSimilarityForIntersection(histogramCalculation, range.get(2));
@@ -120,7 +145,7 @@ public class ComparisonRangeService {
             return (value - min) / (max - min);
         } else {
             logger.info("DuplicateCapException in calculateSimilarityForCorrelation method, range min: " + min +
-                    "range max: " + max + "value: " + value + "in cap " + histogramCalculation.getFirstCap().getId() +
+                    " range max: " + max + " value: " + value + " in cap " + histogramCalculation.getFirstCap().getId() +
                     " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
         }

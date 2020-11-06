@@ -145,7 +145,7 @@ public class BottleCapController {
         return googleDriveService.uploadFile(uploadItem);
     }
 
-    @GetMapping(value = "/capDrive/{id}")
+    @GetMapping(value = "/admin/capDrive/{id}")
     public String getFile(@PathVariable String id) {
         return googleDriveService.getFileUrl(id);
 
@@ -156,7 +156,7 @@ public class BottleCapController {
      *
      * @return amount of pictures
      */
-    @GetMapping("/countAll")
+    @GetMapping("/admin/countAll")
     public long countAllCapsImages() {
         return fileStorageService.countAllFiles();
     }
@@ -228,10 +228,5 @@ public class BottleCapController {
         });
         logger.info("Updated " + counter + " locations");
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @GetMapping("/admin/test")
-    public void test() {
-        System.out.println("test");
     }
 }
