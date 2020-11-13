@@ -126,7 +126,8 @@ public class BottleCapController {
         SimilarityModel similarityModel = comparisonRangeService.calculateSimilarityModelForCap(histogramResults);
         ArrayList<BottleCap> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Long> similarCapsIDs = similarCaps.stream().map(BottleCap::getId).collect(Collectors.toCollection(ArrayList::new));
-        return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs);
+        ArrayList<String> similarCapsURLs = similarCaps.stream().map(BottleCap::getFileLocation).collect(Collectors.toCollection(ArrayList::new));
+        return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs, similarCapsURLs);
     }
 
 
