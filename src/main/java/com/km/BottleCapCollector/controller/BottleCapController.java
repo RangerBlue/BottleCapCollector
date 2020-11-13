@@ -115,7 +115,7 @@ public class BottleCapController {
         return ResponseEntity.ok().body(capToUpdate);
     }
 
-    @GetMapping("/validateCap")
+    @PostMapping("/validateCap")
     public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) throws IOException {
         logger.info("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
