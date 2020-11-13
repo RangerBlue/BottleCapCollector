@@ -5,10 +5,12 @@ import java.util.ArrayList;
 public class ValidateBottleCapResponse {
     boolean isDuplicate;
     ArrayList<Long> similarCapsIDs;
+    ArrayList<String> similarCapsURLs;
 
-    public ValidateBottleCapResponse(boolean isDuplicate, ArrayList<Long> similarCapsIDs) {
+    public ValidateBottleCapResponse(boolean isDuplicate, ArrayList<Long> similarCapsIDs, ArrayList<String> similarCapsURLs) {
         this.isDuplicate = isDuplicate;
         this.similarCapsIDs = similarCapsIDs;
+        this.similarCapsURLs = similarCapsURLs;
     }
 
     public boolean isDuplicate() {
@@ -25,5 +27,13 @@ public class ValidateBottleCapResponse {
 
     public void setSimilarCapsIDs(ArrayList<Long> similarCapsIDs) {
         this.similarCapsIDs = similarCapsIDs;
+    }
+
+    public ArrayList<String> getSimilarCapsURLs() {
+        return similarCapsURLs;
+    }
+
+    public void setSimilarCapsURLs(ArrayList<String> similarCapsURLs) {
+        this.similarCapsURLs = similarCapsURLs;
     }
 }

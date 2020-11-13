@@ -115,8 +115,8 @@ public class BottleCapController {
         return ResponseEntity.ok().body(capToUpdate);
     }
 
-    @GetMapping("/validateCap")
-    public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) throws IOException {
+    @PostMapping("/validateCap")
+    public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, MultipartFile file) throws IOException {
         logger.info("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         Mat mat = fileStorageService.calculateAndReturnMathObject(file);
@@ -126,7 +126,8 @@ public class BottleCapController {
         SimilarityModel similarityModel = comparisonRangeService.calculateSimilarityModelForCap(histogramResults);
         ArrayList<BottleCap> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Long> similarCapsIDs = similarCaps.stream().map(BottleCap::getId).collect(Collectors.toCollection(ArrayList::new));
-        return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs);
+        ArrayList<String> similarCapsURLs = similarCaps.stream().map(BottleCap::getFileLocation).collect(Collectors.toCollection(ArrayList::new));
+        return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs, similarCapsURLs);
     }
 
 
