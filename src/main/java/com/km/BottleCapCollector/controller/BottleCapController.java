@@ -116,7 +116,7 @@ public class BottleCapController {
     }
 
     @PostMapping("/validateCap")
-    public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) throws IOException {
+    public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, MultipartFile file) throws IOException {
         logger.info("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         Mat mat = fileStorageService.calculateAndReturnMathObject(file);
