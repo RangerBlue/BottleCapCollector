@@ -61,9 +61,6 @@ public class ComparisonRangeServiceTests {
         assertEquals(2, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.CHI_SQUARE)).findFirst().get().getMinValue());
         assertEquals(10, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.CHI_SQUARE)).findFirst().get().getMaxValue());
 
-        assertEquals(3, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.INTERSECTION)).findFirst().get().getMinValue());
-        assertEquals(11, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.INTERSECTION)).findFirst().get().getMaxValue());
-
         assertEquals(4, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.BHATTACHARYYA)).findFirst().get().getMinValue());
         assertEquals(12, result.stream().filter(item -> item.getMethodName().equals(ComparisonMethod.BHATTACHARYYA)).findFirst().get().getMaxValue());
     }
@@ -108,21 +105,21 @@ public class ComparisonRangeServiceTests {
 
     @Test
     public void testCalculateSimilarityForIntersectionSuccess() {
-        HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
-        ComparisonRange range = new ComparisonRange(ComparisonMethod.INTERSECTION, 2, 10);
+        HistogramResult histogramResult = new HistogramResult(0.8, 401, 7.5, 0.3);
         histogramResult.setFirstCap(new BottleCap());
         histogramResult.setSecondCap(new BottleCap());
-        double result = service.calculateSimilarityForIntersection(histogramResult, range);
+        histogramResult.getSecondCap().setIntersectionValue(10);
+        double result = service.calculateSimilarityForIntersection(histogramResult);
         assertEquals(0.75, result);
     }
 
     @Test(expected = DuplicateCapException.class)
     public void testCalculateSimilarityForIntersectionFail() {
-        HistogramResult histogramResult = new HistogramResult(1.2, 401, -19, 0.3);
-        ComparisonRange range = new ComparisonRange(ComparisonMethod.INTERSECTION, 0.4, 0.9);
+        HistogramResult histogramResult = new HistogramResult(1.2, 401, 10, 0.3);
         histogramResult.setFirstCap(new BottleCap());
         histogramResult.setSecondCap(new BottleCap());
-        service.calculateSimilarityForIntersection(histogramResult, range);
+        histogramResult.getSecondCap().setIntersectionValue(10);
+        service.calculateSimilarityForIntersection(histogramResult);
     }
 
     @Test
@@ -149,21 +146,21 @@ public class ComparisonRangeServiceTests {
         List<ComparisonRange> range = new ArrayList<>();
         range.add(new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9));
         range.add(new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001));
-        range.add(new ComparisonRange(ComparisonMethod.INTERSECTION, 2, 10));
         range.add(new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9));
 
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         histogramResult.setFirstCap(new BottleCap());
         histogramResult.setSecondCap(new BottleCap());
+        histogramResult.getSecondCap().setIntersectionValue(10);
         HistogramResult result = service.calculateSimilarityForAllMethods(histogramResult, range);
-        assertEquals(0.725, result.getSimilarity(), 0.00001);
+        assertEquals(0.7375, result.getSimilarity(), 0.00001);
     }
 
     @Test()
     public void testCalculateSimilarityForCap() {
         List<HistogramResult> histogramResults = prepareData();
         double result = service.calculateSimilarityForCap(histogramResults);
-        assertEquals(0.4364375, result, 0.00001);
+        assertEquals(0.4509521, result, 0.00001);
     }
 
     @Test()
@@ -173,8 +170,8 @@ public class ComparisonRangeServiceTests {
         assertEquals(0, model.getFrom00To10());
         assertEquals(0, model.getFrom10To20());
         assertEquals(0, model.getFrom20To30());
-        assertEquals(3, model.getFrom30To40());
-        assertEquals(0, model.getFrom40To50());
+        assertEquals(2, model.getFrom30To40());
+        assertEquals(1, model.getFrom40To50());
         assertEquals(0, model.getFrom50To60());
         assertEquals(0, model.getFrom60To70());
         assertEquals(1, model.getFrom70To80());
@@ -213,29 +210,37 @@ public class ComparisonRangeServiceTests {
     }
 
     @Test()
-    public void testSimilarCapsEquals4() {
+    public void testSimilarCapsEquals6() {
         List<HistogramResult> histogramResults = prepareData();
-        HistogramResult histogramResult = new HistogramResult(0.5, 333, 5, 0.2);
+        HistogramResult histogramResult = new HistogramResult(0.7, 402, 7, 0.3);
         histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());
         histogramResult.setSecondCap(new BottleCap());
+        histogramResult.getSecondCap().setIntersectionValue(10);
         histogramResults.add(histogramResult);
-        HistogramResult histogramResult2 = new HistogramResult(0.4, 323, 4, 0.65);
+        HistogramResult histogramResult1 = new HistogramResult(0.3, 202, 4, 0.6);
+        histogramResult1.setFirstCap(histogramResults.get(0).getFirstCap());
+        histogramResult1.setSecondCap(new BottleCap());
+        histogramResult1.getSecondCap().setIntersectionValue(12);
+        histogramResults.add(histogramResult1);
+        HistogramResult histogramResult2 = new HistogramResult(0.2, 31, 2, 0.1);
         histogramResult2.setFirstCap(histogramResults.get(0).getFirstCap());
         histogramResult2.setSecondCap(new BottleCap());
+        histogramResult2.getSecondCap().setIntersectionValue(13);
         histogramResults.add(histogramResult2);
+
         SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults);
 
         assertEquals(0, model.getFrom00To10());
         assertEquals(0, model.getFrom10To20());
         assertEquals(0, model.getFrom20To30());
-        assertEquals(4, model.getFrom30To40());
-        assertEquals(0, model.getFrom40To50());
-        assertEquals(1, model.getFrom50To60());
-        assertEquals(0, model.getFrom60To70());
+        assertEquals(3, model.getFrom30To40());
+        assertEquals(2, model.getFrom40To50());
+        assertEquals(0, model.getFrom50To60());
+        assertEquals(1, model.getFrom60To70());
         assertEquals(1, model.getFrom70To80());
         assertEquals(0, model.getFrom80To90());
         assertEquals(0, model.getFrom90To100());
-        assertEquals(4, model.getSimilarCaps().size());
+        assertEquals(6, model.getSimilarCaps().size());
         assertFalse(model.isDuplicate());
     }
 
@@ -243,7 +248,6 @@ public class ComparisonRangeServiceTests {
         List<ComparisonRange> range = new ArrayList<>();
         range.add(new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9));
         range.add(new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001));
-        range.add(new ComparisonRange(ComparisonMethod.INTERSECTION, 2, 10));
         range.add(new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9));
         when(repository.findAll()).thenReturn(range);
 
@@ -253,15 +257,19 @@ public class ComparisonRangeServiceTests {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         histogramResult.setFirstCap(newCap);
         histogramResult.setSecondCap(new BottleCap());
+        histogramResult.getSecondCap().setIntersectionValue(10);
         HistogramResult histogramResult1 = new HistogramResult(0.2, 201, 4, 0.2);
         histogramResult1.setFirstCap(newCap);
         histogramResult1.setSecondCap(new BottleCap());
+        histogramResult1.getSecondCap().setIntersectionValue(12);
         HistogramResult histogramResult2 = new HistogramResult(0.3, 333, 5, 0.6);
         histogramResult2.setFirstCap(newCap);
         histogramResult2.setSecondCap(new BottleCap());
+        histogramResult2.getSecondCap().setIntersectionValue(13);
         HistogramResult histogramResult3 = new HistogramResult(0.35, 311, 3, 0.4);
         histogramResult3.setFirstCap(newCap);
         histogramResult3.setSecondCap(new BottleCap());
+        histogramResult3.getSecondCap().setIntersectionValue(14);
 
         histogramResults.addAll(Arrays.asList(histogramResult, histogramResult1, histogramResult2, histogramResult3));
 

@@ -23,13 +23,15 @@ public class BottleCap {
     private int cols;
     private int rows;
     private LocalDateTime lastPreviewLinkUpdate;
+    private double intersectionValue;
 
     public BottleCap(String name) {
         this.capName = name;
         this.creationDate = LocalDateTime.now();
     }
 
-    public BottleCap(String capName, BottleCapMat mat, String fileLocation, String googleDriveID) {
+    public BottleCap(String capName, BottleCapMat mat, String fileLocation, String googleDriveID,
+                     double intersectionValue) {
         this.capName = capName;
         this.data = mat.getMatArray();
         this.cols = mat.getCols();
@@ -38,14 +40,16 @@ public class BottleCap {
         this.googleDriveID = googleDriveID;
         this.creationDate = LocalDateTime.now();
         this.lastPreviewLinkUpdate = LocalDateTime.now();
+        this.intersectionValue = intersectionValue;
     }
 
-    public BottleCap(String capName, BottleCapMat mat) {
+    public BottleCap(String capName, BottleCapMat mat, double intersectionValue) {
         this.capName = capName;
         this.data = mat.getMatArray();
         this.cols = mat.getCols();
         this.rows = mat.getRows();
         this.creationDate = LocalDateTime.now();
+        this.intersectionValue = intersectionValue;
     }
 
     public BottleCap(String capName, String fileName) {
@@ -116,6 +120,14 @@ public class BottleCap {
 
     public String getGoogleDriveID() {
         return googleDriveID;
+    }
+
+    public double getIntersectionValue() {
+        return intersectionValue;
+    }
+
+    public void setIntersectionValue(double intersectionValue) {
+        this.intersectionValue = intersectionValue;
     }
 
     @Override

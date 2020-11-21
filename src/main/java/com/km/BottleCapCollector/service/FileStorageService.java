@@ -81,6 +81,10 @@ public class FileStorageService {
         return results;
     }
 
+    public double calculateIntersectionMethod(Mat mat) {
+        return imageHistogramUtil.calculateIntersection(mat);
+    }
+
     public HistogramResult prepareHistogram(BottleCapPair pair) {
         Mat histFromFile1 = null;
         Mat histFromFile2 = null;
