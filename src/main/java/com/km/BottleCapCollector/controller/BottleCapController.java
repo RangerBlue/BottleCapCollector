@@ -222,8 +222,6 @@ public class BottleCapController {
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         AtomicInteger counter = new AtomicInteger();
         caps.forEach(bottleCap -> {
-            logger.info("Updating cap with ID " + bottleCap.getId() + " and google drive ID " +
-                    bottleCap.getGoogleDriveID() + " file location");
             bottleCap.setFileLocation(googleDriveService.getFileUrl(bottleCap.getGoogleDriveID()));
             bottleCap.setLastPreviewLinkUpdate(LocalDateTime.now());
             bottleCapService.addBottleCap(bottleCap);
