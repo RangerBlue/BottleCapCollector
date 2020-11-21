@@ -163,9 +163,8 @@ public class FileStorageService {
     public List<HistogramResult> calculateOneAgainstAllCaps(BottleCap cap, Mat mat, List<BottleCap> inputList) {
         logger.info("Entering calculateOneAgainstAllCaps method with cap with ID : " + cap.getId() + " and name "
                 + cap.getCapName() + " against " + inputList.size() + " items");
-        List<BottleCapPair> outputList = new ArrayList<>();
         logger.info("Creating BottleCap pairs");
-        inputList.stream().parallel().forEach(listCap -> outputList.add(new BottleCapPair(cap, listCap)));
+        List<BottleCapPair> outputList = inputList.stream().parallel().map(bottleCap -> new BottleCapPair(cap, bottleCap)).collect(Collectors.toList());
         logger.info("Preparing histograms");
         return outputList.stream().map(pair -> prepareHistogram(mat, pair)).collect(Collectors.toList());
     }
