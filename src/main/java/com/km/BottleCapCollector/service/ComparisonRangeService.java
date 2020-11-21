@@ -40,12 +40,10 @@ public class ComparisonRangeService {
         List<ComparisonRange> result = new ArrayList<>();
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.CORRELATION, HistogramResult::getCorrelation));
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.CHI_SQUARE, HistogramResult::getChisquare));
-        result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.INTERSECTION, HistogramResult::getIntersection));
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.BHATTACHARYYA, HistogramResult::getBhattacharyya));
         logger.info("Calculated values for methods : CORRELATION - MIN:" + result.get(0).getMinValue() + " MAX:" + result.get(0).getMaxValue());
         logger.info("Calculated values for methods : CHI_SQUARE - MIN:" + result.get(1).getMinValue() + " MAX:" + result.get(1).getMaxValue());
-        logger.info("Calculated values for methods : INTERSECTION - MIN:" + result.get(2).getMinValue() + " MAX:" + result.get(2).getMaxValue());
-        logger.info("Calculated values for methods : BHATTACHARYYA - MIN:" + result.get(3).getMinValue() + " MAX:" + result.get(3).getMaxValue());
+        logger.info("Calculated values for methods : BHATTACHARYYA - MIN:" + result.get(2).getMinValue() + " MAX:" + result.get(2).getMaxValue());
 
         return result;
     }
@@ -131,8 +129,8 @@ public class ComparisonRangeService {
     public HistogramResult calculateSimilarityForAllMethods(HistogramResult histogramCalculation, List<ComparisonRange> range) {
         double correlation = calculateSimilarityForCorrelation(histogramCalculation, range.get(0));
         double chisquare = calculateSimilarityForChisquare(histogramCalculation, range.get(1));
-        double intersection = calculateSimilarityForIntersection(histogramCalculation, range.get(2));
-        double bhattacharyya = calculateSimilarityForBhattacharyya(histogramCalculation, range.get(3));
+        double intersection = calculateSimilarityForIntersection(histogramCalculation);
+        double bhattacharyya = calculateSimilarityForBhattacharyya(histogramCalculation, range.get(2));
         histogramCalculation.setSimilarity((correlation + chisquare + intersection + bhattacharyya) / 4);
         return histogramCalculation;
     }
@@ -166,15 +164,13 @@ public class ComparisonRangeService {
         }
     }
 
-    public double calculateSimilarityForIntersection(HistogramResult histogramCalculation, ComparisonRange range) {
-        double min = range.getMinValue();
-        double max = range.getMaxValue();
-        double value = histogramCalculation.getIntersection();
-        if (value > 0) {
-            return (value - min) / (max - min);
+    public double calculateSimilarityForIntersection(HistogramResult histogramCalculation) {
+        double value = histogramCalculation.getIntersection() / histogramCalculation.getSecondCap().getIntersectionValue();
+        if (value != 1) {
+            return value;
         } else {
-            logger.info("DuplicateCapException in calculateSimilarityForIntersection method, range min: " + min +
-                    "range max: " + max + "value: " + value + "in cap " + histogramCalculation.getFirstCap().getId() +
+            logger.info("DuplicateCapException in calculateSimilarityForIntersection method, value: " + value +
+                    "in cap " + histogramCalculation.getFirstCap().getId() +
                     " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
         }

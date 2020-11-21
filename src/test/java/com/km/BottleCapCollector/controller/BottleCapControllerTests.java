@@ -8,6 +8,7 @@ import com.km.BottleCapCollector.service.FileStorageService;
 import com.km.BottleCapCollector.util.BottleCapMat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -70,8 +71,10 @@ public class BottleCapControllerTests {
         String fileName = "captest1.jpg";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
+        given(fileStorageService.calculateIntersectionMethod(any())).willReturn(123d);
         given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
-        given(fileStorageService.calculateAndReturnMathObjectAsBottleCapMat(any())).willReturn(new BottleCapMat("test".getBytes(), 50, 60));
+        given(fileStorageService.convertMathObjectToBottleCapMat(any())).
+                willReturn(new BottleCapMat("43drgdsgre".getBytes(), 50, 60));
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
                 .file(file)

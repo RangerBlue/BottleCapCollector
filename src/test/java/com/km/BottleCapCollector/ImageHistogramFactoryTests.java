@@ -40,6 +40,7 @@ public class ImageHistogramFactoryTests {
     @Test
     public void testMetricsWithFileUpload() {
         Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
+        double intersectionBase = imageHistogramUtil.calculateIntersection(hist1);
         Mat hist2 = imageHistogramUtil.calculateHistogram(img2Name, resourceFolder);
         assertTrue(imageHistogramUtil.correlationMethod(hist1, hist2) < imageHistogramUtil.CORRELATION_BASE(),
                 "Correlation metric should be less than base metric");
@@ -47,7 +48,7 @@ public class ImageHistogramFactoryTests {
         assertTrue(imageHistogramUtil.chisquareMethod(hist1, hist2) > imageHistogramUtil.CHI_SQUARE_BASE(),
                 "Chi-square metric should be greater than base metric");
 
-        assertTrue(imageHistogramUtil.intersectionMethod(hist1, hist2) < imageHistogramUtil.INTERSECTION_BASE(),
+        assertTrue(imageHistogramUtil.intersectionMethod(hist1, hist2) < intersectionBase,
                 "Intersection metric should be less than base metric");
 
         assertTrue(imageHistogramUtil.bhattacharyyaMethod(hist1, hist2) > imageHistogramUtil.BHATTACHARYYA_BASE(),

@@ -26,7 +26,6 @@ public class ImageHistogramUtil {
     private final byte CHI_SQUARE = 1;
     private final double CHI_SQUARE_BASE = 0;
     private final byte INTERSECTION = 2;
-    private final double INTERSECTION_BASE = 18.8947;
     private final byte BHATTACHARYYA = 3;
     private final byte BHATTACHARYYA_BASE = 0;
     private final String OBJECT_PREFIX = "object";
@@ -49,10 +48,6 @@ public class ImageHistogramUtil {
 
     public double CHI_SQUARE_BASE() {
         return this.CHI_SQUARE_BASE;
-    }
-
-    public double INTERSECTION_BASE() {
-        return this.INTERSECTION_BASE;
     }
 
     public byte BHATTACHARYYA_BASE() {
@@ -112,8 +107,7 @@ public class ImageHistogramUtil {
     }
 
     /**
-     * The less the result, the better the match
-     * {@link #INTERSECTION_BASE} is base value
+     * The result closer to metric, the better the match
      *
      * @param histImage1
      * @param histImage2
@@ -142,6 +136,10 @@ public class ImageHistogramUtil {
         result.setIntersection(intersectionMethod(histImage1, histImage2));
         result.setBhattacharyya(bhattacharyyaMethod(histImage1, histImage2));
         return result;
+    }
+
+    public double calculateIntersection(Mat histImage1) {
+        return intersectionMethod(histImage1, histImage1);
     }
 
     public final Mat loadMat(String name, Path location) {

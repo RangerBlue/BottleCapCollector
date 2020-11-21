@@ -37,7 +37,7 @@ public class BottleCapRepositoryTests {
     public void testAddCap() throws IOException {
         Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
         BottleCap cap = new BottleCap("Perła",imageHistogramUtil.convertMatToBottleCapMat(hist1),
-                "testLocation", "testID");
+                "testLocation", "testID", 1);
         long id = entityManager.persist(cap).getId();
         BottleCap cap1 = repository.findById(id).get();
         assertEquals(cap1.getCapName(), "Perła");

@@ -53,14 +53,18 @@ public class BottleCapController {
     public ResponseEntity<BottleCap> addBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) {
         logger.info("Entering addBottleCap method");
         BottleCap cap;
-        BottleCapMat matFile;
+        BottleCapMat bottleCapMatFile;
         String googleDriveID;
         String fileLocation;
+        Mat mat;
+        double intersectionValue = 0;
         try {
             googleDriveID = uploadFileToDrive(file);
             fileLocation = googleDriveService.getFileUrl(googleDriveID);
-            matFile = fileStorageService.calculateAndReturnMathObjectAsBottleCapMat(file);
-            cap = new BottleCap(capName, matFile, fileLocation, googleDriveID);
+            mat = fileStorageService.calculateAndReturnMathObject(file);
+            bottleCapMatFile = fileStorageService.convertMathObjectToBottleCapMat(mat);
+            intersectionValue = fileStorageService.calculateIntersectionMethod(mat);
+            cap = new BottleCap(capName, bottleCapMatFile, fileLocation, googleDriveID, intersectionValue);
             bottleCapService.addBottleCap(cap);
         } catch (IOException e) {
             throw new FileStorageException("Could not store file " + file.getName() + ". Please try again!", e);
@@ -121,7 +125,8 @@ public class BottleCapController {
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         Mat mat = fileStorageService.calculateAndReturnMathObject(file);
         BottleCapMat bottleCapMat = fileStorageService.convertMathObjectToBottleCapMat(mat);
-        BottleCap savedCap = new BottleCap(capName, bottleCapMat);
+        double intersectionValue = fileStorageService.calculateIntersectionMethod(mat);
+        BottleCap savedCap = new BottleCap(capName, bottleCapMat, intersectionValue);
         List<HistogramResult> histogramResults = fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
         SimilarityModel similarityModel = comparisonRangeService.calculateSimilarityModelForCap(histogramResults);
         ArrayList<BottleCap> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).collect(Collectors.toCollection(ArrayList::new));
