@@ -24,7 +24,7 @@ public class SimilarityModel {
     private int from90To100;
     private boolean duplicate;
 
-    private final int similarCapAmount = 6;
+    private final int similarCapAmount = 9;
 
 
     private Set<HistogramResult> similarCaps = new CapTreeSet(
