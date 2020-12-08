@@ -8,7 +8,6 @@ import com.km.BottleCapCollector.service.FileStorageService;
 import com.km.BottleCapCollector.util.BottleCapMat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -54,7 +53,7 @@ public class BottleCapControllerTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void addFileToDriveTest() throws Exception {
+    public void addFileToDriveWithAdminRoleSuccess() throws Exception {
         String fileName = "captest1.jpg";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
@@ -67,7 +66,7 @@ public class BottleCapControllerTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void addBottleCapTest() throws Exception {
+    public void addBottleCapWithAdminRoleSuccess() throws Exception {
         String fileName = "captest1.jpg";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
@@ -83,7 +82,7 @@ public class BottleCapControllerTests {
     }
 
     @Test
-    public void getBottleCaps() throws Exception {
+    public void getBottleCapsSuccess() throws Exception {
 
         BottleCap cap = new BottleCap("cap1");
         List<BottleCap> allCaps = Arrays.asList(cap);
@@ -96,7 +95,22 @@ public class BottleCapControllerTests {
     }
 
     @Test
-    public void getBottleCap() throws Exception {
+    public void getLinksSuccess() throws Exception {
+        BottleCap cap = new BottleCap("cap1");
+        cap.setFileLocation("link");
+        BottleCap cap1 = new BottleCap("cap2");
+        cap.setFileLocation("link1");
+        List<BottleCap> allCaps = Arrays.asList(cap, cap1);
+
+        given(service.getAllBottleCaps()).willReturn(allCaps);
+
+        mvc.perform(get("/links")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getBottleCapSuccess() throws Exception {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);
         this.mvc.perform(get("/caps/1"))
@@ -104,7 +118,7 @@ public class BottleCapControllerTests {
     }
 
     @Test
-    public void getBottleCapWrongID() throws Exception {
+    public void getBottleCapWrongIDException() throws Exception {
         given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
         this.mvc.perform(get("/caps/1"))
                 .andExpect(status().is(404));
@@ -112,7 +126,7 @@ public class BottleCapControllerTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void updateBottleCap() throws Exception {
+    public void updateBottleCapWithAdminRoleSuccess() throws Exception {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);
         this.mvc.perform(put("/caps/1")
@@ -122,7 +136,7 @@ public class BottleCapControllerTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void updateBottleCapWrongID() throws Exception {
+    public void updateBottleCapWrongIDException() throws Exception {
         given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
         this.mvc.perform(put("/caps/1")
                 .param("newName", "Beer"))
@@ -131,7 +145,7 @@ public class BottleCapControllerTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void deleteBottleCap() throws Exception {
+    public void deleteBottleCapWithAdminRoleSuccess() throws Exception {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);
         given(googleDriveService.deleteFile(anyString())).willReturn("");
@@ -142,7 +156,7 @@ public class BottleCapControllerTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void deleteBottleCapNotFound() throws Exception {
+    public void deleteBottleCapNotFoundWithAdminRoleException() throws Exception {
         given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
         this.mvc.perform(delete("/caps/1"))
                 .andExpect(status().is(404));
@@ -150,7 +164,7 @@ public class BottleCapControllerTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void deleteBottleCapWrongDriveID() throws Exception {
+    public void deleteBottleCapWrongDriveIDWithAdminRoleNotFound() throws Exception {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);
         given(googleDriveService.deleteFile(any())).willThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
@@ -160,7 +174,7 @@ public class BottleCapControllerTests {
 
 
     @Test
-    public void getComparisonRangeValues() throws Exception {
+    public void getComparisonRangeValuesSuccess() throws Exception {
         this.mvc.perform(get("/comparisonRangeValues"))
                 .andExpect(status().is(200));
     }

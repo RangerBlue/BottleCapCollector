@@ -10,6 +10,7 @@ import com.km.BottleCapCollector.service.ComparisonRangeService;
 import com.km.BottleCapCollector.service.FileStorageService;
 import com.km.BottleCapCollector.util.BottleCapMat;
 import com.km.BottleCapCollector.util.HistogramResult;
+import com.km.BottleCapCollector.payload.PictureWrapper;
 import com.km.BottleCapCollector.util.SimilarityModel;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.LogManager;
@@ -50,7 +51,8 @@ public class BottleCapController {
     private GoogleDriveService googleDriveService;
 
     @PostMapping("/caps")
-    public ResponseEntity<BottleCap> addBottleCap(@RequestParam("name") String capName, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<BottleCap> addBottleCap(@RequestParam("name") String capName,
+                                                  @RequestParam("file") MultipartFile file) {
         logger.info("Entering addBottleCap method");
         BottleCap cap;
         BottleCapMat bottleCapMatFile;
@@ -120,7 +122,8 @@ public class BottleCapController {
     }
 
     @PostMapping("/validateCap")
-    public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, MultipartFile file) throws IOException {
+    public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, MultipartFile file)
+            throws IOException {
         logger.info("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         Mat mat = fileStorageService.calculateAndReturnMathObject(file);
@@ -129,9 +132,12 @@ public class BottleCapController {
         BottleCap savedCap = new BottleCap(capName, bottleCapMat, intersectionValue);
         List<HistogramResult> histogramResults = fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
         SimilarityModel similarityModel = comparisonRangeService.calculateSimilarityModelForCap(histogramResults);
-        ArrayList<BottleCap> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<Long> similarCapsIDs = similarCaps.stream().map(BottleCap::getId).collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<String> similarCapsURLs = similarCaps.stream().map(BottleCap::getFileLocation).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<BottleCap> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).
+                collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Long> similarCapsIDs = similarCaps.stream().map(BottleCap::getId).
+                collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<String> similarCapsURLs = similarCaps.stream().map(BottleCap::getFileLocation).
+                collect(Collectors.toCollection(ArrayList::new));
         return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs, similarCapsURLs);
     }
 
@@ -140,6 +146,14 @@ public class BottleCapController {
     public List<BottleCap> getBottleCaps() {
         logger.info("Entering getBottleCaps method");
         return bottleCapService.getAllBottleCaps();
+    }
+
+    @GetMapping("/links")
+    public ArrayList<PictureWrapper> getBottleCapsLinks() {
+        logger.info("Entering getBottleCapsLinks method");
+        return bottleCapService.getAllBottleCaps().stream().map(bottleCap ->
+                new PictureWrapper(bottleCap.getId(), bottleCap.getFileLocation()))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @PostMapping("/admin/uploadFileToDrive")

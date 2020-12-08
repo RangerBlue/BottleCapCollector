@@ -240,7 +240,7 @@ public class ComparisonRangeServiceTests {
         assertEquals(1, model.getFrom70To80());
         assertEquals(0, model.getFrom80To90());
         assertEquals(0, model.getFrom90To100());
-        assertEquals(6, model.getSimilarCaps().size());
+        assertEquals(7, model.getSimilarCaps().size());
         assertFalse(model.isDuplicate());
     }
 
