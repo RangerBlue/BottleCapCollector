@@ -51,14 +51,15 @@ public class BottleCapController {
     private GoogleDriveService googleDriveService;
 
     @PostMapping("/caps")
-    public ResponseEntity<BottleCap> addBottleCap(@RequestParam("name") String capName,
-                                                  @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Long> addBottleCap(@RequestParam("name") String capName,
+                                             @RequestParam("file") MultipartFile file) {
         logger.info("Entering addBottleCap method");
         BottleCap cap;
         BottleCapMat bottleCapMatFile;
         String googleDriveID;
         String fileLocation;
         Mat mat;
+        long addedID = -1;
         double intersectionValue = 0;
         try {
             googleDriveID = uploadFileToDrive(file);
@@ -67,11 +68,11 @@ public class BottleCapController {
             bottleCapMatFile = fileStorageService.convertMathObjectToBottleCapMat(mat);
             intersectionValue = fileStorageService.calculateIntersectionMethod(mat);
             cap = new BottleCap(capName, bottleCapMatFile, fileLocation, googleDriveID, intersectionValue);
-            bottleCapService.addBottleCap(cap);
+            addedID = bottleCapService.addBottleCap(cap).getId();
         } catch (IOException e) {
-            throw new FileStorageException("Could not store file " + file.getName() + ". Please try again!", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(addedID);
         }
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(addedID);
     }
 
 

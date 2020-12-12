@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.HttpClientErrorException;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -77,11 +78,32 @@ public class BottleCapControllerTests {
         given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
         given(fileStorageService.convertMathObjectToBottleCapMat(any())).
                 willReturn(new BottleCapMat("43drgdsgre".getBytes(), 50, 60));
+        given(service.addBottleCap(any())).willReturn(new BottleCap());
+
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
                 .file(file)
                 .param("name", "Beer"))
-                .andExpect(status().is(201));
+                .andExpect(status().is(201))
+                .andExpect(jsonPath("$", is(0)));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void addBottleCapWithAdminRoleThrowsException() throws Exception {
+        String fileName = "captest1.jpg";
+        MockMultipartFile file = new MockMultipartFile("file", fileName,
+                "text/plain", "test data".getBytes());
+        given(fileStorageService.calculateIntersectionMethod(any())).willReturn(123d);
+        given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
+        given(fileStorageService.convertMathObjectToBottleCapMat(any())).
+                willThrow(IOException.class);
+
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
+                .file(file)
+                .param("name", "Beer"))
+                .andExpect(status().is(400))
+                .andExpect(jsonPath("$", is(-1)));
     }
 
     @Test
