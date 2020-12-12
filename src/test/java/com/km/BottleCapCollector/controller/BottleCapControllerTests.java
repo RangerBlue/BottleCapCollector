@@ -6,6 +6,7 @@ import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
 import com.km.BottleCapCollector.service.FileStorageService;
 import com.km.BottleCapCollector.util.BottleCapMat;
+import com.km.BottleCapCollector.util.SimilarityModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,11 @@ import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -79,6 +82,27 @@ public class BottleCapControllerTests {
                 .file(file)
                 .param("name", "Beer"))
                 .andExpect(status().is(201));
+    }
+
+    @Test
+    public void testValidateCap() throws Exception {
+        String fileName = "captest1.jpg";
+        MockMultipartFile file = new MockMultipartFile("file", fileName,
+                "text/plain", "test data".getBytes());
+        given(fileStorageService.calculateIntersectionMethod(any())).willReturn(123d);
+        given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
+        given(fileStorageService.convertMathObjectToBottleCapMat(any())).
+                willReturn(new BottleCapMat("43drgdsgre".getBytes(), 50, 60));
+        given(comparisonRangeService.calculateSimilarityModelForCap(any())).willReturn(new SimilarityModel());
+
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/validateCap")
+                .file(file)
+                .param("name", "Beer"))
+                .andExpect(status().is(200))
+                .andExpect(jsonPath("$['similarCapsIDs']", hasSize(0)))
+                .andExpect(jsonPath("$['similarCapsURLs']", hasSize(0)))
+                .andExpect(jsonPath("$['similarityDistribution']", hasSize(10)))
+                .andExpect(jsonPath("$['duplicate']", is(false)));
     }
 
     @Test

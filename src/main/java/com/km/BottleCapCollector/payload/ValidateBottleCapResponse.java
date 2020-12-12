@@ -6,11 +6,15 @@ public class ValidateBottleCapResponse {
     boolean isDuplicate;
     ArrayList<Long> similarCapsIDs;
     ArrayList<String> similarCapsURLs;
+    int[] similarityDistribution;
 
-    public ValidateBottleCapResponse(boolean isDuplicate, ArrayList<Long> similarCapsIDs, ArrayList<String> similarCapsURLs) {
+
+    public ValidateBottleCapResponse(boolean isDuplicate, ArrayList<Long> similarCapsIDs,
+                                     ArrayList<String> similarCapsURLs, int[] similarityDistribution) {
         this.isDuplicate = isDuplicate;
         this.similarCapsIDs = similarCapsIDs;
         this.similarCapsURLs = similarCapsURLs;
+        this.similarityDistribution = similarityDistribution;
     }
 
     public boolean isDuplicate() {
@@ -35,5 +39,13 @@ public class ValidateBottleCapResponse {
 
     public void setSimilarCapsURLs(ArrayList<String> similarCapsURLs) {
         this.similarCapsURLs = similarCapsURLs;
+    }
+
+    public int[] getSimilarityDistribution() {
+        return similarityDistribution;
+    }
+
+    public void setSimilarityDistribution(int[] similarityDistribution) {
+        this.similarityDistribution = similarityDistribution;
     }
 }
