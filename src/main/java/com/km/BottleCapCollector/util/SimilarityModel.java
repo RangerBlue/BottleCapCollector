@@ -171,6 +171,21 @@ public class SimilarityModel {
         return duplicate;
     }
 
+    public int[] getSimilarityDistribution(){
+        int[] distribution = new int[10];
+        distribution[0] = getFrom00To10();
+        distribution[0] = getFrom10To20();
+        distribution[0] = getFrom20To30();
+        distribution[3] = getFrom30To40();
+        distribution[4] = getFrom40To50();
+        distribution[5] = getFrom50To60();
+        distribution[6] = getFrom60To70();
+        distribution[7] = getFrom70To80();
+        distribution[8] = getFrom80To90();
+        distribution[9] = getFrom90To100();
+        return distribution;
+    }
+
     public void setDuplicate(boolean duplicate) {
         this.duplicate = duplicate;
     }

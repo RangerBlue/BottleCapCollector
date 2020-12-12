@@ -138,7 +138,8 @@ public class BottleCapController {
                 collect(Collectors.toCollection(ArrayList::new));
         ArrayList<String> similarCapsURLs = similarCaps.stream().map(BottleCap::getFileLocation).
                 collect(Collectors.toCollection(ArrayList::new));
-        return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs, similarCapsURLs);
+        return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs, similarCapsURLs,
+                similarityModel.getSimilarityDistribution());
     }
 
 
