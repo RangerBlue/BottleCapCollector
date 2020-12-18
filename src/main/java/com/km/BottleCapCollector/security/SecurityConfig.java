@@ -28,7 +28,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .headers().frameOptions().sameOrigin()
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/caps/").hasRole("ADMIN")
+                .mvcMatchers(HttpMethod.POST, "/caps").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/caps/*").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/caps/*").hasRole("ADMIN")
                 .antMatchers("/admin/*").hasRole("ADMIN")

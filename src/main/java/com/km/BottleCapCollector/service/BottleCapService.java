@@ -45,6 +45,8 @@ public class BottleCapService {
         }
     }
 
+    @Caching(evict =
+    @CacheEvict(value = "caps", allEntries = true))
     public void deleteBottleCapWithId(Long id) {
         repository.deleteById(id);
     }
