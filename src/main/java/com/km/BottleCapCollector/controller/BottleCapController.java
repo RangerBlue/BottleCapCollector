@@ -132,15 +132,34 @@ public class BottleCapController {
         double intersectionValue = fileStorageService.calculateIntersectionMethod(mat);
         BottleCap savedCap = new BottleCap(capName, bottleCapMat, intersectionValue);
         List<HistogramResult> histogramResults = fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
-        SimilarityModel similarityModel = comparisonRangeService.calculateSimilarityModelForCap(histogramResults);
+        SimilarityModel similarityModel = comparisonRangeService.calculateSimilarityModelForCap(histogramResults,
+                SimilarityModel.similarCapAmount);
         ArrayList<BottleCap> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).
                 collect(Collectors.toCollection(ArrayList::new));
+        similarCaps.stream().forEach(bottleCap -> System.out.println(bottleCap.getId()));
         ArrayList<Long> similarCapsIDs = similarCaps.stream().map(BottleCap::getId).
                 collect(Collectors.toCollection(ArrayList::new));
         ArrayList<String> similarCapsURLs = similarCaps.stream().map(BottleCap::getFileLocation).
                 collect(Collectors.toCollection(ArrayList::new));
         return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs, similarCapsURLs,
                 similarityModel.getSimilarityDistribution());
+    }
+
+    @PostMapping("/whatCapAreYou")
+    public ResponseEntity<BottleCap> whatCapAreYou(@RequestParam("name") String capName, MultipartFile file)
+            throws IOException {
+        logger.info("Entering whatCapAreYou method");
+        List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
+        Mat mat = fileStorageService.calculateAndReturnMathObject(file);
+        BottleCapMat bottleCapMat = fileStorageService.convertMathObjectToBottleCapMat(mat);
+        double intersectionValue = fileStorageService.calculateIntersectionMethod(mat);
+        BottleCap savedCap = new BottleCap(capName, bottleCapMat, intersectionValue);
+        List<HistogramResult> histogramResults = fileStorageService.calculateOneAgainstAllCaps(savedCap, mat, caps);
+        SimilarityModel similarityModel = comparisonRangeService.calculateSimilarityModelForCap(histogramResults,
+                SimilarityModel.similarCapAmountOne);
+        BottleCap cap = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).findFirst().
+                orElse(new BottleCap());
+        return ResponseEntity.ok().body(cap);
     }
 
 
