@@ -89,7 +89,7 @@ public class ComparisonRangeService {
         }
     }
 
-    public SimilarityModel calculateSimilarityModelForCap(List<HistogramResult> histogramCalculation) {
+    public SimilarityModel calculateSimilarityModelForCap(List<HistogramResult> histogramCalculation, int capAmount) {
         logger.info("Calculating similarity in calculateSimilarityModelForCap() method");
         List<ComparisonRange> range = getAll();
         SimilarityModel model = new SimilarityModel();
@@ -102,7 +102,7 @@ public class ComparisonRangeService {
                         model.setDuplicate(true);
                     }
                 });
-        Set<HistogramResult> top = model.calculateTopSimilar();
+        Set<HistogramResult> top = model.calculateTopSimilar(capAmount);
         model.setSimilarCaps(top);
         logger.info("Calculated similarity for cap ID : " + histogramCalculation.get(0).getFirstCap().getId() +
                 " Duplicate " + model.isDuplicate() +

@@ -166,7 +166,7 @@ public class ComparisonRangeServiceTests {
     @Test()
     public void testCalculateSimilarityModelForCap() {
         List<HistogramResult> histogramResults = prepareData();
-        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults);
+        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults, SimilarityModel.similarCapAmount);
         assertEquals(0, model.getFrom00To10());
         assertEquals(0, model.getFrom10To20());
         assertEquals(0, model.getFrom20To30());
@@ -193,7 +193,7 @@ public class ComparisonRangeServiceTests {
         histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());
         histogramResult.setSecondCap(new BottleCap());
         histogramResults.add(histogramResult);
-        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults);
+        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults, SimilarityModel.similarCapAmount);
 
         assertEquals(0, model.getFrom00To10());
         assertEquals(0, model.getFrom10To20());
@@ -228,7 +228,7 @@ public class ComparisonRangeServiceTests {
         histogramResult2.getSecondCap().setIntersectionValue(13);
         histogramResults.add(histogramResult2);
 
-        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults);
+        SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults, SimilarityModel.similarCapAmount);
 
         assertEquals(0, model.getFrom00To10());
         assertEquals(0, model.getFrom10To20());

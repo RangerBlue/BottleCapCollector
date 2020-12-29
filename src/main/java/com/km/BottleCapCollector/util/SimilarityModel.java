@@ -24,7 +24,8 @@ public class SimilarityModel {
     private int from90To100;
     private boolean duplicate;
 
-    private final int similarCapAmount = 9;
+    public static final int similarCapAmount = 9;
+    public static final int similarCapAmountOne = 1;
 
 
     private Set<HistogramResult> similarCaps = new CapTreeSet(
@@ -194,7 +195,7 @@ public class SimilarityModel {
         similarCaps.add(result);
     }
 
-    public Set<HistogramResult> calculateTopSimilar() {
+    public Set<HistogramResult> calculateTopSimilar(int similarCapAmount) {
         logger.info("Entering calculateTopSimilar() method");
         synchronized (similarCaps) {
             if (isDuplicate()) {

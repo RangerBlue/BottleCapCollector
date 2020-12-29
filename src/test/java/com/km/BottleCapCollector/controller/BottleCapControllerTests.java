@@ -115,7 +115,8 @@ public class BottleCapControllerTests {
         given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
         given(fileStorageService.convertMathObjectToBottleCapMat(any())).
                 willReturn(new BottleCapMat("43drgdsgre".getBytes(), 50, 60));
-        given(comparisonRangeService.calculateSimilarityModelForCap(any())).willReturn(new SimilarityModel());
+        given(comparisonRangeService.calculateSimilarityModelForCap(any(), anyInt()))
+                .willReturn(new SimilarityModel());
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/validateCap")
                 .file(file)
@@ -125,6 +126,25 @@ public class BottleCapControllerTests {
                 .andExpect(jsonPath("$['similarCapsURLs']", hasSize(0)))
                 .andExpect(jsonPath("$['similarityDistribution']", hasSize(10)))
                 .andExpect(jsonPath("$['duplicate']", is(false)));
+    }
+
+    @Test
+    public void testWhatCapYouAre() throws Exception {
+        String fileName = "captest1.jpg";
+        MockMultipartFile file = new MockMultipartFile("file", fileName,
+                "text/plain", "test data".getBytes());
+        given(fileStorageService.calculateIntersectionMethod(any())).willReturn(123d);
+        given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
+        given(fileStorageService.convertMathObjectToBottleCapMat(any())).
+                willReturn(new BottleCapMat("43drgdsgre".getBytes(), 50, 60));
+        given(comparisonRangeService.calculateSimilarityModelForCap(any(), anyInt()))
+                .willReturn(new SimilarityModel());
+
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/whatCapAreYou")
+                .file(file)
+                .param("name", "Beer"))
+                .andExpect(status().is(200))
+                .andExpect(jsonPath("$['id']", is(0)));
     }
 
     @Test
