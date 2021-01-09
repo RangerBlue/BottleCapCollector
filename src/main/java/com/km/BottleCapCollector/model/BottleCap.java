@@ -17,6 +17,7 @@ public class BottleCap {
     private String fileLocation;
     private String googleDriveID;
     private String capName;
+    private String description;
     private final LocalDateTime creationDate;
     @Lob
     private byte[] data;
@@ -30,7 +31,7 @@ public class BottleCap {
         this.creationDate = LocalDateTime.now();
     }
 
-    public BottleCap(String capName, BottleCapMat mat, String fileLocation, String googleDriveID,
+    public BottleCap(String capName, String description, BottleCapMat mat, String fileLocation, String googleDriveID,
                      double intersectionValue) {
         this.capName = capName;
         this.data = mat.getMatArray();
@@ -41,6 +42,7 @@ public class BottleCap {
         this.creationDate = LocalDateTime.now();
         this.lastPreviewLinkUpdate = LocalDateTime.now();
         this.intersectionValue = intersectionValue;
+        this.description = description;
     }
 
     public BottleCap(String capName, BottleCapMat mat, double intersectionValue) {
@@ -128,6 +130,14 @@ public class BottleCap {
 
     public void setIntersectionValue(double intersectionValue) {
         this.intersectionValue = intersectionValue;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

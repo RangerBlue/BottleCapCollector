@@ -1,9 +1,9 @@
 package com.km.BottleCapCollector.controller;
 
-import com.km.BottleCapCollector.exception.FileStorageException;
 import com.km.BottleCapCollector.google.GoogleDriveService;
 import com.km.BottleCapCollector.google.GoogleDriveUploadItem;
 import com.km.BottleCapCollector.model.*;
+import com.km.BottleCapCollector.payload.CapWrapper;
 import com.km.BottleCapCollector.payload.ValidateBottleCapResponse;
 import com.km.BottleCapCollector.service.BottleCapService;
 import com.km.BottleCapCollector.service.ComparisonRangeService;
@@ -52,6 +52,7 @@ public class BottleCapController {
 
     @PostMapping("/caps")
     public ResponseEntity<Long> addBottleCap(@RequestParam("name") String capName,
+                                             @RequestParam("desc") String description,
                                              @RequestParam("file") MultipartFile file) {
         logger.info("Entering addBottleCap method");
         BottleCap cap;
@@ -67,7 +68,7 @@ public class BottleCapController {
             mat = fileStorageService.calculateAndReturnMathObject(file);
             bottleCapMatFile = fileStorageService.convertMathObjectToBottleCapMat(mat);
             intersectionValue = fileStorageService.calculateIntersectionMethod(mat);
-            cap = new BottleCap(capName, bottleCapMatFile, fileLocation, googleDriveID, intersectionValue);
+            cap = new BottleCap(capName, description, bottleCapMatFile, fileLocation, googleDriveID, intersectionValue);
             addedID = bottleCapService.addBottleCap(cap).getId();
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(addedID);
@@ -108,7 +109,8 @@ public class BottleCapController {
     }
 
     @PutMapping("/caps/{id}")
-    public ResponseEntity<BottleCap> updateCap(@PathVariable Long id, @RequestParam("newName") String newName) {
+    public ResponseEntity<BottleCap> updateCap(@PathVariable Long id, @RequestParam("newName") String newName,
+                                               @RequestParam("newDesc") String newDesc) {
         logger.info("Entering updateCap method");
         BottleCap capToUpdate;
         try {
@@ -116,8 +118,10 @@ public class BottleCapController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        logger.info("Updating cap with name: " + capToUpdate.getCapName() + " to " + newName);
+        logger.info("Updating cap with name: " + capToUpdate.getCapName() + " and description " +
+                capToUpdate.getDescription() + " to " + newName + " and " + newDesc);
         capToUpdate.setCapName(newName);
+        capToUpdate.setDescription(newDesc);
         bottleCapService.addBottleCap(capToUpdate);
         return ResponseEntity.ok().body(capToUpdate);
     }
@@ -177,6 +181,15 @@ public class BottleCapController {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    @GetMapping("/catalog")
+    public ArrayList<CapWrapper> getCapCatalog() {
+        logger.info("Entering getCapCatalog method");
+        return bottleCapService.getAllBottleCaps().stream().map(bottleCap ->
+                new CapWrapper(bottleCap.getId(), bottleCap.getFileLocation(), bottleCap.getCapName(),
+                        bottleCap.getDescription()))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
     @PostMapping("/admin/uploadFileToDrive")
     public String uploadFileToDrive(@RequestParam("file") MultipartFile multipartFile) throws IOException {
         String contentType = multipartFile.getContentType();
@@ -232,7 +245,7 @@ public class BottleCapController {
                 fileInputStream = new FileInputStream(file);
                 MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(),
                         ContentType.IMAGE_JPEG.toString(), fileInputStream);
-                addBottleCap(file.getName(), multipartFile);
+                addBottleCap(file.getName(), "This cap does not have description yet", multipartFile);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {

@@ -83,7 +83,8 @@ public class BottleCapControllerTests {
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
                 .file(file)
-                .param("name", "Beer"))
+                .param("name", "Beer")
+                .param("desc", "Good bear!"))
                 .andExpect(status().is(201))
                 .andExpect(jsonPath("$", is(0)));
     }
@@ -101,7 +102,8 @@ public class BottleCapControllerTests {
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
                 .file(file)
-                .param("name", "Beer"))
+                .param("name", "Beer")
+                .param("desc", "Good bear!"))
                 .andExpect(status().is(400))
                 .andExpect(jsonPath("$", is(-1)));
     }
@@ -151,13 +153,35 @@ public class BottleCapControllerTests {
     public void getBottleCapsSuccess() throws Exception {
 
         BottleCap cap = new BottleCap("cap1");
-        List<BottleCap> allCaps = Arrays.asList(cap);
-
+        BottleCap cap1 = new BottleCap("cap2");
+        List<BottleCap> allCaps = Arrays.asList(cap, cap1);
         given(service.getAllBottleCaps()).willReturn(allCaps);
 
         mvc.perform(get("/caps")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].fileLocation").isEmpty())
+                .andExpect(jsonPath("$[0].googleDriveID").isEmpty())
+                .andExpect(jsonPath("$[0].capName", is("cap1")))
+                .andExpect(jsonPath("$[0].data").isEmpty())
+                .andExpect(jsonPath("$[0].creationDate").isNotEmpty())
+                .andExpect(jsonPath("$[0].cols", is(0)))
+                .andExpect(jsonPath("$[0].rows", is(0)))
+                .andExpect(jsonPath("$[0].lastPreviewLinkUpdate").isEmpty())
+                .andExpect(jsonPath("$[0].intersectionValue", is(0d)))
+                .andExpect(jsonPath("$[0].description").isEmpty())
+                .andExpect(jsonPath("$[1].fileLocation").isEmpty())
+                .andExpect(jsonPath("$[1].googleDriveID").isEmpty())
+                .andExpect(jsonPath("$[1].capName", is("cap2")))
+                .andExpect(jsonPath("$[1].data").isEmpty())
+                .andExpect(jsonPath("$[1].creationDate").isNotEmpty())
+                .andExpect(jsonPath("$[1].cols", is(0)))
+                .andExpect(jsonPath("$[1].rows", is(0)))
+                .andExpect(jsonPath("$[1].lastPreviewLinkUpdate").isEmpty())
+                .andExpect(jsonPath("$[1].intersectionValue", is(0d)))
+                .andExpect(jsonPath("$[1].description").isEmpty());
+
     }
 
     @Test
@@ -165,14 +189,45 @@ public class BottleCapControllerTests {
         BottleCap cap = new BottleCap("cap1");
         cap.setFileLocation("link");
         BottleCap cap1 = new BottleCap("cap2");
-        cap.setFileLocation("link1");
+        cap1.setFileLocation("link1");
         List<BottleCap> allCaps = Arrays.asList(cap, cap1);
 
         given(service.getAllBottleCaps()).willReturn(allCaps);
 
         mvc.perform(get("/links")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(0)))
+                .andExpect(jsonPath("$[0].url", is("link")))
+                .andExpect(jsonPath("$[1].id", is(0)))
+                .andExpect(jsonPath("$[1].url", is("link1")));
+    }
+
+    @Test
+    public void getCatalogSuccess() throws Exception {
+        BottleCap cap = new BottleCap("cap1");
+        cap.setFileLocation("link");
+        cap.setDescription("Good bear!");
+        BottleCap cap1 = new BottleCap("cap2");
+        cap1.setFileLocation("link1");
+        cap1.setDescription("The best bear!!");
+        List<BottleCap> allCaps = Arrays.asList(cap, cap1);
+
+        given(service.getAllBottleCaps()).willReturn(allCaps);
+
+        mvc.perform(get("/catalog")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(0)))
+                .andExpect(jsonPath("$[0].url", is("link")))
+                .andExpect(jsonPath("$[0].name", is("cap1")))
+                .andExpect(jsonPath("$[0].description", is("Good bear!")))
+                .andExpect(jsonPath("$[1].id", is(0)))
+                .andExpect(jsonPath("$[1].url", is("link1")))
+                .andExpect(jsonPath("$[1].name", is("cap2")))
+                .andExpect(jsonPath("$[1].description", is("The best bear!!")));
     }
 
     @Test
@@ -180,7 +235,17 @@ public class BottleCapControllerTests {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);
         this.mvc.perform(get("/caps/1"))
-                .andExpect(status().is(200));
+                .andExpect(status().is(200))
+                .andExpect(jsonPath("$['fileLocation']").isEmpty())
+                .andExpect(jsonPath("$['googleDriveID']").isEmpty())
+                .andExpect(jsonPath("$['capName']", is("cap1")))
+                .andExpect(jsonPath("$['data']").isEmpty())
+                .andExpect(jsonPath("$['creationDate']").isNotEmpty())
+                .andExpect(jsonPath("$['cols']", is(0)))
+                .andExpect(jsonPath("$['rows']", is(0)))
+                .andExpect(jsonPath("$['lastPreviewLinkUpdate']").isEmpty())
+                .andExpect(jsonPath("$['intersectionValue']", is(0d)))
+                .andExpect(jsonPath("$['description']").isEmpty());
     }
 
     @Test
@@ -196,7 +261,8 @@ public class BottleCapControllerTests {
         BottleCap cap = new BottleCap("cap1");
         given(service.getBottleCap(anyLong())).willReturn(cap);
         this.mvc.perform(put("/caps/1")
-                .param("newName", "Beer"))
+                .param("newName", "Beer")
+                .param("newDesc", "Good beer"))
                 .andExpect(status().is(200));
     }
 
@@ -205,7 +271,8 @@ public class BottleCapControllerTests {
     public void updateBottleCapWrongIDException() throws Exception {
         given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
         this.mvc.perform(put("/caps/1")
-                .param("newName", "Beer"))
+                .param("newName", "Beer")
+                .param("newDesc", "Good beer"))
                 .andExpect(status().is(404));
     }
 
