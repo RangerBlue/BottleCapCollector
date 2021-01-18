@@ -12,7 +12,7 @@
 	<artifactId>BottleCapCollector</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>BottleCapCollector</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Backend project for Bottle Cap Collecror system</description>
 
 	<properties>
 		<java.version>1.8</java.version>
