@@ -140,7 +140,6 @@ public class BottleCapController {
                 SimilarityModel.similarCapAmount);
         ArrayList<BottleCap> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).
                 collect(Collectors.toCollection(ArrayList::new));
-        similarCaps.stream().forEach(bottleCap -> System.out.println(bottleCap.getId()));
         ArrayList<Long> similarCapsIDs = similarCaps.stream().map(BottleCap::getId).
                 collect(Collectors.toCollection(ArrayList::new));
         ArrayList<String> similarCapsURLs = similarCaps.stream().map(BottleCap::getFileLocation).
