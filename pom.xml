@@ -133,9 +133,6 @@
 				<groupId>org.liquibase</groupId>
 				<artifactId>liquibase-maven-plugin</artifactId>
 				<version>4.3.1</version>
-				<configuration>
-					<propertyFile>src/main/resources/application-default.properties</propertyFile>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
