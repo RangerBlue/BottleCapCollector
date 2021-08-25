@@ -1,15 +1,14 @@
 package com.km.bottlecapcollector.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
+@Slf4j
 public class CustomApplicationListener implements ApplicationListener<ApplicationEvent> {
-    private static final Logger logger = LoggerFactory.getLogger(CustomApplicationListener.class);
 
     @Override
     public void onApplicationEvent(ApplicationEvent applicationEvent) {
-        logger.info("Event ::" + applicationEvent.toString());
+        log.info("Event ::" + applicationEvent.toString());
     }
 }

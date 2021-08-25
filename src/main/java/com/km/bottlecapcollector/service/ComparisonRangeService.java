@@ -7,8 +7,7 @@ import com.km.bottlecapcollector.repository.ComparisonRangeRepository;
 import com.km.bottlecapcollector.util.ComparisonMethod;
 import com.km.bottlecapcollector.util.ImageHistogramUtil;
 import com.km.bottlecapcollector.util.SimilarityModel;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +15,8 @@ import java.util.*;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class ComparisonRangeService {
-
-    private static final Logger logger = LogManager.getLogger(ComparisonRangeService.class);
 
     @Autowired
     private ComparisonRangeRepository repository;
@@ -35,14 +33,14 @@ public class ComparisonRangeService {
     }
 
     public List<ComparisonRange> calculateMinMaxValuesOfAllComparisonMethods(List<HistogramResult> list) throws IllegalArgumentException {
-        logger.info("Calculating min and max values in calculateMinMaxValuesOfAllComparisonMethods() method");
+        log.info("Calculating min and max values in calculateMinMaxValuesOfAllComparisonMethods() method");
         List<ComparisonRange> result = new ArrayList<>();
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.CORRELATION, HistogramResult::getCorrelation));
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.CHI_SQUARE, HistogramResult::getChisquare));
         result.add(calculateMinMaxValueOfMethod(list, ComparisonMethod.BHATTACHARYYA, HistogramResult::getBhattacharyya));
-        logger.info("Calculated values for methods : CORRELATION - MIN:" + result.get(0).getMinValue() + " MAX:" + result.get(0).getMaxValue());
-        logger.info("Calculated values for methods : CHI_SQUARE - MIN:" + result.get(1).getMinValue() + " MAX:" + result.get(1).getMaxValue());
-        logger.info("Calculated values for methods : BHATTACHARYYA - MIN:" + result.get(2).getMinValue() + " MAX:" + result.get(2).getMaxValue());
+        log.info("Calculated values for methods : CORRELATION - MIN:" + result.get(0).getMinValue() + " MAX:" + result.get(0).getMaxValue());
+        log.info("Calculated values for methods : CHI_SQUARE - MIN:" + result.get(1).getMinValue() + " MAX:" + result.get(1).getMaxValue());
+        log.info("Calculated values for methods : BHATTACHARYYA - MIN:" + result.get(2).getMinValue() + " MAX:" + result.get(2).getMaxValue());
 
         return result;
     }
@@ -53,20 +51,20 @@ public class ComparisonRangeService {
             OptionalDouble maxValue = list.stream().mapToDouble(v -> toMethod.apply(v)).max();
             Optional<ComparisonRange> existingValue = Optional.ofNullable(getByComparisonMethod(method));
             if (existingValue.isPresent()) {
-                logger.info("There are comparison ranges in table for method " + method.name());
+                log.info("There are comparison ranges in table for method " + method.name());
                 ComparisonRange rangeToUpdate = existingValue.get();
                 if (existingValue.get().getMinValue() > minValue.getAsDouble()) {
                     rangeToUpdate.setMinValue(minValue.getAsDouble());
-                    logger.info("Updating new minimum for " + method.name() + " with value " + minValue.getAsDouble());
+                    log.info("Updating new minimum for " + method.name() + " with value " + minValue.getAsDouble());
                 }
                 if (existingValue.get().getMaxValue() < maxValue.getAsDouble()) {
                     rangeToUpdate.setMaxValue(maxValue.getAsDouble());
-                    logger.info("Updating new maximum for " + method.name() + " with value " + maxValue.getAsDouble());
+                    log.info("Updating new maximum for " + method.name() + " with value " + maxValue.getAsDouble());
                 }
                 repository.save(rangeToUpdate);
                 return rangeToUpdate;
             } else {
-                logger.info("Comparison ranges table is empty, adding new values");
+                log.info("Comparison ranges table is empty, adding new values");
                 ComparisonRange range = new ComparisonRange(method, minValue.getAsDouble(), maxValue.getAsDouble());
                 repository.save(range);
                 return range;
@@ -89,7 +87,7 @@ public class ComparisonRangeService {
     }
 
     public SimilarityModel calculateSimilarityModelForCap(List<HistogramResult> histogramCalculation, int capAmount) {
-        logger.info("Calculating similarity in calculateSimilarityModelForCap() method");
+        log.info("Calculating similarity in calculateSimilarityModelForCap() method");
         List<ComparisonRange> range = getAll();
         SimilarityModel model = new SimilarityModel();
 
@@ -103,7 +101,7 @@ public class ComparisonRangeService {
                 });
         Set<HistogramResult> top = model.calculateTopSimilar(capAmount);
         model.setSimilarCaps(top);
-        logger.info("Calculated similarity for cap ID : " + histogramCalculation.get(0).getFirstCap().getId() +
+        log.info("Calculated similarity for cap ID : " + histogramCalculation.get(0).getFirstCap().getId() +
                 " Duplicate " + model.isDuplicate() +
                 " | 0-10% " + model.getFrom00To10() +
                 "| 10-20% " + model.getFrom10To20() +
@@ -117,9 +115,9 @@ public class ComparisonRangeService {
         );
         if (!model.isDuplicate()) {
             Set<HistogramResult> similarCaps = model.getSimilarCaps();
-            logger.info("Similar caps:");
+            log.info("Similar caps:");
             similarCaps.forEach(histogramResult -> {
-                logger.info("ID " + histogramResult.getSecondCap().getId() + ", name " + histogramResult.getSecondCap().getCapName());
+                log.info("ID " + histogramResult.getSecondCap().getId() + ", name " + histogramResult.getSecondCap().getCapName());
             });
         }
         return model;
@@ -141,7 +139,7 @@ public class ComparisonRangeService {
         if (value < imageHistogramUtil.CORRELATION_BASE() && value > 0) {
             return (value - min) / (max - min);
         } else {
-            logger.info("DuplicateCapException in calculateSimilarityForCorrelation method, range min: " + min +
+            log.info("DuplicateCapException in calculateSimilarityForCorrelation method, range min: " + min +
                     " range max: " + max + " value: " + value + " in cap " + histogramCalculation.getFirstCap().getId() +
                     " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
@@ -156,7 +154,7 @@ public class ComparisonRangeService {
         if (value > imageHistogramUtil.CHI_SQUARE_BASE()) {
             return (max - value) / (max - min);
         } else {
-            logger.info("DuplicateCapException in calculateSimilarityForChisquare method, range min: " + min +
+            log.info("DuplicateCapException in calculateSimilarityForChisquare method, range min: " + min +
                     "range max: " + max + "value: " + value + "in cap " + histogramCalculation.getFirstCap().getId() +
                     " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
@@ -168,7 +166,7 @@ public class ComparisonRangeService {
         if (value != 1) {
             return value;
         } else {
-            logger.info("DuplicateCapException in calculateSimilarityForIntersection method, value: " + value +
+            log.info("DuplicateCapException in calculateSimilarityForIntersection method, value: " + value +
                     "in cap " + histogramCalculation.getFirstCap().getId() +
                     " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");
@@ -182,7 +180,7 @@ public class ComparisonRangeService {
         if (value < 1 && value > imageHistogramUtil.BHATTACHARYYA_BASE()) {
             return (max - value) / (max - min);
         } else {
-            logger.info("DuplicateCapException in calculateSimilarityForBhattacharyya method, range min: " + min +
+            log.info("DuplicateCapException in calculateSimilarityForBhattacharyya method, range min: " + min +
                     "range max: " + max + "value: " + value + "in cap " + histogramCalculation.getFirstCap().getId() +
                     " and cap " + histogramCalculation.getSecondCap().getId());
             throw new DuplicateCapException("You have already got this picture");

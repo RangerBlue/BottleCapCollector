@@ -1,7 +1,6 @@
 package com.km.bottlecapcollector.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -16,10 +15,8 @@ import java.util.List;
 
 @Component
 @Scope("singleton")
+@Slf4j
 public class ImageHistogramUtil {
-
-    private static final Logger logger = LogManager.getLogger(ImageHistogramUtil.class);
-
 
     private final byte CORRELATION = 0;
     private final double CORRELATION_BASE = 1;
@@ -71,7 +68,7 @@ public class ImageHistogramUtil {
     }
 
     public Mat calculateHistogram(MultipartFile file) throws IOException {
-        logger.info("Calculating Mat object from multipart file...");
+        log.info("Calculating Mat object from multipart file...");
         Mat hsvImage = new Mat();
         Mat histImage = new Mat();
         Mat inputImage = Imgcodecs.imdecode(new MatOfByte(file.getBytes()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
@@ -154,7 +151,7 @@ public class ImageHistogramUtil {
             mat.put(0, 0, data);
             return mat;
         } catch (IOException | ClassNotFoundException | ClassCastException ex) {
-            logger.error("Could not load mat from file " + name);
+            log.error("Could not load mat from file " + name);
         }
         return null;
     }
@@ -170,13 +167,13 @@ public class ImageHistogramUtil {
                 oos.writeObject(data);
             }
         } catch (IOException | ClassCastException ex) {
-            logger.error("ERROR: Could not save mat to file: " + name);
+            log.error("ERROR: Could not save mat to file: " + name);
         }
         return name + OBJECT_PREFIX;
     }
 
     public BottleCapMat convertMatToBottleCapMat(Mat mat) throws IOException {
-        logger.info("Converting Mat object to BottleCapMat object ...");
+        log.info("Converting Mat object to BottleCapMat object ...");
         float[] image = new float[(int) (mat.total() * mat.elemSize())];
         mat.get(0, 0, image);
         ByteArrayOutputStream bas = new ByteArrayOutputStream();

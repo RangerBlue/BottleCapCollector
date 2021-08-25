@@ -3,8 +3,7 @@ package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.model.BottleCap;
 import com.km.bottlecapcollector.repository.BottleCapRepository;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,9 +16,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class BottleCapService {
-
-    private static final Logger logger = LogManager.getLogger(BottleCapService.class);
 
     @Autowired
     private BottleCapRepository repository;
@@ -32,7 +30,7 @@ public class BottleCapService {
 
     @Cacheable(value = "caps")
     public List<BottleCap> getAllBottleCaps() {
-        logger.info("Entering getAllBottleCap method in service layer");
+        log.info("Entering getAllBottleCap method in service layer");
         return (List<BottleCap>) repository.findAll();
     }
 

@@ -1,16 +1,14 @@
 package com.km.bottlecapcollector.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class SimilarityModel {
-
-    private static final Logger logger = LogManager.getLogger(SimilarityModel.class);
 
     private int from00To10;
     private int from10To20;
@@ -196,7 +194,7 @@ public class SimilarityModel {
     }
 
     public Set<HistogramResult> calculateTopSimilar(int similarCapAmount) {
-        logger.info("Entering calculateTopSimilar() method");
+        log.info("Entering calculateTopSimilar() method");
         synchronized (similarCaps) {
             if (isDuplicate()) {
                 markModelAsDuplicate(similarCaps.size());
@@ -217,6 +215,6 @@ public class SimilarityModel {
         this.setFrom70To80(0);
         this.setFrom80To90(0);
         this.setFrom90To100(capCount);
-        logger.info("Cap marked as duplicate");
+        log.info("Cap marked as duplicate");
     }
 }

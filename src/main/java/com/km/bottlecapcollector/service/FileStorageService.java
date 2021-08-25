@@ -8,8 +8,7 @@ import com.km.bottlecapcollector.property.CustomProperties;
 import com.km.bottlecapcollector.util.BottleCapMat;
 import com.km.bottlecapcollector.util.BottleCapPair;
 import com.km.bottlecapcollector.util.ImageHistogramUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
@@ -31,9 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class FileStorageService {
-
-    private static final Logger logger = LogManager.getLogger(FileStorageService.class);
 
     @Autowired
     private ImageHistogramUtil imageHistogramUtil;
@@ -54,30 +52,30 @@ public class FileStorageService {
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
-        logger.debug("Directory " + fileStorageLocation + " has been created or already exists");
+        log.debug("Directory " + fileStorageLocation + " has been created or already exists");
     }
 
     public BottleCapMat calculateAndReturnMathObjectAsBottleCapMat(MultipartFile file) throws IOException {
-        logger.info("Entering calculateAndReturnMathObjectAsBottleCapMat method with multipart file ");
+        log.info("Entering calculateAndReturnMathObjectAsBottleCapMat method with multipart file ");
         Mat mat = imageHistogramUtil.calculateHistogram(file);
         return convertMathObjectToBottleCapMat(mat);
     }
 
     public BottleCapMat convertMathObjectToBottleCapMat(Mat mat) throws IOException {
-        logger.info("Entering convertMathObjectToBottleCapMat method with multipart file ");
+        log.info("Entering convertMathObjectToBottleCapMat method with multipart file ");
         return imageHistogramUtil.convertMatToBottleCapMat(mat);
     }
 
     public Mat calculateAndReturnMathObject(MultipartFile file) throws IOException {
-        logger.info("Entering calculateAndReturnMathObject method with multipart file ");
+        log.info("Entering calculateAndReturnMathObject method with multipart file ");
         return imageHistogramUtil.calculateHistogram(file);
     }
 
     public List<HistogramResult> calculateEachWithEachCap(List<BottleCap> caps) {
         List<BottleCapPair> dataToProcess = calculateEachWithEach(caps);
-        logger.info("Processed " + caps.size() + " caps with " + dataToProcess.size() + " pair output");
+        log.info("Processed " + caps.size() + " caps with " + dataToProcess.size() + " pair output");
         List<HistogramResult> results = dataToProcess.stream().parallel().map(bottleCapPair -> prepareHistogram(bottleCapPair)).collect(Collectors.toList());
-        logger.info("Created " + results.size() + " histogram results");
+        log.info("Created " + results.size() + " histogram results");
         return results;
     }
 
@@ -94,7 +92,7 @@ public class FileStorageService {
             histFromFile2 = imageHistogramUtil.convertBottleCapMatToMat(new BottleCapMat(pair.getSecondCap().getData(),
                     pair.getSecondCap().getCols(), pair.getSecondCap().getRows()));
         } catch (IOException e) {
-            logger.info("Exception occurred during preparing histogram: " + e.getStackTrace());
+            log.info("Exception occurred during preparing histogram: " + e.getStackTrace());
         }
 
         HistogramResult result = imageHistogramUtil.calculateCoefficients(histFromFile1, histFromFile2);
@@ -111,7 +109,7 @@ public class FileStorageService {
                             pair.getSecondCap().getCols(),
                             pair.getSecondCap().getRows()));
         } catch (IOException e) {
-            logger.info("Exception occurred during conversion : " + e.getStackTrace());
+            log.info("Exception occurred during conversion : " + e.getStackTrace());
         }
         HistogramResult result = imageHistogramUtil.calculateCoefficients(firstCapMat, secondCapMat);
         result.setFirstCap(pair.getFirstCap());
@@ -165,11 +163,11 @@ public class FileStorageService {
     }
 
     public List<HistogramResult> calculateOneAgainstAllCaps(BottleCap cap, Mat mat, List<BottleCap> inputList) {
-        logger.info("Entering calculateOneAgainstAllCaps method with cap with ID : " + cap.getId() + " and name "
+        log.info("Entering calculateOneAgainstAllCaps method with cap with ID : " + cap.getId() + " and name "
                 + cap.getCapName() + " against " + inputList.size() + " items");
-        logger.info("Creating BottleCap pairs");
+        log.info("Creating BottleCap pairs");
         List<BottleCapPair> outputList = inputList.stream().parallel().map(bottleCap -> new BottleCapPair(cap, bottleCap)).collect(Collectors.toList());
-        logger.info("Preparing histograms");
+        log.info("Preparing histograms");
         return outputList.stream().map(pair -> prepareHistogram(mat, pair)).collect(Collectors.toList());
     }
 

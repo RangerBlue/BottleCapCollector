@@ -13,8 +13,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -29,9 +28,8 @@ import java.util.*;
 
 
 @Component
+@Slf4j
 public class GoogleDriveService {
-
-    private static final Logger logger = LogManager.getLogger(GoogleDriveService.class);
 
     @Autowired
     GoogleDriveProperties properties;
@@ -96,7 +94,7 @@ public class GoogleDriveService {
     }
 
     public String uploadFile(GoogleDriveUploadItem googleUploadItemDto) {
-        logger.info("Entering method uploadFile with " + googleUploadItemDto.getFileName() + " file");
+        log.info("Entering method uploadFile with " + googleUploadItemDto.getFileName() + " file");
         ObjectMapper mapper = new ObjectMapper();
         HttpHeaders headers = new HttpHeaders();
 
@@ -132,7 +130,7 @@ public class GoogleDriveService {
         map.set("file", contentsAsResource);
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<MultiValueMap<String, Object>>(map, headers);
         ResponseEntity<GoogleDriveItemResponse> response = template.postForEntity("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", entity, GoogleDriveItemResponse.class);
-        logger.info("File " + googleUploadItemDto.getFileName() + " has been uploaded");
+        log.info("File " + googleUploadItemDto.getFileName() + " has been uploaded");
 
         return response.getBody().getId();
     }

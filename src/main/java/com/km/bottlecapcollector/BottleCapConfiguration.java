@@ -4,9 +4,8 @@ import com.km.bottlecapcollector.property.CustomProperties;
 import com.km.bottlecapcollector.google.GoogleDriveProperties;
 import com.km.bottlecapcollector.util.ImageHistogramUtil;
 
+import lombok.extern.slf4j.Slf4j;
 import org.opencv.imgproc.Imgproc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -29,22 +28,22 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Configuration
 @EnableCaching
 @EnableAsync
+@Slf4j
 public class BottleCapConfiguration implements CommandLineRunner, ApplicationRunner {
-    private static final Logger logger = LoggerFactory.getLogger(BottleCapConfiguration.class);
 
     @Autowired
     private ApplicationContext context;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        args.getNonOptionArgs().forEach(logger::info);
+        args.getNonOptionArgs().forEach(log::info);
         context.getBean(ImageHistogramUtil.class);
     }
 
     @Override
     public void run(String... args) throws Exception {
         for(String arg : args){
-            logger.info(arg);
+            log.info(arg);
         }
     }
 
@@ -56,19 +55,19 @@ public class BottleCapConfiguration implements CommandLineRunner, ApplicationRun
     @Bean
     @ConditionalOnBean(name = "imageHistogramUtil")
     public void conditionalOnBean(){
-        logger.info("ImageHistogramUtil is available, name");
+        log.info("ImageHistogramUtil is available, name");
     }
 
     @Bean
     @ConditionalOnBean(ImageHistogramUtil.class)
     public void conditionalOnBeanClass(){
-        logger.info("ImageHistogramFactory is available class");
+        log.info("ImageHistogramFactory is available class");
     }
 
     @Bean
     @ConditionalOnMissingBean(name = "ImageHistogramUtil")
     public void conditionalOnMissingBean(){
-        logger.info("ImageHistogramUtil is not available");
+        log.info("ImageHistogramUtil is not available");
     }
 
     @Bean
@@ -76,50 +75,50 @@ public class BottleCapConfiguration implements CommandLineRunner, ApplicationRun
             value = "server.port",
             havingValue = "8083")
     public void conditionalOnProperty(){
-        logger.info("Server port set to 8083");
+        log.info("Server port set to 8083");
     }
 
     @Bean
     @ConditionalOnExpression(
             "${spring.h2.console.enabled.enable:true}")
     public void conditionalOnExpression(){
-        logger.info("H2 console access is enabled");
+        log.info("H2 console access is enabled");
     }
 
     @Bean
     @ConditionalOnResource(resources = "img/captest.jpg")
     public void conditionalOnResource(){
-        logger.info("Test picture captest1 is available");
+        log.info("Test picture captest1 is available");
     }
 
     @Bean
     @ConditionalOnClass(Imgproc.class)
     public void conditionalOnClass(){
-        logger.info("Imgproc class form opencv module is available");
+        log.info("Imgproc class form opencv module is available");
     }
 
     @Bean
     @ConditionalOnJava(JavaVersion.EIGHT)
     public void conditionalOnJava(){
-        logger.info("Java 8 is used");
+        log.info("Java 8 is used");
     }
 
     @Bean
     @ConditionalOnWebApplication
     public void conditionalOnWebApplication(){
-        logger.info("It is web application");
+        log.info("It is web application");
     }
 
     @Bean
     @ConditionalOnNotWebApplication
     public void conditionalOnNotWebApplication(){
-        logger.info("It is not  web application");
+        log.info("It is not  web application");
     }
 
     @Bean
     @ConditionalOnCloudPlatform(CloudPlatform.HEROKU)
     public void conditionalOnCloudPlatform(){
-        logger.info("Application is run on Heroku");
+        log.info("Application is run on Heroku");
     }
 
 }

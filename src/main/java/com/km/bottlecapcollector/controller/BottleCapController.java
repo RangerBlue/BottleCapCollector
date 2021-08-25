@@ -12,9 +12,8 @@ import com.km.bottlecapcollector.util.BottleCapMat;
 import com.km.bottlecapcollector.util.HistogramResult;
 import com.km.bottlecapcollector.payload.PictureWrapper;
 import com.km.bottlecapcollector.util.SimilarityModel;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.entity.ContentType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -34,9 +33,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
+@Slf4j
 public class BottleCapController {
-
-    private static final Logger logger = LogManager.getLogger(BottleCapController.class);
 
     @Autowired
     private BottleCapService bottleCapService;
@@ -54,7 +52,7 @@ public class BottleCapController {
     public ResponseEntity<Long> addBottleCap(@RequestParam("name") String capName,
                                              @RequestParam("desc") String description,
                                              @RequestParam("file") MultipartFile file) {
-        logger.info("Entering addBottleCap method");
+        log.info("Entering addBottleCap method");
         BottleCap cap;
         BottleCapMat bottleCapMatFile;
         String googleDriveID;
@@ -79,26 +77,26 @@ public class BottleCapController {
 
     @DeleteMapping("/caps/{id}")
     public ResponseEntity<String> deleteBottleCap(@PathVariable Long id) {
-        logger.info("Entering deleteBottleCap method");
+        log.info("Entering deleteBottleCap method");
         BottleCap capToDelete;
         try {
             capToDelete = bottleCapService.getBottleCap(id);
             googleDriveService.deleteFile(capToDelete.getGoogleDriveID());
         } catch (HttpClientErrorException e) {
-            logger.info("Could not remove cap " + id + " from drive");
+            log.info("Could not remove cap " + id + " from drive");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        logger.info("Cap with ID " + id + " has been removed from drive");
+        log.info("Cap with ID " + id + " has been removed from drive");
         bottleCapService.deleteBottleCapWithId(capToDelete.getId());
-        logger.info("Cap with ID " + id + " has been removed from database");
+        log.info("Cap with ID " + id + " has been removed from database");
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/caps/{id}")
     public ResponseEntity<BottleCap> getBottleCap(@PathVariable Long id) {
-        logger.info("Entering getBottleCap method");
+        log.info("Entering getBottleCap method");
         BottleCap cap;
         try {
             cap = bottleCapService.getBottleCap(id);
@@ -111,14 +109,14 @@ public class BottleCapController {
     @PutMapping("/caps/{id}")
     public ResponseEntity<BottleCap> updateCap(@PathVariable Long id, @RequestParam("newName") String newName,
                                                @RequestParam("newDesc") String newDesc) {
-        logger.info("Entering updateCap method");
+        log.info("Entering updateCap method");
         BottleCap capToUpdate;
         try {
             capToUpdate = bottleCapService.getBottleCap(id);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        logger.info("Updating cap with name: " + capToUpdate.getCapName() + " and description " +
+        log.info("Updating cap with name: " + capToUpdate.getCapName() + " and description " +
                 capToUpdate.getDescription() + " to " + newName + " and " + newDesc);
         capToUpdate.setCapName(newName);
         capToUpdate.setDescription(newDesc);
@@ -129,7 +127,7 @@ public class BottleCapController {
     @PostMapping("/validateCap")
     public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, MultipartFile file)
             throws IOException {
-        logger.info("Entering validateBottleCap method");
+        log.info("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         Mat mat = fileStorageService.calculateAndReturnMathObject(file);
         BottleCapMat bottleCapMat = fileStorageService.convertMathObjectToBottleCapMat(mat);
@@ -151,7 +149,7 @@ public class BottleCapController {
     @PostMapping("/whatCapAreYou")
     public ResponseEntity<BottleCap> whatCapAreYou(@RequestParam("name") String capName, MultipartFile file)
             throws IOException {
-        logger.info("Entering whatCapAreYou method");
+        log.info("Entering whatCapAreYou method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         Mat mat = fileStorageService.calculateAndReturnMathObject(file);
         BottleCapMat bottleCapMat = fileStorageService.convertMathObjectToBottleCapMat(mat);
@@ -168,13 +166,13 @@ public class BottleCapController {
 
     @GetMapping("/caps")
     public List<BottleCap> getBottleCaps() {
-        logger.info("Entering getBottleCaps method");
+        log.info("Entering getBottleCaps method");
         return bottleCapService.getAllBottleCaps();
     }
 
     @GetMapping("/links")
     public ArrayList<PictureWrapper> getBottleCapsLinks() {
-        logger.info("Entering getBottleCapsLinks method");
+        log.info("Entering getBottleCapsLinks method");
         return bottleCapService.getAllBottleCaps().stream().map(bottleCap ->
                 new PictureWrapper(bottleCap.getId(), bottleCap.getFileLocation()))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -182,7 +180,7 @@ public class BottleCapController {
 
     @GetMapping("/catalog")
     public ArrayList<CapWrapper> getCapCatalog() {
-        logger.info("Entering getCapCatalog method");
+        log.info("Entering getCapCatalog method");
         return bottleCapService.getAllBottleCaps().stream().map(bottleCap ->
                 new CapWrapper(bottleCap.getId(), bottleCap.getFileLocation(), bottleCap.getCapName(),
                         bottleCap.getDescription()))
@@ -270,7 +268,7 @@ public class BottleCapController {
     @Async()
     @PutMapping("/admin/updateThumbnailsURL")
     public void updateCapLocations() {
-        logger.info("Entering updateCapLocations method");
+        log.info("Entering updateCapLocations method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
         AtomicInteger counter = new AtomicInteger();
         caps.forEach(bottleCap -> {
@@ -279,6 +277,6 @@ public class BottleCapController {
             bottleCapService.addBottleCap(bottleCap);
             counter.getAndIncrement();
         });
-        logger.info("Updated " + counter + " locations");
+        log.info("Updated " + counter + " locations");
     }
 }
