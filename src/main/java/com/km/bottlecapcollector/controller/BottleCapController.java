@@ -1,19 +1,21 @@
 package com.km.bottlecapcollector.controller;
 
+import com.km.bottlecapcollector.dto.BottleCapDto;
 import com.km.bottlecapcollector.google.GoogleDriveService;
 import com.km.bottlecapcollector.google.GoogleDriveUploadItem;
 import com.km.bottlecapcollector.model.*;
-import com.km.bottlecapcollector.payload.CapWrapper;
-import com.km.bottlecapcollector.payload.ValidateBottleCapResponse;
+import com.km.bottlecapcollector.dto.CapWrapper;
+import com.km.bottlecapcollector.dto.ValidateBottleCapResponse;
 import com.km.bottlecapcollector.service.BottleCapService;
 import com.km.bottlecapcollector.service.ComparisonRangeService;
 import com.km.bottlecapcollector.service.FileStorageService;
 import com.km.bottlecapcollector.util.BottleCapMat;
 import com.km.bottlecapcollector.util.HistogramResult;
-import com.km.bottlecapcollector.payload.PictureWrapper;
+import com.km.bottlecapcollector.dto.PictureWrapper;
 import com.km.bottlecapcollector.util.SimilarityModel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.entity.ContentType;
+import org.modelmapper.ModelMapper;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -35,6 +37,9 @@ import java.util.stream.Collectors;
 @CrossOrigin
 @Slf4j
 public class BottleCapController {
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Autowired
     private BottleCapService bottleCapService;
@@ -95,15 +100,8 @@ public class BottleCapController {
     }
 
     @GetMapping("/caps/{id}")
-    public ResponseEntity<BottleCap> getBottleCap(@PathVariable Long id) {
-        log.info("Entering getBottleCap method");
-        BottleCap cap;
-        try {
-            cap = bottleCapService.getBottleCap(id);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        return ResponseEntity.ok().body(cap);
+    public ResponseEntity<BottleCapDto> getBottleCap(@PathVariable Long id) {
+        return ResponseEntity.ok().body(modelMapper.map(bottleCapService.getBottleCap(id), BottleCapDto.class));
     }
 
     @PutMapping("/caps/{id}")
@@ -111,11 +109,7 @@ public class BottleCapController {
                                                @RequestParam("newDesc") String newDesc) {
         log.info("Entering updateCap method");
         BottleCap capToUpdate;
-        try {
-            capToUpdate = bottleCapService.getBottleCap(id);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        capToUpdate = bottleCapService.getBottleCap(id);
         log.info("Updating cap with name: " + capToUpdate.getCapName() + " and description " +
                 capToUpdate.getDescription() + " to " + newName + " and " + newDesc);
         capToUpdate.setCapName(newName);
@@ -165,9 +159,10 @@ public class BottleCapController {
 
 
     @GetMapping("/caps")
-    public List<BottleCap> getBottleCaps() {
-        log.info("Entering getBottleCaps method");
-        return bottleCapService.getAllBottleCaps();
+    public List<BottleCapDto> getBottleCaps() {
+        log.trace("Retrieving all caps");
+        return bottleCapService.getAllBottleCaps().stream().
+                map(bottleCap -> modelMapper.map(bottleCap, BottleCapDto.class)).collect(Collectors.toList());
     }
 
     @GetMapping("/links")

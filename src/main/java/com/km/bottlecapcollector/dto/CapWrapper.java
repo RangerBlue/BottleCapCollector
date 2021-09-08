@@ -1,4 +1,4 @@
-package com.km.bottlecapcollector.payload;
+package com.km.bottlecapcollector.dto;
 
 public class CapWrapper extends PictureWrapper{
     private String name;

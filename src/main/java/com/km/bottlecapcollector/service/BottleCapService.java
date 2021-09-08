@@ -1,6 +1,7 @@
 package com.km.bottlecapcollector.service;
 
 
+import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.model.BottleCap;
 import com.km.bottlecapcollector.repository.BottleCapRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -30,17 +30,12 @@ public class BottleCapService {
 
     @Cacheable(value = "caps")
     public List<BottleCap> getAllBottleCaps() {
-        log.info("Entering getAllBottleCap method in service layer");
+        log.trace("Retrieving all caps from database");
         return (List<BottleCap>) repository.findAll();
     }
 
     public BottleCap getBottleCap(long id) {
-        Optional<BottleCap> cap = repository.findById(id);
-        if (cap.isPresent()) {
-            return cap.get();
-        } else {
-            throw new IllegalArgumentException("Couldn't find record with given id");
-        }
+        return repository.findById(id).orElseThrow(() -> new CapNotFoundException(id));
     }
 
     @Caching(evict =

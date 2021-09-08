@@ -1,4 +1,4 @@
-package com.km.bottlecapcollector.payload;
+package com.km.bottlecapcollector.dto;
 
 import java.util.ArrayList;
 

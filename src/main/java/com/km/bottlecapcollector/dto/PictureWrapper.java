@@ -1,4 +1,4 @@
-package com.km.bottlecapcollector.payload;
+package com.km.bottlecapcollector.dto;
 
 public class PictureWrapper {
     private long id;

@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.controller;
 
+import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.google.GoogleDriveService;
 import com.km.bottlecapcollector.model.BottleCap;
 import com.km.bottlecapcollector.service.BottleCapService;
@@ -9,9 +10,11 @@ import com.km.bottlecapcollector.util.BottleCapMat;
 import com.km.bottlecapcollector.util.SimilarityModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -35,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = BottleCapController.class)
+@Import(ModelMapper.class)
 public class BottleCapControllerTests {
 
     @Autowired
@@ -164,7 +168,6 @@ public class BottleCapControllerTests {
                 .andExpect(jsonPath("$[0].fileLocation").isEmpty())
                 .andExpect(jsonPath("$[0].googleDriveID").isEmpty())
                 .andExpect(jsonPath("$[0].capName", is("cap1")))
-                .andExpect(jsonPath("$[0].data").isEmpty())
                 .andExpect(jsonPath("$[0].creationDate").isNotEmpty())
                 .andExpect(jsonPath("$[0].cols", is(0)))
                 .andExpect(jsonPath("$[0].rows", is(0)))
@@ -174,7 +177,6 @@ public class BottleCapControllerTests {
                 .andExpect(jsonPath("$[1].fileLocation").isEmpty())
                 .andExpect(jsonPath("$[1].googleDriveID").isEmpty())
                 .andExpect(jsonPath("$[1].capName", is("cap2")))
-                .andExpect(jsonPath("$[1].data").isEmpty())
                 .andExpect(jsonPath("$[1].creationDate").isNotEmpty())
                 .andExpect(jsonPath("$[1].cols", is(0)))
                 .andExpect(jsonPath("$[1].rows", is(0)))
@@ -239,7 +241,6 @@ public class BottleCapControllerTests {
                 .andExpect(jsonPath("$['fileLocation']").isEmpty())
                 .andExpect(jsonPath("$['googleDriveID']").isEmpty())
                 .andExpect(jsonPath("$['capName']", is("cap1")))
-                .andExpect(jsonPath("$['data']").isEmpty())
                 .andExpect(jsonPath("$['creationDate']").isNotEmpty())
                 .andExpect(jsonPath("$['cols']", is(0)))
                 .andExpect(jsonPath("$['rows']", is(0)))
@@ -250,7 +251,8 @@ public class BottleCapControllerTests {
 
     @Test
     public void getBottleCapWrongIDException() throws Exception {
-        given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
+        long id = 1;
+        given(service.getBottleCap(id)).willThrow(new CapNotFoundException(id));
         this.mvc.perform(get("/caps/1"))
                 .andExpect(status().is(404));
     }
@@ -269,7 +271,8 @@ public class BottleCapControllerTests {
     @Test
     @WithMockUser(roles = "ADMIN")
     public void updateBottleCapWrongIDException() throws Exception {
-        given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
+        long id = 1;
+        given(service.getBottleCap(id)).willThrow(new CapNotFoundException(id));
         this.mvc.perform(put("/caps/1")
                 .param("newName", "Beer")
                 .param("newDesc", "Good beer"))
