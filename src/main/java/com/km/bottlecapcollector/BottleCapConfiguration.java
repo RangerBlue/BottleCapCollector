@@ -5,7 +5,6 @@ import com.km.bottlecapcollector.google.GoogleDriveProperties;
 import com.km.bottlecapcollector.util.ImageHistogramUtil;
 
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -31,10 +30,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @Slf4j
 public class BottleCapConfiguration implements CommandLineRunner, ApplicationRunner {
-    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
 
     @Autowired
     private ApplicationContext context;

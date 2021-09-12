@@ -1,23 +1,19 @@
 package com.km.bottlecapcollector.controller;
 
-import com.km.bottlecapcollector.dto.BottleCapDto;
+import com.km.bottlecapcollector.dto.*;
 import com.km.bottlecapcollector.google.GoogleDriveService;
 import com.km.bottlecapcollector.google.GoogleDriveUploadItem;
 import com.km.bottlecapcollector.model.*;
-import com.km.bottlecapcollector.dto.CapWrapper;
-import com.km.bottlecapcollector.dto.ValidateBottleCapResponse;
 import com.km.bottlecapcollector.service.BottleCapService;
 import com.km.bottlecapcollector.service.ComparisonRangeService;
 import com.km.bottlecapcollector.service.FileStorageService;
 import com.km.bottlecapcollector.util.BottleCapMat;
 import com.km.bottlecapcollector.util.HistogramResult;
-import com.km.bottlecapcollector.dto.PictureWrapper;
 import com.km.bottlecapcollector.util.SimilarityModel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.entity.ContentType;
 import org.modelmapper.ModelMapper;
 import org.opencv.core.Mat;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.scheduling.annotation.Async;
@@ -38,20 +34,23 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BottleCapController {
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
+    private final BottleCapService bottleCapService;
+    private final FileStorageService fileStorageService;
+    private final ComparisonRangeService comparisonRangeService;
+    private final GoogleDriveService googleDriveService;
 
-    @Autowired
-    private BottleCapService bottleCapService;
-
-    @Autowired
-    private FileStorageService fileStorageService;
-
-    @Autowired
-    private ComparisonRangeService comparisonRangeService;
-
-    @Autowired
-    private GoogleDriveService googleDriveService;
+    public BottleCapController(CustomMapper modelMapper,
+                               BottleCapService bottleCapService,
+                               FileStorageService fileStorageService,
+                               ComparisonRangeService comparisonRangeService,
+                               GoogleDriveService googleDriveService) {
+        this.modelMapper = modelMapper;
+        this.bottleCapService = bottleCapService;
+        this.fileStorageService = fileStorageService;
+        this.comparisonRangeService = comparisonRangeService;
+        this.googleDriveService = googleDriveService;
+    }
 
     @PostMapping("/caps")
     public ResponseEntity<Long> addBottleCap(@RequestParam("name") String capName,
@@ -119,7 +118,7 @@ public class BottleCapController {
     }
 
     @PostMapping("/validateCap")
-    public ValidateBottleCapResponse validateBottleCap(@RequestParam("name") String capName, MultipartFile file)
+    public BottleCapValidationResponseDto validateBottleCap(@RequestParam("name") String capName, MultipartFile file)
             throws IOException {
         log.info("Entering validateBottleCap method");
         List<BottleCap> caps = new ArrayList<>(bottleCapService.getAllBottleCaps());
@@ -136,7 +135,7 @@ public class BottleCapController {
                 collect(Collectors.toCollection(ArrayList::new));
         ArrayList<String> similarCapsURLs = similarCaps.stream().map(BottleCap::getFileLocation).
                 collect(Collectors.toCollection(ArrayList::new));
-        return new ValidateBottleCapResponse(similarityModel.isDuplicate(), similarCapsIDs, similarCapsURLs,
+        return new BottleCapValidationResponseDto(similarityModel.isDuplicate(), similarCapsIDs, similarCapsURLs,
                 similarityModel.getSimilarityDistribution());
     }
 
@@ -166,18 +165,18 @@ public class BottleCapController {
     }
 
     @GetMapping("/links")
-    public ArrayList<PictureWrapper> getBottleCapsLinks() {
+    public List<BottleCapPictureDto> getBottleCapsLinks() {
         log.info("Entering getBottleCapsLinks method");
         return bottleCapService.getAllBottleCaps().stream().map(bottleCap ->
-                new PictureWrapper(bottleCap.getId(), bottleCap.getFileLocation()))
+                modelMapper.map(bottleCap, BottleCapPictureDto.class))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @GetMapping("/catalog")
-    public ArrayList<CapWrapper> getCapCatalog() {
+    public ArrayList<BottleCapCatalogDto> getCapCatalog() {
         log.info("Entering getCapCatalog method");
         return bottleCapService.getAllBottleCaps().stream().map(bottleCap ->
-                new CapWrapper(bottleCap.getId(), bottleCap.getFileLocation(), bottleCap.getCapName(),
+                new BottleCapCatalogDto(bottleCap.getId(), bottleCap.getFileLocation(), bottleCap.getCapName(),
                         bottleCap.getDescription()))
                 .collect(Collectors.toCollection(ArrayList::new));
     }

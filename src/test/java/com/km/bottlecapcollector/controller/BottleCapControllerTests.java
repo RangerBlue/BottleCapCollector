@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.controller;
 
+import com.km.bottlecapcollector.dto.CustomMapper;
 import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.google.GoogleDriveService;
 import com.km.bottlecapcollector.model.BottleCap;
@@ -8,6 +9,7 @@ import com.km.bottlecapcollector.service.ComparisonRangeService;
 import com.km.bottlecapcollector.service.FileStorageService;
 import com.km.bottlecapcollector.util.BottleCapMat;
 import com.km.bottlecapcollector.util.SimilarityModel;
+import liquibase.pro.packaged.A;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.modelmapper.ModelMapper;
@@ -38,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = BottleCapController.class)
-@Import(ModelMapper.class)
+@Import(CustomMapper.class)
 public class BottleCapControllerTests {
 
     @Autowired
