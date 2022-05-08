@@ -2,7 +2,7 @@ package com.km.bottlecapcollector.repository;
 
 import com.km.bottlecapcollector.ImageHistogramFactoryTests;
 import com.km.bottlecapcollector.model.BottleCap;
-import com.km.bottlecapcollector.util.BottleCapMat;
+import com.km.bottlecapcollector.util.CustomMat;
 import com.km.bottlecapcollector.util.ImageHistogramUtil;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
@@ -26,9 +26,7 @@ public class BottleCapRepositoryTests {
 
     @Autowired
     private BottleCapRepository repository;
-
-    @Autowired
-    ImageHistogramUtil imageHistogramUtil;
+    ImageHistogramUtil imageHistogramUtil = new ImageHistogramUtil();
 
     private final Path resourceFolder = Paths.get("src/main/resources/img/");
     private final String img1Name = "captest.jpg";
@@ -41,7 +39,7 @@ public class BottleCapRepositoryTests {
         long id = entityManager.persist(cap).getId();
         BottleCap cap1 = repository.findById(id).get();
         assertEquals(cap1.getCapName(), "Perła");
-        Mat hist2 = imageHistogramUtil.convertBottleCapMatToMat(new BottleCapMat(cap1.getData(), cap1.getCols(), cap1.getRows()));
+        Mat hist2 = imageHistogramUtil.convertBottleCapMatToMat(new CustomMat(cap1.getData(), cap1.getCols(), cap1.getRows()));
         ImageHistogramFactoryTests.assertHistogramsConversion1x1(hist1, hist2, imageHistogramUtil);
     }
 

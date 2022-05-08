@@ -1,18 +1,22 @@
 package com.km.bottlecapcollector.controller;
 
+import com.km.bottlecapcollector.dto.BottleCapDto;
+import com.km.bottlecapcollector.dto.BottleCapValidationResponseDto;
 import com.km.bottlecapcollector.dto.CustomMapper;
 import com.km.bottlecapcollector.exception.CapNotFoundException;
+import com.km.bottlecapcollector.exception.GoogleDriveException;
 import com.km.bottlecapcollector.google.GoogleDriveService;
 import com.km.bottlecapcollector.model.BottleCap;
-import com.km.bottlecapcollector.service.BottleCapService;
+import com.km.bottlecapcollector.service.ItemService;
 import com.km.bottlecapcollector.service.ComparisonRangeService;
 import com.km.bottlecapcollector.service.FileStorageService;
-import com.km.bottlecapcollector.util.BottleCapMat;
+import com.km.bottlecapcollector.util.CustomMat;
+import com.km.bottlecapcollector.util.ImageHistogramUtil;
+import com.km.bottlecapcollector.util.ItemFactory;
 import com.km.bottlecapcollector.util.SimilarityModel;
-import liquibase.pro.packaged.A;
+import liquibase.pro.packaged.B;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -47,7 +51,7 @@ public class BottleCapControllerTests {
     private MockMvc mvc;
 
     @MockBean
-    private BottleCapService service;
+    private ItemService itemService;
 
     @MockBean
     private FileStorageService fileStorageService;
@@ -60,6 +64,8 @@ public class BottleCapControllerTests {
 
     @MockBean
     private DataSource dataSource;
+
+    private ImageHistogramUtil imageHistogramUtil = new ImageHistogramUtil();
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -78,40 +84,36 @@ public class BottleCapControllerTests {
     @WithMockUser(roles = "ADMIN")
     public void addBottleCapWithAdminRoleSuccess() throws Exception {
         String fileName = "captest1.jpg";
+        String capName = "Beer";
+        String description = "Good bear!";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
-        given(fileStorageService.calculateIntersectionMethod(any())).willReturn(123d);
-        given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
-        given(fileStorageService.convertMathObjectToBottleCapMat(any())).
-                willReturn(new BottleCapMat("43drgdsgre".getBytes(), 50, 60));
-        given(service.addBottleCap(any())).willReturn(new BottleCap());
+        given(itemService.addCapItem(capName, description, file)).willReturn(12L);
 
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
                 .file(file)
-                .param("name", "Beer")
-                .param("desc", "Good bear!"))
+                .param("name", capName)
+                .param("desc", description))
                 .andExpect(status().is(201))
-                .andExpect(jsonPath("$", is(0)));
+                .andExpect(jsonPath("$", is(12)));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     public void addBottleCapWithAdminRoleThrowsException() throws Exception {
         String fileName = "captest1.jpg";
+        String capName = "Beer";
+        String description = "Good bear!";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
-        given(fileStorageService.calculateIntersectionMethod(any())).willReturn(123d);
-        given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
-        given(fileStorageService.convertMathObjectToBottleCapMat(any())).
-                willThrow(IOException.class);
+        given(itemService.addCapItem(capName, description, file)).willThrow(new GoogleDriveException());
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
                 .file(file)
-                .param("name", "Beer")
-                .param("desc", "Good bear!"))
-                .andExpect(status().is(400))
-                .andExpect(jsonPath("$", is(-1)));
+                .param("name", capName)
+                .param("desc", description))
+                .andExpect(status().is(400));
     }
 
     @Test
@@ -119,19 +121,16 @@ public class BottleCapControllerTests {
         String fileName = "captest1.jpg";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
-        given(fileStorageService.calculateIntersectionMethod(any())).willReturn(123d);
-        given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
-        given(fileStorageService.convertMathObjectToBottleCapMat(any())).
-                willReturn(new BottleCapMat("43drgdsgre".getBytes(), 50, 60));
-        given(comparisonRangeService.calculateSimilarityModelForCap(any(), anyInt()))
-                .willReturn(new SimilarityModel());
+        given(itemService.validateCapItem(fileName, file)).willReturn(new BottleCapValidationResponseDto(false,
+                Arrays.asList(1L, 2L), Arrays.asList("www.google.pl", "www.google.pl"),
+                new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8 ,9}));
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/validateCap")
                 .file(file)
-                .param("name", "Beer"))
+                .param("name", fileName))
                 .andExpect(status().is(200))
-                .andExpect(jsonPath("$['similarCapsIDs']", hasSize(0)))
-                .andExpect(jsonPath("$['similarCapsURLs']", hasSize(0)))
+                .andExpect(jsonPath("$['similarCapsIDs']", hasSize(2)))
+                .andExpect(jsonPath("$['similarCapsURLs']", hasSize(2)))
                 .andExpect(jsonPath("$['similarityDistribution']", hasSize(10)))
                 .andExpect(jsonPath("$['duplicate']", is(false)));
     }
@@ -141,16 +140,11 @@ public class BottleCapControllerTests {
         String fileName = "captest1.jpg";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
-        given(fileStorageService.calculateIntersectionMethod(any())).willReturn(123d);
-        given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
-        given(fileStorageService.convertMathObjectToBottleCapMat(any())).
-                willReturn(new BottleCapMat("43drgdsgre".getBytes(), 50, 60));
-        given(comparisonRangeService.calculateSimilarityModelForCap(any(), anyInt()))
-                .willReturn(new SimilarityModel());
+        given(itemService.validateWhatCapYouAre(fileName, file)).willReturn(new BottleCapDto());
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/whatCapAreYou")
                 .file(file)
-                .param("name", "Beer"))
+                .param("name", fileName))
                 .andExpect(status().is(200))
                 .andExpect(jsonPath("$['id']", is(0)));
     }
@@ -161,7 +155,7 @@ public class BottleCapControllerTests {
         BottleCap cap = new BottleCap("cap1");
         BottleCap cap1 = new BottleCap("cap2");
         List<BottleCap> allCaps = Arrays.asList(cap, cap1);
-        given(service.getAllBottleCaps()).willReturn(allCaps);
+        given(itemService.getAllBottleCaps()).willReturn(allCaps);
 
         mvc.perform(get("/caps")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -196,7 +190,7 @@ public class BottleCapControllerTests {
         cap1.setFileLocation("link1");
         List<BottleCap> allCaps = Arrays.asList(cap, cap1);
 
-        given(service.getAllBottleCaps()).willReturn(allCaps);
+        given(itemService.getAllBottleCaps()).willReturn(allCaps);
 
         mvc.perform(get("/links")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -218,7 +212,7 @@ public class BottleCapControllerTests {
         cap1.setDescription("The best bear!!");
         List<BottleCap> allCaps = Arrays.asList(cap, cap1);
 
-        given(service.getAllBottleCaps()).willReturn(allCaps);
+        given(itemService.getAllBottleCaps()).willReturn(allCaps);
 
         mvc.perform(get("/catalog")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -236,8 +230,12 @@ public class BottleCapControllerTests {
 
     @Test
     public void getBottleCapSuccess() throws Exception {
-        BottleCap cap = new BottleCap("cap1");
-        given(service.getBottleCap(anyLong())).willReturn(cap);
+        BottleCapDto bottleCapDto = new BottleCapDto();
+        bottleCapDto.setCapName("cap1");
+        bottleCapDto.setFileLocation("");
+        bottleCapDto.setGoogleDriveID("");
+        bottleCapDto.setCreationDate("2021-01-09T19:48:51.438");
+        given(itemService.getCapItemDto(anyLong())).willReturn(bottleCapDto);
         this.mvc.perform(get("/caps/1"))
                 .andExpect(status().is(200))
                 .andExpect(jsonPath("$['fileLocation']").isEmpty())
@@ -254,7 +252,7 @@ public class BottleCapControllerTests {
     @Test
     public void getBottleCapWrongIDException() throws Exception {
         long id = 1;
-        given(service.getBottleCap(id)).willThrow(new CapNotFoundException(id));
+        given(itemService.getCapItemDto(id)).willThrow(new CapNotFoundException(id));
         this.mvc.perform(get("/caps/1"))
                 .andExpect(status().is(404));
     }
@@ -263,7 +261,7 @@ public class BottleCapControllerTests {
     @WithMockUser(roles = "ADMIN")
     public void updateBottleCapWithAdminRoleSuccess() throws Exception {
         BottleCap cap = new BottleCap("cap1");
-        given(service.getBottleCap(anyLong())).willReturn(cap);
+        given(itemService.getBottleCap(anyLong())).willReturn(cap);
         this.mvc.perform(put("/caps/1")
                 .param("newName", "Beer")
                 .param("newDesc", "Good beer"))
@@ -274,10 +272,12 @@ public class BottleCapControllerTests {
     @WithMockUser(roles = "ADMIN")
     public void updateBottleCapWrongIDException() throws Exception {
         long id = 1;
-        given(service.getBottleCap(id)).willThrow(new CapNotFoundException(id));
+        String newName = "Beer";
+        String newDesc = "Good beer";
+        given(itemService.updateCapItemDto(id, newName, newDesc)).willThrow(new CapNotFoundException(id));
         this.mvc.perform(put("/caps/1")
-                .param("newName", "Beer")
-                .param("newDesc", "Good beer"))
+                .param("newName", newName)
+                .param("newDesc", newDesc))
                 .andExpect(status().is(404));
     }
 
@@ -285,29 +285,19 @@ public class BottleCapControllerTests {
     @WithMockUser(roles = "ADMIN")
     public void deleteBottleCapWithAdminRoleSuccess() throws Exception {
         BottleCap cap = new BottleCap("cap1");
-        given(service.getBottleCap(anyLong())).willReturn(cap);
+        given(itemService.getBottleCap(anyLong())).willReturn(cap);
         given(googleDriveService.deleteFile(anyString())).willReturn("");
         this.mvc.perform(delete("/caps/1"))
                 .andExpect(status().is(200));
 
     }
-
     @Test
     @WithMockUser(roles = "ADMIN")
     public void deleteBottleCapNotFoundWithAdminRoleException() throws Exception {
-        given(service.getBottleCap(1)).willThrow(new IllegalArgumentException());
-        this.mvc.perform(delete("/caps/1"))
+        long capId = 12L;
+        given(itemService.removeCapItem(12L)).willThrow(new CapNotFoundException(capId));
+        this.mvc.perform(delete("/caps/"+capId))
                 .andExpect(status().is(404));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    public void deleteBottleCapWrongDriveIDWithAdminRoleNotFound() throws Exception {
-        BottleCap cap = new BottleCap("cap1");
-        given(service.getBottleCap(anyLong())).willReturn(cap);
-        given(googleDriveService.deleteFile(any())).willThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
-        this.mvc.perform(delete("/caps/1"))
-                .andExpect(status().is(400));
     }
 
 

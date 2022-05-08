@@ -22,6 +22,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.*;
@@ -29,7 +30,7 @@ import java.util.*;
 
 @Component
 @Slf4j
-public class GoogleDriveService {
+public class GoogleDriveService implements ImageUploader{
 
     @Autowired
     GoogleDriveProperties properties;
@@ -93,8 +94,9 @@ public class GoogleDriveService {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public String uploadFile(GoogleDriveUploadItem googleUploadItemDto) {
-        log.info("Entering method uploadFile with " + googleUploadItemDto.getFileName() + " file");
+    @Override
+    public String uploadFile(MultipartFile multipartFile) throws IOException {
+        log.info("Entering method uploadFile with " + multipartFile.getName()+ " file");
         ObjectMapper mapper = new ObjectMapper();
         HttpHeaders headers = new HttpHeaders();
 
@@ -103,8 +105,8 @@ public class GoogleDriveService {
         headers.setAccept(Arrays.asList(new MediaType[]{MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_UTF8, MediaType.IMAGE_JPEG}));
         GoogleDriveItemMetadataRequest metadata = new GoogleDriveItemMetadataRequest();
 
-        metadata.setMimeType(googleUploadItemDto.getContentType());
-        metadata.setName(googleUploadItemDto.getOriginalFilename());
+        metadata.setMimeType(multipartFile.getContentType());
+        metadata.setName(multipartFile.getOriginalFilename());
         metadata.setParents(new String[]{getFolderID()});
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
@@ -119,10 +121,10 @@ public class GoogleDriveService {
         }
 
         map.set("metadata", metadataEntity);
-        ByteArrayResource contentsAsResource = new ByteArrayResource(googleUploadItemDto.getByteArray()) {
+        ByteArrayResource contentsAsResource = new ByteArrayResource(multipartFile.getBytes()) {
             @Override
             public String getFilename() {
-                return googleUploadItemDto.getFileName();
+                return multipartFile.getName();
             }
 
         };
@@ -130,7 +132,7 @@ public class GoogleDriveService {
         map.set("file", contentsAsResource);
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<MultiValueMap<String, Object>>(map, headers);
         ResponseEntity<GoogleDriveItemResponse> response = template.postForEntity("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", entity, GoogleDriveItemResponse.class);
-        log.info("File " + googleUploadItemDto.getFileName() + " has been uploaded");
+        log.info("File " + multipartFile.getName() + " has been uploaded");
 
         return response.getBody().getId();
     }
@@ -145,6 +147,7 @@ public class GoogleDriveService {
         return response.getBody();
     }
 
+    @Override
     public String getFileUrl(String id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(getAccessToken());

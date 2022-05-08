@@ -4,6 +4,8 @@ import com.km.bottlecapcollector.model.BottleCap;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
 
 public class CustomModelMapperTest {
@@ -11,7 +13,7 @@ public class CustomModelMapperTest {
     public static CustomMapper mapper;
 
     @BeforeClass
-    public static void init() {
+    public static void init() throws IOException {
         mapper = new CustomMapper();
     }
 

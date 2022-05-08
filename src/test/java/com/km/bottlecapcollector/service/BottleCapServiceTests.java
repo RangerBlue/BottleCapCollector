@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class BottleCapServiceTests {
     @InjectMocks
-    private BottleCapService service;
+    private ItemService service;
 
     @Mock
     private BottleCapRepository repository;

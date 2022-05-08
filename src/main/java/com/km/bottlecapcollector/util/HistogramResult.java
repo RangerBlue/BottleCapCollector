@@ -1,12 +1,12 @@
 package com.km.bottlecapcollector.util;
 
-import com.km.bottlecapcollector.model.BottleCap;
+import com.km.bottlecapcollector.model.CapItem;
 
 import java.util.Objects;
 
 public class HistogramResult {
-    private BottleCap firstCap;
-    private BottleCap secondCap;
+    private CapItem firstCap;
+    private CapItem secondCap;
 
     private double correlation;
     private double chisquare;
@@ -56,19 +56,19 @@ public class HistogramResult {
         this.bhattacharyya = bhattacharyya;
     }
 
-    public BottleCap getFirstCap() {
+    public CapItem getFirstCap() {
         return firstCap;
     }
 
-    public void setFirstCap(BottleCap firstCap) {
+    public void setFirstCap(CapItem firstCap) {
         this.firstCap = firstCap;
     }
 
-    public BottleCap getSecondCap() {
+    public CapItem getSecondCap() {
         return secondCap;
     }
 
-    public void setSecondCap(BottleCap secondCap) {
+    public void setSecondCap(CapItem secondCap) {
         this.secondCap = secondCap;
     }
 

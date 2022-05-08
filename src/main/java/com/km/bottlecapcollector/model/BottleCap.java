@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.model;
 
-import com.km.bottlecapcollector.util.BottleCapMat;
+import com.km.bottlecapcollector.util.CustomMat;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "CAP")
 public class BottleCap {
-
+//TODO get rid of this entity soon
     @Id
     @Column(name="id")
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -31,7 +31,7 @@ public class BottleCap {
         this.creationDate = LocalDateTime.now();
     }
 
-    public BottleCap(String capName, String description, BottleCapMat mat, String fileLocation, String googleDriveID,
+    public BottleCap(String capName, String description, CustomMat mat, String fileLocation, String googleDriveID,
                      double intersectionValue) {
         this.capName = capName;
         this.data = mat.getMatArray();
@@ -45,7 +45,7 @@ public class BottleCap {
         this.description = description;
     }
 
-    public BottleCap(String capName, BottleCapMat mat, double intersectionValue) {
+    public BottleCap(String capName, CustomMat mat, double intersectionValue) {
         this.capName = capName;
         this.data = mat.getMatArray();
         this.cols = mat.getCols();

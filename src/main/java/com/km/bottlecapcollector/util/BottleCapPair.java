@@ -1,27 +1,27 @@
 package com.km.bottlecapcollector.util;
 
-import com.km.bottlecapcollector.model.BottleCap;
+import com.km.bottlecapcollector.model.CapItem;
 
 public class BottleCapPair {
-    private BottleCap firstCap;
-    private BottleCap secondCap;
+    private CapItem firstCap;
+    private CapItem secondCap;
 
-    public BottleCapPair(BottleCap fistCap, BottleCap secondCap) {
+    public BottleCapPair(CapItem fistCap, CapItem secondCap) {
         this.firstCap = fistCap;
         this.secondCap = secondCap;
     }
 
-    public BottleCap getFirstCap() {
+    public CapItem getFirstCap() {
         return firstCap;
     }
 
-    public BottleCap getSecondCap() {
+    public CapItem getSecondCap() {
         return secondCap;
     }
 
     @Override
     public String toString() {
-        return "BottleCapPair{" +
+        return "CapItem{" +
                 "firstCap=" + firstCap +
                 ", secondCap=" + secondCap +
                 '}';

@@ -3,12 +3,12 @@ package com.km.bottlecapcollector.util;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class BottleCapMat {
+public class CustomMat {
     private byte[] matArray;
     private int cols;
     private int rows;
 
-    public BottleCapMat(byte[] matArray, int cols, int rows) {
+    public CustomMat(byte[] matArray, int cols, int rows) {
         this.matArray = matArray;
         this.cols = cols;
         this.rows = rows;
@@ -42,7 +42,7 @@ public class BottleCapMat {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        BottleCapMat that = (BottleCapMat) o;
+        CustomMat that = (CustomMat) o;
         return cols == that.cols &&
                 rows == that.rows &&
                 Arrays.equals(matArray, that.matArray);

@@ -2,12 +2,11 @@ package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.exception.DuplicateCapException;
 import com.km.bottlecapcollector.model.BottleCap;
+import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.model.ComparisonRange;
-import com.km.bottlecapcollector.util.HistogramResult;
+import com.km.bottlecapcollector.model.OpenCVImageSignature;
+import com.km.bottlecapcollector.util.*;
 import com.km.bottlecapcollector.repository.ComparisonRangeRepository;
-import com.km.bottlecapcollector.util.ComparisonMethod;
-import com.km.bottlecapcollector.util.ImageHistogramUtil;
-import com.km.bottlecapcollector.util.SimilarityModel;
 import org.junit.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -38,17 +37,19 @@ public class ComparisonRangeServiceTests {
     @Spy
     private ImageHistogramUtil imageHistogramUtil;
 
+    ItemFactoryImpl itemFactory = new ItemFactoryImpl();
+
     @Test
     public void testCalculateMethodMaxMinValues() {
         HistogramResult result1 = new HistogramResult(1, 2, 3, 4);
-        result1.setFirstCap(new BottleCap());
-        result1.setSecondCap(new BottleCap());
+        result1.setFirstCap(new CapItem());
+        result1.setSecondCap(new CapItem());
         HistogramResult result2 = new HistogramResult(5, 6, 7, 8);
-        result2.setFirstCap(new BottleCap());
-        result2.setSecondCap(new BottleCap());
+        result2.setFirstCap(new CapItem());
+        result2.setSecondCap(new CapItem());
         HistogramResult result3 = new HistogramResult(9, 10, 11, 12);
-        result3.setFirstCap(new BottleCap());
-        result3.setSecondCap(new BottleCap());
+        result3.setFirstCap(new CapItem());
+        result3.setSecondCap(new CapItem());
         List<HistogramResult> histogramList = new ArrayList<>();
         histogramList.add(result1);
         histogramList.add(result2);
@@ -69,8 +70,8 @@ public class ComparisonRangeServiceTests {
     public void testCalculateSimilarityForCorrelationSuccess() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
         double result = service.calculateSimilarityForCorrelation(histogramResult, range);
         assertEquals(0.8, result);
     }
@@ -79,8 +80,8 @@ public class ComparisonRangeServiceTests {
     public void testCalculateSimilarityForCorrelationFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
         service.calculateSimilarityForCorrelation(histogramResult, range);
     }
 
@@ -88,8 +89,8 @@ public class ComparisonRangeServiceTests {
     public void testCalculateSimilarityForChisquareSuccess() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
         double result = service.calculateSimilarityForChisquare(histogramResult, range);
         assertEquals(0.6, result);
     }
@@ -98,17 +99,19 @@ public class ComparisonRangeServiceTests {
     public void testCalculateSimilarityForChisquareFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, -1, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CHI_SQUARE, 0.4, 0.9);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
         service.calculateSimilarityForChisquare(histogramResult, range);
     }
 
     @Test
     public void testCalculateSimilarityForIntersectionSuccess() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 7.5, 0.3);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
-        histogramResult.getSecondCap().setIntersectionValue(10);
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature = (OpenCVImageSignature) histogramResult.getSecondCap().getImage().getSignature();
+        openCVImageSignature.setIntersectionValue(10);
+
         double result = service.calculateSimilarityForIntersection(histogramResult);
         assertEquals(0.75, result);
     }
@@ -116,9 +119,10 @@ public class ComparisonRangeServiceTests {
     @Test(expected = DuplicateCapException.class)
     public void testCalculateSimilarityForIntersectionFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, 401, 10, 0.3);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
-        histogramResult.getSecondCap().setIntersectionValue(10);
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature = (OpenCVImageSignature) histogramResult.getSecondCap().getImage().getSignature();
+        openCVImageSignature.setIntersectionValue(10);
         service.calculateSimilarityForIntersection(histogramResult);
     }
 
@@ -126,8 +130,8 @@ public class ComparisonRangeServiceTests {
     public void testCalculateSimilarityForBhattacharyyaSuccess() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
         double result = service.calculateSimilarityForBhattacharyya(histogramResult, range);
         assertEquals(0.75, result, 0.00001);
     }
@@ -136,8 +140,8 @@ public class ComparisonRangeServiceTests {
     public void testCalculateSimilarityForBhattacharyyaFail() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 1.2);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
         service.calculateSimilarityForBhattacharyya(histogramResult, range);
     }
 
@@ -149,9 +153,10 @@ public class ComparisonRangeServiceTests {
         range.add(new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9));
 
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
-        histogramResult.setFirstCap(new BottleCap());
-        histogramResult.setSecondCap(new BottleCap());
-        histogramResult.getSecondCap().setIntersectionValue(10);
+        histogramResult.setFirstCap(itemFactory.getCapItem());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature = (OpenCVImageSignature) histogramResult.getSecondCap().getImage().getSignature();
+        openCVImageSignature.setIntersectionValue(10);
         HistogramResult result = service.calculateSimilarityForAllMethods(histogramResult, range);
         assertEquals(0.7375, result.getSimilarity(), 0.00001);
     }
@@ -191,7 +196,7 @@ public class ComparisonRangeServiceTests {
                 18.8947,
                 imageHistogramUtil.BHATTACHARYYA_BASE());
         histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());
-        histogramResult.setSecondCap(new BottleCap());
+        histogramResult.setSecondCap(itemFactory.getCapItem());
         histogramResults.add(histogramResult);
         SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults, SimilarityModel.similarCapAmount);
 
@@ -214,18 +219,21 @@ public class ComparisonRangeServiceTests {
         List<HistogramResult> histogramResults = prepareData();
         HistogramResult histogramResult = new HistogramResult(0.7, 402, 7, 0.3);
         histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());
-        histogramResult.setSecondCap(new BottleCap());
-        histogramResult.getSecondCap().setIntersectionValue(10);
+        histogramResult.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature = (OpenCVImageSignature) histogramResult.getSecondCap().getImage().getSignature();
+        openCVImageSignature.setIntersectionValue(10);
         histogramResults.add(histogramResult);
         HistogramResult histogramResult1 = new HistogramResult(0.3, 202, 4, 0.6);
         histogramResult1.setFirstCap(histogramResults.get(0).getFirstCap());
-        histogramResult1.setSecondCap(new BottleCap());
-        histogramResult1.getSecondCap().setIntersectionValue(12);
+        histogramResult1.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature1 = (OpenCVImageSignature) histogramResult1.getSecondCap().getImage().getSignature();
+        openCVImageSignature1.setIntersectionValue(12);
         histogramResults.add(histogramResult1);
         HistogramResult histogramResult2 = new HistogramResult(0.2, 31, 2, 0.1);
         histogramResult2.setFirstCap(histogramResults.get(0).getFirstCap());
-        histogramResult2.setSecondCap(new BottleCap());
-        histogramResult2.getSecondCap().setIntersectionValue(13);
+        histogramResult2.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature2 = (OpenCVImageSignature) histogramResult2.getSecondCap().getImage().getSignature();
+        openCVImageSignature2.setIntersectionValue(10);
         histogramResults.add(histogramResult2);
 
         SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults, SimilarityModel.similarCapAmount);
@@ -251,25 +259,29 @@ public class ComparisonRangeServiceTests {
         range.add(new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9));
         when(repository.findAll()).thenReturn(range);
 
-        BottleCap newCap = new BottleCap();
+        CapItem newCap = itemFactory.getCapItem();
 
         List<HistogramResult> histogramResults = new ArrayList<>();
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         histogramResult.setFirstCap(newCap);
-        histogramResult.setSecondCap(new BottleCap());
-        histogramResult.getSecondCap().setIntersectionValue(10);
+        histogramResult.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature = (OpenCVImageSignature) histogramResult.getSecondCap().getImage().getSignature();
+        openCVImageSignature.setIntersectionValue(10);
         HistogramResult histogramResult1 = new HistogramResult(0.2, 201, 4, 0.2);
         histogramResult1.setFirstCap(newCap);
-        histogramResult1.setSecondCap(new BottleCap());
-        histogramResult1.getSecondCap().setIntersectionValue(12);
+        histogramResult1.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature1 = (OpenCVImageSignature) histogramResult1.getSecondCap().getImage().getSignature();
+        openCVImageSignature1.setIntersectionValue(12);
         HistogramResult histogramResult2 = new HistogramResult(0.3, 333, 5, 0.6);
         histogramResult2.setFirstCap(newCap);
-        histogramResult2.setSecondCap(new BottleCap());
-        histogramResult2.getSecondCap().setIntersectionValue(13);
+        histogramResult2.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature2 = (OpenCVImageSignature) histogramResult2.getSecondCap().getImage().getSignature();
+        openCVImageSignature2.setIntersectionValue(13);
         HistogramResult histogramResult3 = new HistogramResult(0.35, 311, 3, 0.4);
         histogramResult3.setFirstCap(newCap);
-        histogramResult3.setSecondCap(new BottleCap());
-        histogramResult3.getSecondCap().setIntersectionValue(14);
+        histogramResult3.setSecondCap(itemFactory.getCapItem());
+        OpenCVImageSignature openCVImageSignature3 = (OpenCVImageSignature) histogramResult3.getSecondCap().getImage().getSignature();
+        openCVImageSignature3.setIntersectionValue(14);
 
         histogramResults.addAll(Arrays.asList(histogramResult, histogramResult1, histogramResult2, histogramResult3));
 

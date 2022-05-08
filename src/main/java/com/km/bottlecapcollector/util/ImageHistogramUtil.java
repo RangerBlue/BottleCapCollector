@@ -1,39 +1,40 @@
 package com.km.bottlecapcollector.util;
 
+import com.km.bottlecapcollector.model.BottleCap;
+import com.km.bottlecapcollector.model.CapItem;
+import com.km.bottlecapcollector.model.OpenCVImageSignature;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Component
-@Scope("singleton")
 @Slf4j
 public class ImageHistogramUtil {
 
-    private final byte CORRELATION = 0;
-    private final double CORRELATION_BASE = 1;
-    private final byte CHI_SQUARE = 1;
-    private final double CHI_SQUARE_BASE = 0;
-    private final byte INTERSECTION = 2;
-    private final byte BHATTACHARYYA = 3;
-    private final byte BHATTACHARYYA_BASE = 0;
+    private static final byte CORRELATION = 0;
+    private static final double CORRELATION_BASE = 1;
+    private static final byte CHI_SQUARE = 1;
+    private static final double CHI_SQUARE_BASE = 0;
+    private static final byte INTERSECTION = 2;
+    private static final byte BHATTACHARYYA = 3;
+    private static final byte BHATTACHARYYA_BASE = 0;
     private final String OBJECT_PREFIX = "object";
 
 
-    private final int hBins = 50, sBins = 60;
-    private final int[] histSize = {hBins, sBins};
+    private static final int hBins = 50, sBins = 60;
+    private static final int[] histSize = {hBins, sBins};
     // hue varies from 0 to 179, saturation from 0 to 255
-    private final float[] ranges = {0, 180, 0, 256};
+    private static final float[] ranges = {0, 180, 0, 256};
     // Use the 0-th and 1-st channels
-    private final int[] channels = {0, 1};
+    private static final int[] channels = {0, 1};
 
     public ImageHistogramUtil() {
     }
@@ -67,7 +68,7 @@ public class ImageHistogramUtil {
         return histImage;
     }
 
-    public Mat calculateHistogram(MultipartFile file) throws IOException {
+    public static Mat calculateHistogram(MultipartFile file) throws IOException {
         log.info("Calculating Mat object from multipart file...");
         Mat hsvImage = new Mat();
         Mat histImage = new Mat();
@@ -87,7 +88,7 @@ public class ImageHistogramUtil {
      * @param histImage2
      * @return metric result
      */
-    public double correlationMethod(Mat histImage1, Mat histImage2) {
+    public static double correlationMethod(Mat histImage1, Mat histImage2) {
         return Imgproc.compareHist(histImage1, histImage2, CORRELATION);
     }
 
@@ -99,7 +100,7 @@ public class ImageHistogramUtil {
      * @param histImage2
      * @return metric result
      */
-    public double chisquareMethod(Mat histImage1, Mat histImage2) {
+    public static double chisquareMethod(Mat histImage1, Mat histImage2) {
         return Imgproc.compareHist(histImage1, histImage2, CHI_SQUARE);
     }
 
@@ -110,7 +111,7 @@ public class ImageHistogramUtil {
      * @param histImage2
      * @return metric result
      */
-    public double intersectionMethod(Mat histImage1, Mat histImage2) {
+    public static double intersectionMethod(Mat histImage1, Mat histImage2) {
         return Imgproc.compareHist(histImage1, histImage2, INTERSECTION);
     }
 
@@ -122,11 +123,11 @@ public class ImageHistogramUtil {
      * @param histImage2
      * @return metric result
      */
-    public double bhattacharyyaMethod(Mat histImage1, Mat histImage2) {
+    public static double bhattacharyyaMethod(Mat histImage1, Mat histImage2) {
         return Imgproc.compareHist(histImage1, histImage2, BHATTACHARYYA);
     }
 
-    public HistogramResult calculateCoefficients(Mat histImage1, Mat histImage2) {
+    public static HistogramResult calculateCoefficients(Mat histImage1, Mat histImage2) {
         HistogramResult result = new HistogramResult();
         result.setCorrelation(correlationMethod(histImage1, histImage2));
         result.setChisquare(chisquareMethod(histImage1, histImage2));
@@ -135,7 +136,7 @@ public class ImageHistogramUtil {
         return result;
     }
 
-    public double calculateIntersection(Mat histImage1) {
+    public static double calculateIntersection(Mat histImage1) {
         return intersectionMethod(histImage1, histImage1);
     }
 
@@ -172,7 +173,7 @@ public class ImageHistogramUtil {
         return name + OBJECT_PREFIX;
     }
 
-    public BottleCapMat convertMatToBottleCapMat(Mat mat) throws IOException {
+    public static CustomMat convertMatToBottleCapMat(Mat mat) throws IOException {
         log.info("Converting Mat object to BottleCapMat object ...");
         float[] image = new float[(int) (mat.total() * mat.elemSize())];
         mat.get(0, 0, image);
@@ -181,10 +182,10 @@ public class ImageHistogramUtil {
         for (float f : image)
             ds.writeFloat(f);
         byte[] bytes = bas.toByteArray();
-        return new BottleCapMat(bytes, mat.cols(), mat.rows());
+        return new CustomMat(bytes, mat.cols(), mat.rows());
     }
 
-    public Mat convertBottleCapMatToMat(BottleCapMat data) throws IOException {
+    public static Mat convertBottleCapMatToMat(CustomMat data) throws IOException {
         ByteArrayInputStream bas = new ByteArrayInputStream(data.getMatArray());
         DataInputStream ds = new DataInputStream(bas);
         float[] fArr = new float[data.getMatArray().length / 4];
@@ -199,5 +200,100 @@ public class ImageHistogramUtil {
     public String calculateAndStoreHistogram(String imageName, Path fileStorageLocation, Path objectStorageLocation) {
         Mat hist = calculateHistogram(imageName, fileStorageLocation);
         return storeMatFile(hist, imageName, objectStorageLocation);
+    }
+
+    public CustomMat calculateAndReturnMathObjectAsBottleCapMat(MultipartFile file) throws IOException {
+        log.info("Entering calculateAndReturnMathObjectAsBottleCapMat method with multipart file ");
+        Mat mat = calculateHistogram(file);
+        return convertMathObjectToBottleCapMat(mat);
+    }
+
+    public static CustomMat convertMathObjectToBottleCapMat(Mat mat) throws IOException {
+        log.info("Entering convertMathObjectToBottleCapMat method with multipart file ");
+        return convertMatToBottleCapMat(mat);
+    }
+
+    public static Mat calculateAndReturnMathObject(MultipartFile file) throws IOException {
+        log.info("Entering calculateAndReturnMathObject method with multipart file ");
+        return calculateHistogram(file);
+    }
+
+    public static List<HistogramResult> calculateEachWithEachCap(List<CapItem> caps) {
+        List<BottleCapPair> dataToProcess = calculateEachWithEach(caps);
+        log.info("Processed " + caps.size() + " caps with " + dataToProcess.size() + " pair output");
+        List<HistogramResult> results = dataToProcess.stream().parallel().map(bottleCapPair -> prepareHistogram(bottleCapPair)).collect(Collectors.toList());
+        log.info("Created " + results.size() + " histogram results");
+        return results;
+    }
+
+    public static double calculateIntersectionMethod(Mat mat) {
+        return calculateIntersection(mat);
+    }
+
+    public static HistogramResult prepareHistogram(BottleCapPair pair) {
+        Mat histFromFile1 = null;
+        Mat histFromFile2 = null;
+        OpenCVImageSignature firstCapSignature = (OpenCVImageSignature) pair.getFirstCap().getImage().getSignature();
+        OpenCVImageSignature secondCapSignature = (OpenCVImageSignature) pair.getSecondCap().getImage().getSignature();
+        try {
+            histFromFile1 = convertBottleCapMatToMat(new CustomMat(firstCapSignature.getImageData(),
+                    firstCapSignature.getImageCols(), firstCapSignature.getImageRows()));
+            histFromFile2 = convertBottleCapMatToMat(new CustomMat(secondCapSignature.getImageData(),
+                    secondCapSignature.getImageCols(), secondCapSignature.getImageRows()));
+        } catch (IOException e) {
+            log.info("Exception occurred during preparing histogram: " + e.getStackTrace());
+        }
+
+        HistogramResult result = calculateCoefficients(histFromFile1, histFromFile2);
+        result.setFirstCap(pair.getFirstCap());
+        result.setSecondCap(pair.getSecondCap());
+        return result;
+    }
+
+    public static HistogramResult prepareHistogram(Mat firstCapMat, BottleCapPair pair) {
+        CapItem secondCap = pair.getSecondCap();
+        Mat secondCapMat = null;
+        OpenCVImageSignature secondCapSignature = null;
+        try {
+            secondCapSignature = (OpenCVImageSignature) secondCap.getImage().getSignature();
+            secondCapMat = convertBottleCapMatToMat(
+                    new CustomMat(secondCapSignature.getImageData(),
+                            secondCapSignature.getImageCols(),
+                            secondCapSignature.getImageRows()));
+        } catch (IOException e) {
+            log.info("Exception occurred during conversion : " + e.getStackTrace());
+        }
+        HistogramResult result = calculateCoefficients(firstCapMat, secondCapMat);
+        result.setFirstCap(pair.getFirstCap());
+        result.setSecondCap(pair.getSecondCap());
+        return result;
+    }
+
+    public static List<BottleCapPair> calculateEachWithEach(List<CapItem> inputList) {
+        int inputListSize = inputList.size();
+        int outputListSize = (inputList.size() * (inputList.size() - 1) / 2);
+        List<BottleCapPair> outputList = new ArrayList<>(outputListSize);
+        for (int i = 1; i < inputListSize; i++) {
+            outputList.addAll(calculateEach(inputList.subList(0, i + 1), i));
+        }
+        return outputList;
+    }
+
+    private static List<BottleCapPair> calculateEach(List<CapItem> inputList, int size) {
+        List<BottleCapPair> result = new ArrayList<>();
+        for (int i = 0; i <= size - 1; i++) {
+            result.add(new BottleCapPair(inputList.get(i), inputList.get(size)));
+        }
+
+        return result;
+    }
+
+    public static List<HistogramResult> calculateOneAgainstAllCaps(CapItem cap, List<CapItem> inputList) {
+        log.info("Entering calculateOneAgainstAllCaps method with cap with ID : " + cap.getId() + " and name "
+                + cap.getName() + " against " + inputList.size() + " items");
+        log.info("Creating BottleCap pairs");
+        List<BottleCapPair> outputList = inputList.stream().parallel().map(bottleCap -> new BottleCapPair(cap, bottleCap)).collect(Collectors.toList());
+        log.info("Preparing histograms");
+        return outputList.stream().map(pair -> ImageHistogramUtil.prepareHistogram(pair)).collect(Collectors.toList());
     }
 }

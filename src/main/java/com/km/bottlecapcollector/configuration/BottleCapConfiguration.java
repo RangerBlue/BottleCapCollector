@@ -1,8 +1,7 @@
-package com.km.bottlecapcollector;
+package com.km.bottlecapcollector.configuration;
 
 import com.km.bottlecapcollector.property.CustomProperties;
 import com.km.bottlecapcollector.google.GoogleDriveProperties;
-import com.km.bottlecapcollector.util.ImageHistogramUtil;
 
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.imgproc.Imgproc;
@@ -21,6 +20,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
 
 @EnableConfigurationProperties({
         CustomProperties.class, GoogleDriveProperties.class
@@ -34,10 +37,18 @@ public class BottleCapConfiguration implements CommandLineRunner, ApplicationRun
     @Autowired
     private ApplicationContext context;
 
+    @Bean
+    public Docket api() {
+        return new Docket(DocumentationType.OAS_30)
+                .select()
+                .apis(RequestHandlerSelectors.any())
+                .paths(PathSelectors.any())
+                .build();
+    }
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         args.getNonOptionArgs().forEach(log::info);
-        context.getBean(ImageHistogramUtil.class);
     }
 
     @Override
@@ -50,18 +61,6 @@ public class BottleCapConfiguration implements CommandLineRunner, ApplicationRun
     @Bean
     public HttpTraceRepository httpTraceRepository() {
         return new InMemoryHttpTraceRepository();
-    }
-
-    @Bean
-    @ConditionalOnBean(name = "imageHistogramUtil")
-    public void conditionalOnBean(){
-        log.info("ImageHistogramUtil is available, name");
-    }
-
-    @Bean
-    @ConditionalOnBean(ImageHistogramUtil.class)
-    public void conditionalOnBeanClass(){
-        log.info("ImageHistogramFactory is available class");
     }
 
     @Bean

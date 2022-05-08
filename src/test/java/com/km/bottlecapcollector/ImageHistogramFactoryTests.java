@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector;
 
-import com.km.bottlecapcollector.util.BottleCapMat;
+import com.km.bottlecapcollector.util.CustomMat;
 import com.km.bottlecapcollector.util.ImageHistogramUtil;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
@@ -21,8 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @Import(ImageHistogramUtil.class)
 public class ImageHistogramFactoryTests {
 
-    @Autowired
-    ImageHistogramUtil imageHistogramUtil;
+    ImageHistogramUtil imageHistogramUtil = new ImageHistogramUtil();
 
     private final Path resourceFolder = Paths.get("src/main/resources/img/");
     private final String img1Name = "captest.jpg";
@@ -84,9 +83,9 @@ public class ImageHistogramFactoryTests {
     public void testMetricsWithoutUpload() throws IOException {
         Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
         Mat hist2 = imageHistogramUtil.calculateHistogram(img2Name, resourceFolder);
-        BottleCapMat byteFromMat1 = imageHistogramUtil.convertMatToBottleCapMat(hist1);
+        CustomMat byteFromMat1 = imageHistogramUtil.convertMatToBottleCapMat(hist1);
         Mat hist1After = imageHistogramUtil.convertBottleCapMatToMat(byteFromMat1);
-        BottleCapMat byteFromMat2 = imageHistogramUtil.convertMatToBottleCapMat(hist2);
+        CustomMat byteFromMat2 = imageHistogramUtil.convertMatToBottleCapMat(hist2);
         Mat hist2After = imageHistogramUtil.convertBottleCapMatToMat(byteFromMat2);
 
         assertHistogramsConversion2x2(hist1, hist2, hist1After, hist2After);

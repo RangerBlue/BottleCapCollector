@@ -2,6 +2,7 @@ package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.exception.DuplicateCapException;
 import com.km.bottlecapcollector.model.ComparisonRange;
+import com.km.bottlecapcollector.model.OpenCVImageSignature;
 import com.km.bottlecapcollector.util.HistogramResult;
 import com.km.bottlecapcollector.repository.ComparisonRangeRepository;
 import com.km.bottlecapcollector.util.ComparisonMethod;
@@ -21,8 +22,7 @@ public class ComparisonRangeService {
     @Autowired
     private ComparisonRangeRepository repository;
 
-    @Autowired
-    private ImageHistogramUtil imageHistogramUtil;
+    ImageHistogramUtil imageHistogramUtil = new ImageHistogramUtil();
 
     public List<ComparisonRange> getAll() {
         return (List<ComparisonRange>) repository.findAll();
@@ -117,7 +117,7 @@ public class ComparisonRangeService {
             Set<HistogramResult> similarCaps = model.getSimilarCaps();
             log.info("Similar caps:");
             similarCaps.forEach(histogramResult -> {
-                log.info("ID " + histogramResult.getSecondCap().getId() + ", name " + histogramResult.getSecondCap().getCapName());
+                log.info("ID " + histogramResult.getSecondCap().getId() + ", name " + histogramResult.getSecondCap().getName());
             });
         }
         return model;
@@ -162,7 +162,8 @@ public class ComparisonRangeService {
     }
 
     public double calculateSimilarityForIntersection(HistogramResult histogramCalculation) {
-        double value = histogramCalculation.getIntersection() / histogramCalculation.getSecondCap().getIntersectionValue();
+        OpenCVImageSignature secondCapSignature = (OpenCVImageSignature) histogramCalculation.getSecondCap().getImage().getSignature();
+        double value = histogramCalculation.getIntersection() / secondCapSignature.getIntersectionValue();
         if (value != 1) {
             return value;
         } else {
