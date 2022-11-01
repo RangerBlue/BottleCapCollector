@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.service;
 
-import com.km.bottlecapcollector.model.BottleCap;
-import com.km.bottlecapcollector.repository.BottleCapRepository;
+import com.km.bottlecapcollector.model.CapItem;
+import com.km.bottlecapcollector.repository.CapItemRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -10,47 +10,56 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BottleCapServiceTests {
     @InjectMocks
-    private ItemService service;
+    private BottleCapService service;
 
     @Mock
-    private BottleCapRepository repository;
+    private CapItemRepository repository;
+
 
     @Test
     public void addCapTest() {
-        BottleCap cap0 = new BottleCap("Pinta");
+        CapItem cap0 = new CapItem();
+        cap0.setName("Pinta");
         service.addBottleCap(cap0);
         verify(repository, times(1)).save(cap0);
     }
 
     @Test
     public void getCapByIdTest() {
-        when(repository.findById(1L)).thenReturn(java.util.Optional.of(new BottleCap("Pinta", "file123.jpg")));
-        BottleCap cap = service.getBottleCap(1);
-        assertEquals("Pinta", cap.getCapName());
-        assertTrue(cap.getFileLocation().contains("file123.jpg"));
-        verify(repository, times(1)).findById(1L);
+        String capName = "Pinta";
+        long id = 1L;
+        CapItem cap0 = new CapItem();
+        cap0.setName(capName);
+
+        when(repository.findById(id)).thenReturn(Optional.of(cap0));
+        CapItem cap = service.getCapItem(id);
+        assertEquals(capName, cap.getName());
+        verify(repository, times(1)).findById(id);
     }
 
     @Test
     public void getAllBottleCaps() {
-        List<BottleCap> list = new ArrayList<>();
-        BottleCap cap0 = new BottleCap("Pinta");
-        BottleCap cap1 = new BottleCap("Funky Fluid");
-        BottleCap cap2 = new BottleCap("Deer Beer");
+        List<CapItem> list = new ArrayList<>();
+        CapItem cap0 = new CapItem();
+        cap0.setName("Pinta");
+        CapItem cap1 = new CapItem();
+        cap1.setName("Funky Fluid");
+        CapItem cap2 = new CapItem();
+        cap2.setName("Deer Beer");
         list.add(cap0);
         list.add(cap1);
         list.add(cap2);
 
         when(repository.findAll()).thenReturn(list);
-        List<BottleCap> result = service.getAllBottleCaps();
+        List<CapItem> result = service.getAllCapItems();
 
         assertEquals(3, result.size());
         verify(repository, times(1)).findAll();

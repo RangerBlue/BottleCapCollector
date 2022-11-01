@@ -1,6 +1,5 @@
-package com.km.bottlecapcollector.model.enums;
+package com.km.bottlecapcollector.model;
 
-import com.km.bottlecapcollector.model.CollectionItem;
 import lombok.Data;
 
 import javax.persistence.DiscriminatorValue;

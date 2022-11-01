@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.model;
 
-import com.km.bottlecapcollector.util.CustomMat;
+import com.km.bottlecapcollector.opencv.CustomMat;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

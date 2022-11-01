@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.model;
 
-import com.km.bottlecapcollector.util.ComparisonMethod;
+import com.km.bottlecapcollector.opencv.ComparisonMethod;
 
 import javax.persistence.*;
 

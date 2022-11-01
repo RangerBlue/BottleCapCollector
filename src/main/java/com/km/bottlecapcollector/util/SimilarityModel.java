@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.util;
 
+import com.km.bottlecapcollector.opencv.HistogramResult;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Comparator;
@@ -173,8 +174,8 @@ public class SimilarityModel {
     public int[] getSimilarityDistribution(){
         int[] distribution = new int[10];
         distribution[0] = getFrom00To10();
-        distribution[0] = getFrom10To20();
-        distribution[0] = getFrom20To30();
+        distribution[1] = getFrom10To20();
+        distribution[2] = getFrom20To30();
         distribution[3] = getFrom30To40();
         distribution[4] = getFrom40To50();
         distribution[5] = getFrom50To60();

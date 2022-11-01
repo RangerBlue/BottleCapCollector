@@ -1,12 +1,12 @@
 package com.km.bottlecapcollector.model;
 
+import com.km.bottlecapcollector.exception.ImageUploaderException;
 import com.km.bottlecapcollector.google.ImageUploader;
 import lombok.Data;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,5 +22,5 @@ public abstract class AbstractImageProvider {
     @UpdateTimestamp
     private LocalDateTime updateDateTime;
 
-    public abstract String upload(MultipartFile file, ImageUploader uploader) throws IOException;
+    public abstract String upload(MultipartFile file, ImageUploader uploader) throws ImageUploaderException;
 }

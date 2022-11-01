@@ -1,4 +1,4 @@
-package com.km.bottlecapcollector.util;
+package com.km.bottlecapcollector.opencv;
 
 import com.km.bottlecapcollector.model.CapItem;
 

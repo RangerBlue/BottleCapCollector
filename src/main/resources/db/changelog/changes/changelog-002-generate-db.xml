@@ -19,7 +19,7 @@
             <column name="username" type="VARCHAR(10)">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="users_pkey"/>
             </column>
-            <column name="password" type="VARCHAR(100)">
+            <column name="pw" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
             <column name="enabled" type="BOOLEAN">

@@ -1,8 +1,9 @@
-package com.km.bottlecapcollector.util;
+package com.km.bottlecapcollector.opencv;
 
-import com.km.bottlecapcollector.model.BottleCap;
+import com.km.bottlecapcollector.exception.ImageSignatureException;
 import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.model.OpenCVImageSignature;
+import com.km.bottlecapcollector.util.BottleCapPair;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -68,15 +69,21 @@ public class ImageHistogramUtil {
         return histImage;
     }
 
-    public static Mat calculateHistogram(MultipartFile file) throws IOException {
+    public static Mat calculateHistogram(MultipartFile file) {
         log.info("Calculating Mat object from multipart file...");
         Mat hsvImage = new Mat();
         Mat histImage = new Mat();
-        Mat inputImage = Imgcodecs.imdecode(new MatOfByte(file.getBytes()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+        Mat inputImage;
+        try {
+            inputImage = Imgcodecs.imdecode(new MatOfByte(file.getBytes()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+        } catch (IOException e){
+            throw new ImageSignatureException("OpenCV processing exception", e);
+        }
+
         Imgproc.cvtColor(inputImage, hsvImage, Imgproc.COLOR_BGR2HSV);
         List<Mat> hsvBaseList = Arrays.asList(hsvImage);
         Imgproc.calcHist(hsvBaseList, new MatOfInt(channels), new Mat(), histImage, new MatOfInt(histSize), new MatOfFloat(ranges), false);
-        Core.normalize(histImage, histImage, 0, histImage.rows(), Core.NORM_MINMAX);
+        Core.normalize(histImage, histImage, 0, 1, Core.NORM_MINMAX);
         return histImage;
     }
 
@@ -173,14 +180,19 @@ public class ImageHistogramUtil {
         return name + OBJECT_PREFIX;
     }
 
-    public static CustomMat convertMatToBottleCapMat(Mat mat) throws IOException {
+    public static CustomMat convertMatToBottleCapMat(Mat mat) throws ImageSignatureException{
         log.info("Converting Mat object to BottleCapMat object ...");
         float[] image = new float[(int) (mat.total() * mat.elemSize())];
         mat.get(0, 0, image);
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         DataOutputStream ds = new DataOutputStream(bas);
-        for (float f : image)
-            ds.writeFloat(f);
+        try {
+            for (float f : image)
+                ds.writeFloat(f);
+        } catch (IOException e){
+            throw new ImageSignatureException("OpenCV processing exception", e);
+        }
+
         byte[] bytes = bas.toByteArray();
         return new CustomMat(bytes, mat.cols(), mat.rows());
     }
@@ -202,18 +214,18 @@ public class ImageHistogramUtil {
         return storeMatFile(hist, imageName, objectStorageLocation);
     }
 
-    public CustomMat calculateAndReturnMathObjectAsBottleCapMat(MultipartFile file) throws IOException {
+    public CustomMat calculateAndReturnMathObjectAsBottleCapMat(MultipartFile file) throws ImageSignatureException {
         log.info("Entering calculateAndReturnMathObjectAsBottleCapMat method with multipart file ");
         Mat mat = calculateHistogram(file);
         return convertMathObjectToBottleCapMat(mat);
     }
 
-    public static CustomMat convertMathObjectToBottleCapMat(Mat mat) throws IOException {
+    public static CustomMat convertMathObjectToBottleCapMat(Mat mat) throws ImageSignatureException {
         log.info("Entering convertMathObjectToBottleCapMat method with multipart file ");
         return convertMatToBottleCapMat(mat);
     }
 
-    public static Mat calculateAndReturnMathObject(MultipartFile file) throws IOException {
+    public static Mat calculateAndReturnMathObject(MultipartFile file) throws ImageSignatureException {
         log.info("Entering calculateAndReturnMathObject method with multipart file ");
         return calculateHistogram(file);
     }

@@ -1,7 +1,8 @@
 package com.km.bottlecapcollector.model;
 
-import com.km.bottlecapcollector.util.CustomMat;
-import com.km.bottlecapcollector.util.ImageHistogramUtil;
+import com.km.bottlecapcollector.exception.ImageSignatureException;
+import com.km.bottlecapcollector.opencv.CustomMat;
+import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
 import lombok.Data;
 import org.opencv.core.Mat;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
-import java.io.IOException;
 
 @Entity
 @DiscriminatorValue("OpenCV")
@@ -26,12 +26,13 @@ public class OpenCVImageSignature extends AbstractSignature {
 
 
     @Override
-    public void calculateParameters(MultipartFile file) throws IOException {
+    public AbstractSignature calculateParameters(MultipartFile file) throws ImageSignatureException {
         Mat mat = ImageHistogramUtil.calculateAndReturnMathObject(file);
         CustomMat customMatFile = ImageHistogramUtil.convertMathObjectToBottleCapMat(mat);
         setImageData(customMatFile.getMatArray());
         setImageCols(customMatFile.getCols());
         setImageRows(customMatFile.getRows());
         setIntersectionValue(ImageHistogramUtil.calculateIntersection(mat));
+        return this;
     }
 }

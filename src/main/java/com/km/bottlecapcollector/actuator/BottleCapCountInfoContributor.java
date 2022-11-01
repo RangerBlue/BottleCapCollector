@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.actuator;
 
-import com.km.bottlecapcollector.service.ItemService;
+import com.km.bottlecapcollector.service.BottleCapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
@@ -13,11 +13,11 @@ import java.util.Map;
 public class BottleCapCountInfoContributor implements InfoContributor {
 
     @Autowired
-    private ItemService service;
+    private BottleCapService service;
 
     @Override
     public void contribute(Info.Builder builder) {
-        long capCount = service.getAllBottleCaps().size();
+        long capCount = service.getAllCapItems().size();
         Map<String, Object> capMap = new HashMap<>();
         capMap.put("count", capCount);
         builder.withDetail("cap-stats", capMap);

@@ -1,12 +1,10 @@
 package com.km.bottlecapcollector.service;
 
-import com.km.bottlecapcollector.model.BottleCap;
 import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.util.BottleCapPair;
-import com.km.bottlecapcollector.util.ImageHistogramUtil;
+import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -15,7 +13,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FileStorageServiceTests {
+public class LocalFileStorageServiceTests {
 
 
 

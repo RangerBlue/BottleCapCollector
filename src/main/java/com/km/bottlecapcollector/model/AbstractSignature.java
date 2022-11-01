@@ -1,10 +1,10 @@
 package com.km.bottlecapcollector.model;
 
+import com.km.bottlecapcollector.exception.ImageSignatureException;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
-import java.io.IOException;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -15,5 +15,5 @@ public abstract class AbstractSignature {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    public abstract void calculateParameters(MultipartFile file) throws IOException;
+    public abstract AbstractSignature calculateParameters(MultipartFile file) throws ImageSignatureException;
 }

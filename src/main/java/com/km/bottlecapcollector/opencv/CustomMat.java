@@ -1,4 +1,4 @@
-package com.km.bottlecapcollector.util;
+package com.km.bottlecapcollector.opencv;
 
 import java.util.Arrays;
 import java.util.Objects;

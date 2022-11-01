@@ -8,8 +8,5 @@
 
     <include file="changes/changelog-001-generate-db.xml" relativeToChangelogFile="true"/>
     <include file="changes/changelog-002-generate-db.xml" relativeToChangelogFile="true"/>
-    <include file="changes/changelog-003-generate-db.xml" relativeToChangelogFile="true"/>
-    <include file="changes/changelog-004-generate-db.xml" relativeToChangelogFile="true"/>
-    <include file="changes/changelog-005-generate-db.xml" relativeToChangelogFile="true"/>
     <include file="changes/changelog-006-generate-new-structure.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -1,75 +1,80 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
-                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-                   http://www.liquibase.org/xml/ns/pro
-                   http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd
-                   http://www.liquibase.org/xml/ns/dbchangelog
-                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-    <changeSet author="kamil (generated)" id="1652006864671-1">
-        <createTable tableName="abstract_image_provider">
-            <column name="dtype" type="VARCHAR(31)">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="kamil (generated)" id="1667045041154-1">
+        <createTable tableName="ABSTRACTIMAGE">
+            <column name="IMAGE_TYPE" type="VARCHAR(31)">
                 <constraints nullable="false"/>
             </column>
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="abstract_image_provider_pkey"/>
+            <column autoIncrement="true" defaultOnNull="false" generationType="ALWAYS" name="ID" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="SYS_C0030925"/>
             </column>
-            <column name="image_provider_id" type="VARCHAR(255)"/>
-            <column name="update_date_time" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="URL" type="VARCHAR(255)"/>
+            <column name="PROVIDER_ID" type="INT"/>
+            <column name="SINGATURE_ID" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet author="kamil (generated)" id="1652006864671-2">
-        <createTable tableName="abstract_signature">
-            <column name="signature_type" type="VARCHAR(31)">
+    <changeSet author="kamil (generated)" id="1667045041154-2">
+        <createTable tableName="ABSTRACT_IMAGE_PROVIDER">
+            <column name="DTYPE" type="VARCHAR(31)">
                 <constraints nullable="false"/>
             </column>
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="abstract_signature_pkey"/>
+            <column autoIncrement="true" defaultOnNull="false" generationType="ALWAYS" name="ID" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="SYS_C0030928"/>
             </column>
-            <column name="image_cols" type="INTEGER"/>
-            <column name="image_data" type="OID"/>
-            <column name="image_rows" type="INTEGER"/>
-            <column name="intersection_value" type="FLOAT8"/>
+            <column name="IMAGE_PROVIDER_ID" type="VARCHAR(255)"/>
+            <column name="UPDATE_DATE_TIME" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
-    <changeSet author="kamil (generated)" id="1652006864671-3">
-        <createTable tableName="abstractimage">
-            <column name="image_type" type="VARCHAR(31)">
+    <changeSet author="kamil (generated)" id="1667045041154-3">
+        <createTable tableName="ABSTRACT_SIGNATURE">
+            <column name="SIGNATURE_TYPE" type="VARCHAR(31)">
                 <constraints nullable="false"/>
             </column>
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="abstractimage_pkey"/>
+            <column autoIncrement="true" defaultOnNull="false" generationType="ALWAYS" name="ID" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="SYS_C0030931"/>
             </column>
-            <column name="url" type="VARCHAR(255)"/>
-            <column name="provider_id" type="BIGINT"/>
-            <column name="singature_id" type="BIGINT"/>
+            <column name="IMAGE_COLS" type="INT"/>
+            <column name="IMAGE_DATA" type="BLOB"/>
+            <column name="IMAGE_ROWS" type="INT"/>
+            <column name="INTERSECTION_VALUE" type="DOUBLE"/>
         </createTable>
     </changeSet>
-    <changeSet author="kamil (generated)" id="1652006864671-5">
-        <createTable tableName="collection_item">
-            <column name="item_type" type="VARCHAR(31)">
+    <changeSet author="kamil (generated)" id="1667045041154-4">
+        <createTable tableName="COLLECTION_ITEM">
+            <column name="ITEM_TYPE" type="VARCHAR2(31)">
                 <constraints nullable="false"/>
             </column>
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="collection_item_pkey"/>
+            <column autoIncrement="true" defaultOnNull="false" generationType="ALWAYS" name="ID" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="SYS_C0030934"/>
             </column>
-            <column name="create_date_time" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="update_date_time" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="description" type="VARCHAR(255)"/>
-            <column name="name" type="VARCHAR(255)"/>
-            <column name="image_id" type="BIGINT"/>
+            <column name="CREATE_DATE_TIME" type="TIMESTAMP"/>
+            <column name="UPDATE_DATE_TIME" type="TIMESTAMP"/>
+            <column name="DESCRIPTION" type="VARCHAR(255)"/>
+            <column name="NAME" type="VARCHAR(255)"/>
+            <column name="IMAGE_ID" type="INT"/>
         </createTable>
     </changeSet>
-    <changeSet author="kamil (generated)" id="1652006864671-7">
-        <addForeignKeyConstraint baseColumnNames="provider_id" baseTableName="abstractimage" constraintName="fkqncnyc9i2a4rybojrm0oldj34" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="abstract_image_provider" validate="true"/>
+    <changeSet author="kamil (generated)" id="1667045041154-5">
+        <createTable tableName="COMPARISON_RANGE">
+            <column autoIncrement="true" defaultOnNull="false" generationType="ALWAYS" name="ID" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="SYS_C0030938"/>
+            </column>
+            <column name="MAX_VALUE" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="METHOD_NAME" type="VARCHAR(255)"/>
+            <column name="MIN_VALUE" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
     </changeSet>
-    <changeSet author="kamil (generated)" id="1652006864671-8">
-        <addForeignKeyConstraint baseColumnNames="singature_id" baseTableName="abstractimage" constraintName="fk7i54xke2b0c4g8g9un504k93v" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="abstract_signature" validate="true"/>
+    <changeSet author="kamil (generated)" id="1667045041154-6">
+        <addForeignKeyConstraint baseColumnNames="SINGATURE_ID" baseTableName="ABSTRACTIMAGE" constraintName="FK7I54XKE2B0C4G8G9UN504K93V" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="ID" referencedTableName="ABSTRACT_SIGNATURE" validate="true"/>
     </changeSet>
-    <changeSet author="kamil (generated)" id="1652006864671-9">
-        <addForeignKeyConstraint baseColumnNames="image_id" baseTableName="collection_item" constraintName="fkcsanix0e8hh387viv6brp7kd" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="abstractimage" validate="true"/>
+    <changeSet author="kamil (generated)" id="1667045041154-7">
+        <addForeignKeyConstraint baseColumnNames="IMAGE_ID" baseTableName="COLLECTION_ITEM" constraintName="FKCSANIX0E8HH387VIV6BRP7KD" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="ID" referencedTableName="ABSTRACTIMAGE" validate="true"/>
+    </changeSet>
+    <changeSet author="kamil (generated)" id="1667045041154-8">
+        <addForeignKeyConstraint baseColumnNames="PROVIDER_ID" baseTableName="ABSTRACTIMAGE" constraintName="FKQNCNYC9I2A4RYBOJRM0OLDJ34" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="ID" referencedTableName="ABSTRACT_IMAGE_PROVIDER" validate="true"/>
     </changeSet>
 </databaseChangeLog>

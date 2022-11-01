@@ -1,11 +1,10 @@
 package com.km.bottlecapcollector;
 
-import com.km.bottlecapcollector.util.CustomMat;
-import com.km.bottlecapcollector.util.ImageHistogramUtil;
+import com.km.bottlecapcollector.opencv.CustomMat;
+import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
@@ -39,18 +38,18 @@ public class ImageHistogramFactoryTests {
     @Test
     public void testMetricsWithFileUpload() {
         Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
-        double intersectionBase = imageHistogramUtil.calculateIntersection(hist1);
+        double intersectionBase = ImageHistogramUtil.calculateIntersection(hist1);
         Mat hist2 = imageHistogramUtil.calculateHistogram(img2Name, resourceFolder);
-        assertTrue(imageHistogramUtil.correlationMethod(hist1, hist2) < imageHistogramUtil.CORRELATION_BASE(),
+        assertTrue(ImageHistogramUtil.correlationMethod(hist1, hist2) < imageHistogramUtil.CORRELATION_BASE(),
                 "Correlation metric should be less than base metric");
 
-        assertTrue(imageHistogramUtil.chisquareMethod(hist1, hist2) > imageHistogramUtil.CHI_SQUARE_BASE(),
+        assertTrue(ImageHistogramUtil.chisquareMethod(hist1, hist2) > imageHistogramUtil.CHI_SQUARE_BASE(),
                 "Chi-square metric should be greater than base metric");
 
-        assertTrue(imageHistogramUtil.intersectionMethod(hist1, hist2) < intersectionBase,
+        assertTrue(ImageHistogramUtil.intersectionMethod(hist1, hist2) < intersectionBase,
                 "Intersection metric should be less than base metric");
 
-        assertTrue(imageHistogramUtil.bhattacharyyaMethod(hist1, hist2) > imageHistogramUtil.BHATTACHARYYA_BASE(),
+        assertTrue(ImageHistogramUtil.bhattacharyyaMethod(hist1, hist2) > imageHistogramUtil.BHATTACHARYYA_BASE(),
                 "Bhattacharyya metric should be greater than base metric");
 
     }
@@ -83,72 +82,72 @@ public class ImageHistogramFactoryTests {
     public void testMetricsWithoutUpload() throws IOException {
         Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
         Mat hist2 = imageHistogramUtil.calculateHistogram(img2Name, resourceFolder);
-        CustomMat byteFromMat1 = imageHistogramUtil.convertMatToBottleCapMat(hist1);
-        Mat hist1After = imageHistogramUtil.convertBottleCapMatToMat(byteFromMat1);
-        CustomMat byteFromMat2 = imageHistogramUtil.convertMatToBottleCapMat(hist2);
-        Mat hist2After = imageHistogramUtil.convertBottleCapMatToMat(byteFromMat2);
+        CustomMat byteFromMat1 = ImageHistogramUtil.convertMatToBottleCapMat(hist1);
+        Mat hist1After = ImageHistogramUtil.convertBottleCapMatToMat(byteFromMat1);
+        CustomMat byteFromMat2 = ImageHistogramUtil.convertMatToBottleCapMat(hist2);
+        Mat hist2After = ImageHistogramUtil.convertBottleCapMatToMat(byteFromMat2);
 
         assertHistogramsConversion2x2(hist1, hist2, hist1After, hist2After);
 
     }
 
     private void assertHistogramsConversion2x2(Mat hist1Before, Mat hist2Before, Mat hist1After, Mat hist2After) {
-        assertEquals(imageHistogramUtil.correlationMethod(hist1Before, hist2Before),
-                imageHistogramUtil.correlationMethod(hist1After, hist2After), "Results should be the same");
-        assertEquals(imageHistogramUtil.CORRELATION_BASE(), imageHistogramUtil.correlationMethod(hist1Before, hist1After),
+        assertEquals(ImageHistogramUtil.correlationMethod(hist1Before, hist2Before),
+                ImageHistogramUtil.correlationMethod(hist1After, hist2After), "Results should be the same");
+        assertEquals(imageHistogramUtil.CORRELATION_BASE(), ImageHistogramUtil.correlationMethod(hist1Before, hist1After),
                 "Correlation metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.CORRELATION_BASE(), imageHistogramUtil.correlationMethod(hist2Before, hist2After),
+        assertEquals(imageHistogramUtil.CORRELATION_BASE(), ImageHistogramUtil.correlationMethod(hist2Before, hist2After),
                 "Correlation metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.correlationMethod(hist1Before, hist2After),
-                imageHistogramUtil.correlationMethod(hist1After, hist2Before), "Results should be the same");
+        assertEquals(ImageHistogramUtil.correlationMethod(hist1Before, hist2After),
+                ImageHistogramUtil.correlationMethod(hist1After, hist2Before), "Results should be the same");
 
-        assertEquals(imageHistogramUtil.chisquareMethod(hist1Before, hist2Before),
-                imageHistogramUtil.chisquareMethod(hist1After, hist2After), "Results should be the same");
-        assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), imageHistogramUtil.chisquareMethod(hist1Before, hist1After),
+        assertEquals(ImageHistogramUtil.chisquareMethod(hist1Before, hist2Before),
+                ImageHistogramUtil.chisquareMethod(hist1After, hist2After), "Results should be the same");
+        assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), ImageHistogramUtil.chisquareMethod(hist1Before, hist1After),
                 "Chi-square metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), imageHistogramUtil.chisquareMethod(hist2Before, hist2After),
+        assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), ImageHistogramUtil.chisquareMethod(hist2Before, hist2After),
                 "Chi-square metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.chisquareMethod(hist1Before, hist2After),
-                imageHistogramUtil.chisquareMethod(hist1After, hist2Before), "Results should be the same");
+        assertEquals(ImageHistogramUtil.chisquareMethod(hist1Before, hist2After),
+                ImageHistogramUtil.chisquareMethod(hist1After, hist2Before), "Results should be the same");
 
-        assertEquals(imageHistogramUtil.intersectionMethod(hist1Before, hist2Before),
-                imageHistogramUtil.intersectionMethod(hist1After, hist2After), "Results should be the same");
-        assertTrue(imageHistogramUtil.intersectionMethod(hist1Before, hist1After) > 0,
+        assertEquals(ImageHistogramUtil.intersectionMethod(hist1Before, hist2Before),
+                ImageHistogramUtil.intersectionMethod(hist1After, hist2After), "Results should be the same");
+        assertTrue(ImageHistogramUtil.intersectionMethod(hist1Before, hist1After) > 0,
                 "Intersection metric should be more than 0");
-        assertTrue(imageHistogramUtil.intersectionMethod(hist2Before, hist2After) > 0,
+        assertTrue(ImageHistogramUtil.intersectionMethod(hist2Before, hist2After) > 0,
                 "Intersection metric should be more than 0");
-        assertEquals(imageHistogramUtil.intersectionMethod(hist1Before, hist2After),
-                imageHistogramUtil.intersectionMethod(hist1After, hist2Before), "Results should be the same");
+        assertEquals(ImageHistogramUtil.intersectionMethod(hist1Before, hist2After),
+                ImageHistogramUtil.intersectionMethod(hist1After, hist2Before), "Results should be the same");
 
-        assertEquals(imageHistogramUtil.bhattacharyyaMethod(hist1Before, hist2Before),
-                imageHistogramUtil.bhattacharyyaMethod(hist1After, hist2After), "Results should be the same");
-        assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), imageHistogramUtil.bhattacharyyaMethod(hist1Before, hist1After),
+        assertEquals(ImageHistogramUtil.bhattacharyyaMethod(hist1Before, hist2Before),
+                ImageHistogramUtil.bhattacharyyaMethod(hist1After, hist2After), "Results should be the same");
+        assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), ImageHistogramUtil.bhattacharyyaMethod(hist1Before, hist1After),
                 "Bhattacharyya metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), imageHistogramUtil.bhattacharyyaMethod(hist2Before, hist2After),
+        assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), ImageHistogramUtil.bhattacharyyaMethod(hist2Before, hist2After),
                 "Bhattacharyya metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.bhattacharyyaMethod(hist1Before, hist2After),
-                imageHistogramUtil.bhattacharyyaMethod(hist1After, hist2Before), "Results should be the same");
+        assertEquals(ImageHistogramUtil.bhattacharyyaMethod(hist1Before, hist2After),
+                ImageHistogramUtil.bhattacharyyaMethod(hist1After, hist2Before), "Results should be the same");
     }
 
     public static void assertHistogramsConversion1x1(Mat histBefore, Mat histAfter, ImageHistogramUtil imageHistogramUtil) {
-        assertEquals(imageHistogramUtil.CORRELATION_BASE(), imageHistogramUtil.correlationMethod(histBefore, histAfter),
-                "Correlation metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.CORRELATION_BASE(), imageHistogramUtil.correlationMethod(histBefore, histAfter),
-                "Correlation metric should be equal with base metric");
+        assertEquals(imageHistogramUtil.CORRELATION_BASE(), ImageHistogramUtil.correlationMethod(histBefore, histAfter),
+                0.00001, "Correlation metric should be equal with base metric");
+        assertEquals(imageHistogramUtil.CORRELATION_BASE(), ImageHistogramUtil.correlationMethod(histBefore, histAfter),
+                0.00001, "Correlation metric should be equal with base metric");
 
-        assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), imageHistogramUtil.chisquareMethod(histBefore, histAfter),
+        assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), ImageHistogramUtil.chisquareMethod(histBefore, histAfter),
                 "Chi-square metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), imageHistogramUtil.chisquareMethod(histBefore, histAfter),
+        assertEquals(imageHistogramUtil.CHI_SQUARE_BASE(), ImageHistogramUtil.chisquareMethod(histBefore, histAfter),
                 "Chi-square metric should be equal with base metric");
 
-        assertTrue(imageHistogramUtil.intersectionMethod(histBefore, histAfter) > 0,
+        assertTrue(ImageHistogramUtil.intersectionMethod(histBefore, histAfter) > 0,
                 "Intersection metric should be more than 0");
-        assertTrue(imageHistogramUtil.intersectionMethod(histBefore, histAfter) > 0,
+        assertTrue(ImageHistogramUtil.intersectionMethod(histBefore, histAfter) > 0,
                 "Intersection metric should be more than 0");
 
-        assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), imageHistogramUtil.bhattacharyyaMethod(histBefore, histAfter),
+        assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), ImageHistogramUtil.bhattacharyyaMethod(histBefore, histAfter),
                 "Bhattacharyya metric should be equal with base metric");
-        assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), imageHistogramUtil.bhattacharyyaMethod(histBefore, histAfter),
+        assertEquals(imageHistogramUtil.BHATTACHARYYA_BASE(), ImageHistogramUtil.bhattacharyyaMethod(histBefore, histAfter),
                 "Bhattacharyya metric should be equal with base metric");
     }
 

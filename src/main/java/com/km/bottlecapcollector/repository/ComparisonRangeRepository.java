@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.repository;
 
 import com.km.bottlecapcollector.model.ComparisonRange;
-import com.km.bottlecapcollector.util.ComparisonMethod;
+import com.km.bottlecapcollector.opencv.ComparisonMethod;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 

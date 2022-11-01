@@ -3,7 +3,7 @@ package com.km.bottlecapcollector.util;
 import com.km.bottlecapcollector.model.*;
 import com.km.bottlecapcollector.model.enums.CollectionItemType;
 import com.km.bottlecapcollector.model.enums.ImageProviderType;
-import com.km.bottlecapcollector.model.enums.PictureItem;
+import com.km.bottlecapcollector.model.PictureItem;
 import com.km.bottlecapcollector.model.enums.SignatureType;
 
 public class CollectionItemBuilder {
@@ -40,7 +40,7 @@ public class CollectionItemBuilder {
             item.setImage(image);
         } else if (collectionItemType == CollectionItemType.PICTURE && imageProviderType == ImageProviderType.GOOGLE && signatureType == SignatureType.OPEN_CV) {
             item = new PictureItem();
-            AbstractImage image = new RoundOpenCVGoogleImage();
+            AbstractImage image = new RectangleOpenCVGoogleImage();
             AbstractImageProvider abstractImageProvider = ImageProviderFactory.getSignature(imageProviderType);
             AbstractSignature openCVImageSignature = SignatureFactory.getSignature(signatureType);
             image.setProvider(abstractImageProvider);

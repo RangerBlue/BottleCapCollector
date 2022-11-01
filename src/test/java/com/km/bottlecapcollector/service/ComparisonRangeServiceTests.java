@@ -1,10 +1,12 @@
 package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.exception.DuplicateCapException;
-import com.km.bottlecapcollector.model.BottleCap;
 import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.model.ComparisonRange;
 import com.km.bottlecapcollector.model.OpenCVImageSignature;
+import com.km.bottlecapcollector.opencv.ComparisonMethod;
+import com.km.bottlecapcollector.opencv.HistogramResult;
+import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
 import com.km.bottlecapcollector.util.*;
 import com.km.bottlecapcollector.repository.ComparisonRangeRepository;
 import org.junit.Test;
