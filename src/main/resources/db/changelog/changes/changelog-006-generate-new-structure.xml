@@ -22,6 +22,7 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="SYS_C0030928"/>
             </column>
             <column name="IMAGE_PROVIDER_ID" type="VARCHAR(255)"/>
+            <column name="FILE_NAME" type="VARCHAR(255)"/>
             <column name="UPDATE_DATE_TIME" type="TIMESTAMP"/>
         </createTable>
     </changeSet>

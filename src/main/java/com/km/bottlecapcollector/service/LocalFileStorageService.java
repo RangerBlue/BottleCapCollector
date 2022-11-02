@@ -1,9 +1,9 @@
 package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.exception.FileStorageException;
-import com.km.bottlecapcollector.property.CustomProperties;
+import com.km.bottlecapcollector.property.AppProperties;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -17,16 +17,16 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class LocalFileStorageService {
-    @Autowired
-    private CustomProperties customProperties;
+    private AppProperties appProperties;
 
-    public Path fileStorageLocation;
+    public static Path fileStorageLocation;
 
 
     @PostConstruct
     public void setupLocations() {
-        fileStorageLocation = Paths.get(customProperties.getUploadDir()).toAbsolutePath().normalize();
+        fileStorageLocation = Paths.get(appProperties.getFileUploadDir()).toAbsolutePath().normalize();
 
         try {
             Files.createDirectories(fileStorageLocation);

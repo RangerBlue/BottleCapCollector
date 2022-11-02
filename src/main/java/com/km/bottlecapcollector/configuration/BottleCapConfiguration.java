@@ -1,8 +1,6 @@
 package com.km.bottlecapcollector.configuration;
 
-import com.km.bottlecapcollector.property.CustomProperties;
-import com.km.bottlecapcollector.google.GoogleDriveProperties;
-
+import com.km.bottlecapcollector.property.AppProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.imgproc.Imgproc;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +23,7 @@ import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
-@EnableConfigurationProperties({
-        CustomProperties.class, GoogleDriveProperties.class
-})
+@EnableConfigurationProperties(AppProperties.class)
 @Configuration
 @EnableCaching
 @EnableAsync

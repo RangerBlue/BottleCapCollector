@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 @Entity
 @DiscriminatorValue("GoogleDrive")
 @Data
-public class GoogleDriveProvider extends AbstractImageProvider{
+public class GoogleDriveProvider extends AbstractImageProvider {
 
     @Override
     public String upload(MultipartFile file, ImageUploader uploader) throws ImageUploaderException {

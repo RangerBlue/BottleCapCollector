@@ -11,12 +11,14 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Value;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
 import com.km.bottlecapcollector.exception.GoogleDriveException;
 import com.km.bottlecapcollector.exception.ImageUploaderException;
+import com.km.bottlecapcollector.property.AppProperties;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -31,16 +33,14 @@ import java.util.*;
 
 
 @Component
+@AllArgsConstructor
 @Slf4j
 public class GoogleDriveService implements ImageUploader{
 
-    @Autowired
-    GoogleDriveProperties properties;
+    private static final String GRANT_TYPE = "refresh_token";
+    private static final String AUTH_PROVIDER_X509_CERT_URL = "https://www.googleapis.com/oauth2/v1/certs";
+    private static final String AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
 
-    /**
-     * Application name.
-     */
-    private static final String APPLICATION_NAME = "BottleCapCollector";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
@@ -50,11 +50,10 @@ public class GoogleDriveService implements ImageUploader{
      */
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
 
-    private RestTemplate template = new RestTemplate();
 
-    public String getFolderID() {
-        return properties.getFolderID();
-    }
+    private final RestTemplate template = new RestTemplate();
+
+    private final AppProperties appProperties;
 
     public String getAccessToken() {
         String token = "";
@@ -78,11 +77,11 @@ public class GoogleDriveService implements ImageUploader{
      */
     public Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         GoogleClientSecrets.Details details = new GoogleClientSecrets.Details();
-        details.setClientId(properties.getClientID());
-        details.set("project_id", properties.getProjectID());
-        details.setAuthUri(properties.getAuthUri());
-        details.set("auth_provider_x509_cert_url", properties.getAuthProviderX509CertUrl());
-        details.setClientSecret(properties.getClientSecret());
+        details.setClientId(appProperties.getGoogleDriveClientId());
+        details.set("project_id", appProperties.getGoogleDriveProjectId());
+        details.setAuthUri(AUTH_URI);
+        details.set("auth_provider_x509_cert_url", AUTH_PROVIDER_X509_CERT_URL);
+        details.setClientSecret(appProperties.getGoogleDriveClientSecret());
         GoogleClientSecrets clientSecrets = new GoogleClientSecrets();
         clientSecrets.setInstalled(details);
 
@@ -109,7 +108,7 @@ public class GoogleDriveService implements ImageUploader{
 
         metadata.setMimeType(multipartFile.getContentType());
         metadata.setName(multipartFile.getOriginalFilename());
-        metadata.setParents(new String[]{getFolderID()});
+        metadata.setParents(new String[]{appProperties.getGoogleDriveFolderId()});
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
 

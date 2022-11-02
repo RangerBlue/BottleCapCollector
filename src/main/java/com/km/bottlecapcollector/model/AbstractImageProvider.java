@@ -19,6 +19,8 @@ public abstract class AbstractImageProvider {
 
     private String imageProviderId;
 
+    private String fileName;
+
     @UpdateTimestamp
     private LocalDateTime updateDateTime;
 

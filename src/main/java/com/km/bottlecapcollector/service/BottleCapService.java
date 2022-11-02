@@ -119,7 +119,8 @@ public class BottleCapService implements SimilarityCalculator{
 
     @Transactional
     public Long addCapItem(String itemName, String description, MultipartFile file) {
-        log.info("Adding new cap item: {}", itemName);
+        String fileName = file.getOriginalFilename();
+        log.info("Adding new cap item: {}, from picture: {}", itemName, fileName);
         CapItem capItem = itemFactory.getCapItem();
         capItem.setName(itemName);
         capItem.setDescription(description);
@@ -132,6 +133,7 @@ public class BottleCapService implements SimilarityCalculator{
             AbstractImageProvider googleDriveProvider = capItem.getImage().getProvider();
             uploadedImageUrl = googleDriveProvider.upload(file, imageUploaderService);
             image.setUrl(uploadedImageUrl);
+            googleDriveProvider.setFileName(fileName);
         } catch (ImageSignatureException ise) {
             log.error("Error during calculating image signature parameters at: {}", itemName);
             throw new ImageSignatureException(ise);
@@ -141,8 +143,6 @@ public class BottleCapService implements SimilarityCalculator{
         }
 
         log.info("Picture has been successfully uploaded at: {}", uploadedImageUrl);
-
-        image.setUrl(uploadedImageUrl);
 
         return capItemRepository.save(capItem).getId();
     }
