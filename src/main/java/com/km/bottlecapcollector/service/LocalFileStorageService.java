@@ -12,8 +12,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -21,8 +23,7 @@ import java.util.stream.Collectors;
 public class LocalFileStorageService {
     private AppProperties appProperties;
 
-    public static Path fileStorageLocation;
-
+    private static Path fileStorageLocation;
 
     @PostConstruct
     public void setupLocations() {
@@ -36,21 +37,16 @@ public class LocalFileStorageService {
         log.debug("Directory " + fileStorageLocation + " has been created or already exists");
     }
 
-    public long countAllFiles() {
-        try {
-            return Files.list(fileStorageLocation).count();
+    public List<File> getAllPictures() {
+        try (Stream<Path> paths = Files.walk(fileStorageLocation)) {
+            return paths.map(Path::toFile).skip(1).collect(Collectors.toList());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error while reading file from local storage, {}", e.getMessage());
         }
-        return -1;
+        return Collections.emptyList();
     }
 
-    public List<File> getAllPictures() {
-        try {
-            return Files.walk(fileStorageLocation).map(p -> p.toFile()).skip(1).collect(Collectors.toList());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public String getUploadFolderLocation(){
+        return fileStorageLocation.toString();
     }
 }

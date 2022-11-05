@@ -1,4 +1,4 @@
-package mapper;
+package com.km.bottlecapcollector.mapper;
 
 import com.km.bottlecapcollector.dto.BottleCapCatalogDto;
 import com.km.bottlecapcollector.dto.BottleCapDto;

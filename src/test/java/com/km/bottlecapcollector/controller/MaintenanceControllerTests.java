@@ -1,10 +1,6 @@
 package com.km.bottlecapcollector.controller;
 
-import com.km.bottlecapcollector.google.GoogleDriveService;
-import com.km.bottlecapcollector.service.AbstractImageService;
-import com.km.bottlecapcollector.service.BottleCapService;
-import com.km.bottlecapcollector.service.ComparisonRangeService;
-import com.km.bottlecapcollector.service.LocalFileStorageService;
+import com.km.bottlecapcollector.service.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,24 +25,10 @@ public class MaintenanceControllerTests {
     @Autowired
     private MockMvc mvc;
     @MockBean
-    private GoogleDriveService googleDriveService;
-
-    @MockBean
-    private BottleCapService bottleCapService;
-
-    @MockBean
-    private LocalFileStorageService localFileStorageService;
-
-    @MockBean
-    private ComparisonRangeService comparisonRangeService;
-
-    @MockBean
-    private AbstractImageService abstractImageService;
+    private MaintenanceService maintenanceService;
 
     @MockBean
     private DataSource dataSource;
-
-
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -54,9 +36,9 @@ public class MaintenanceControllerTests {
         String fileName = "captest1.jpg";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
-        given(googleDriveService.uploadFile(any())).willReturn("abcdfgh123");
+        given(maintenanceService.uploadFileToGoogleDrive(any())).willReturn("abcdfgh123");
 
-        this.mvc.perform(MockMvcRequestBuilders.multipart("/admin/uploadFileToDrive")
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/admin/upload-file-to-google-drive")
                         .file(file))
                 .andExpect(status().is(200));
     }

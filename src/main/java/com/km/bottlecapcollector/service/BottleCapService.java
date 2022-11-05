@@ -15,7 +15,7 @@ import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
 import com.km.bottlecapcollector.repository.CapItemRepository;
 import com.km.bottlecapcollector.util.*;
 import lombok.extern.slf4j.Slf4j;
-import mapper.BottleCapMapper;
+import com.km.bottlecapcollector.mapper.BottleCapMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
