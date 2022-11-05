@@ -16,5 +16,5 @@ public class AppProperties {
     private String googleDriveClientSecret;
     private String googleDriveProjectId;
     private String googleDriveFolderId;
-
+    private String googleDriveTokenPath;
 }
