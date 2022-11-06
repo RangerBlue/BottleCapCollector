@@ -18,6 +18,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
@@ -27,6 +28,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 @Configuration
 @EnableCaching
 @EnableAsync
+@EnableScheduling
 @Slf4j
 public class BottleCapConfiguration implements CommandLineRunner, ApplicationRunner {
 

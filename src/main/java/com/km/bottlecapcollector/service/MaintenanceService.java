@@ -8,10 +8,12 @@ import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.model.ComparisonRange;
 import com.km.bottlecapcollector.opencv.HistogramResult;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
+import com.km.bottlecapcollector.property.AppProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.entity.ContentType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,6 +48,12 @@ public class MaintenanceService {
     }
     public String uploadFileToGoogleDrive(MultipartFile multipartFile){
         return googleDriveService.uploadFile(multipartFile);
+    }
+    @Scheduled(cron = "${bcc.google-drive-update-cron}")
+    public void runScheduledAction(){
+        log.info("Started update of Google Drive images");
+        updateGoogleDrivePicturesUrls();
+        log.info("Finished update of Google Drive images");
     }
 
     public List<ComparisonRangeDto> calculateComparisonRangeData() {

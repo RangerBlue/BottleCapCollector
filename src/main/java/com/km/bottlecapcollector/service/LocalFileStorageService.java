@@ -1,6 +1,5 @@
 package com.km.bottlecapcollector.service;
 
-import com.km.bottlecapcollector.exception.FileStorageException;
 import com.km.bottlecapcollector.property.AppProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

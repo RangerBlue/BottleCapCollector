@@ -6,6 +6,7 @@ target/
 wallet/
 tokens/
 logs/
+keystore/
 
 ### STS ###
 .apt_generated

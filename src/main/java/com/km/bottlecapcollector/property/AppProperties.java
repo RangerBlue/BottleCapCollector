@@ -17,4 +17,5 @@ public class AppProperties {
     private String googleDriveProjectId;
     private String googleDriveFolderId;
     private String googleDriveTokenPath;
+    private String googleDriveUpdateCron;
 }
