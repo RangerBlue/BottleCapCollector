@@ -28,13 +28,6 @@ public class LocalFileStorageService {
     @PostConstruct
     public void setupLocations() {
         fileStorageLocation = Paths.get(appProperties.getFileUploadDir()).toAbsolutePath().normalize();
-
-        try {
-            Files.createDirectories(fileStorageLocation);
-        } catch (Exception ex) {
-            throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
-        }
-        log.debug("Directory " + fileStorageLocation + " has been created or already exists");
     }
 
     public List<File> getAllPictures() {
