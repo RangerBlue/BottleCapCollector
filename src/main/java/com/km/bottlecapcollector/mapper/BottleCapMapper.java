@@ -1,8 +1,7 @@
 package com.km.bottlecapcollector.mapper;
 
-import com.km.bottlecapcollector.dto.BottleCapCatalogDto;
 import com.km.bottlecapcollector.dto.BottleCapDto;
-import com.km.bottlecapcollector.dto.BottleCapPictureDto;
+import com.km.bottlecapcollector.dto.CapPictureDto;
 import com.km.bottlecapcollector.model.CapItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,20 +14,13 @@ public interface BottleCapMapper {
 
     @Mapping(target = "id", source = "capItem.id")
     @Mapping(target = "url", source = "capItem.image.url")
-    BottleCapPictureDto capItemToBottleCapPictureDto(CapItem capItem);
+    CapPictureDto capItemToCapPictureDto(CapItem capItem);
 
-
-    @Mapping(target = "id", source = "capItem.id")
-    @Mapping(target = "fileLocation", source = "capItem.image.url")
-    @Mapping(target = "capName", source = "capItem.name")
-    @Mapping(target = "description", source = "capItem.description")
-    @Mapping(target = "creationDate", source = "capItem.createDateTime")
-    BottleCapDto capItemToBottleCapDto (CapItem capItem);
 
     @Mapping(target = "id", source = "capItem.id")
     @Mapping(target = "url", source = "capItem.image.url")
     @Mapping(target = "name", source = "capItem.name")
     @Mapping(target = "description", source = "capItem.description")
-    BottleCapCatalogDto capItemToBottleCapCatalogDto (CapItem capItem);
-
+    @Mapping(target = "creationDate", source = "capItem.createDateTime")
+    BottleCapDto capItemToBottleCapDto (CapItem capItem);
 }

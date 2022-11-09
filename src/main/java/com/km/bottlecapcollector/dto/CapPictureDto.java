@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BottleCapCatalogDto extends BottleCapPictureDto {
-    private String name;
-    private String description;
-
+public class CapPictureDto {
+    private long id;
+    private String url;
 }

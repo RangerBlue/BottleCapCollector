@@ -1,10 +1,9 @@
 package com.km.bottlecapcollector.service;
 
 
-import com.km.bottlecapcollector.dto.BottleCapCatalogDto;
 import com.km.bottlecapcollector.dto.BottleCapDto;
-import com.km.bottlecapcollector.dto.BottleCapPictureDto;
 import com.km.bottlecapcollector.dto.BottleCapValidationResponseDto;
+import com.km.bottlecapcollector.dto.CapPictureDto;
 import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.exception.ImageSignatureException;
 import com.km.bottlecapcollector.exception.ImageUploaderException;
@@ -59,16 +58,8 @@ public class BottleCapService implements SimilarityCalculator{
         return (List<CapItem>) capItemRepository.findAll();
     }
 
-    public List<BottleCapCatalogDto> getCatalogCaps() {
-        log.info("Entering getCapCatalog method");
-        return getAllCapItems().stream().map(mapper::capItemToBottleCapCatalogDto)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-
-
-    public List<BottleCapPictureDto> getAllBottleCapsLinks() {
-        return getAllCapItems().stream().map(mapper::capItemToBottleCapPictureDto)
+    public List<CapPictureDto> getAllBottleCapsLinks() {
+        return getAllCapItems().stream().map(mapper::capItemToCapPictureDto)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

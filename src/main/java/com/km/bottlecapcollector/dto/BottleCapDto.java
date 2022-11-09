@@ -3,10 +3,9 @@ package com.km.bottlecapcollector.dto;
 import lombok.Data;
 
 @Data
-public class BottleCapDto {
+public class BottleCapDto extends CapPictureDto{
     private long id;
-    private String fileLocation;
-    private String capName;
+    private String name;
     private String description;
     private String creationDate;
 }

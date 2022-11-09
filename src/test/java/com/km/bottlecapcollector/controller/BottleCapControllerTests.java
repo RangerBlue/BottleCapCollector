@@ -1,9 +1,8 @@
 package com.km.bottlecapcollector.controller;
 
-import com.km.bottlecapcollector.dto.BottleCapCatalogDto;
 import com.km.bottlecapcollector.dto.BottleCapDto;
-import com.km.bottlecapcollector.dto.BottleCapPictureDto;
 import com.km.bottlecapcollector.dto.BottleCapValidationResponseDto;
+import com.km.bottlecapcollector.dto.CapPictureDto;
 import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.exception.GoogleDriveException;
 import com.km.bottlecapcollector.google.GoogleDriveService;
@@ -128,12 +127,12 @@ public class BottleCapControllerTests {
     public void getBottleCapsSuccess() throws Exception {
 
         BottleCapDto cap = new BottleCapDto();
-        cap.setCapName("cap1");
-        cap.setFileLocation("location1");
+        cap.setName("cap1");
+        cap.setUrl("location1");
         cap.setCreationDate(LocalTime.now().toString());
         BottleCapDto cap1 = new BottleCapDto();
-        cap1.setCapName("cap2");
-        cap1.setFileLocation("location2");
+        cap1.setName("cap2");
+        cap1.setUrl("location2");
         cap1.setCreationDate(LocalTime.now().toString());
         List<BottleCapDto> allCaps = Arrays.asList(cap, cap1);
         given(bottleCapService.getAllBottleCapsDto()).willReturn(allCaps);
@@ -142,12 +141,12 @@ public class BottleCapControllerTests {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].fileLocation", is("location1")))
-                .andExpect(jsonPath("$[0].capName", is("cap1")))
+                .andExpect(jsonPath("$[0].url", is("location1")))
+                .andExpect(jsonPath("$[0].name", is("cap1")))
                 .andExpect(jsonPath("$[0].creationDate").isNotEmpty())
                 .andExpect(jsonPath("$[0].description").isEmpty())
-                .andExpect(jsonPath("$[1].fileLocation", is("location2")))
-                .andExpect(jsonPath("$[1].capName", is("cap2")))
+                .andExpect(jsonPath("$[1].url", is("location2")))
+                .andExpect(jsonPath("$[1].name", is("cap2")))
                 .andExpect(jsonPath("$[1].creationDate").isNotEmpty())
                 .andExpect(jsonPath("$[1].description").isEmpty());
 
@@ -155,13 +154,13 @@ public class BottleCapControllerTests {
 
     @Test
     public void getLinksSuccess() throws Exception {
-        BottleCapPictureDto cap = new BottleCapPictureDto();
+        CapPictureDto cap = new CapPictureDto();
         cap.setId(1);
         cap.setUrl("link");
-        BottleCapPictureDto cap1 = new BottleCapPictureDto();
+        CapPictureDto cap1 = new CapPictureDto();
         cap1.setId(2);
         cap1.setUrl("link1");
-        List<BottleCapPictureDto> allCaps = Arrays.asList(cap, cap1);
+        List<CapPictureDto> allCaps = Arrays.asList(cap, cap1);
 
         given(bottleCapService.getAllBottleCapsLinks()).willReturn(allCaps);
 
@@ -176,46 +175,16 @@ public class BottleCapControllerTests {
     }
 
     @Test
-    public void getCatalogSuccess() throws Exception {
-        BottleCapCatalogDto cap = new BottleCapCatalogDto();
-        cap.setName("cap1");
-        cap.setDescription("Good beer!");
-        cap.setUrl("link");
-
-        BottleCapCatalogDto cap1 = new BottleCapCatalogDto();
-        cap1.setName("cap2");
-        cap1.setDescription("The best beer!!");
-        cap1.setUrl("link1");
-
-        List<BottleCapCatalogDto> allCaps = Arrays.asList(cap, cap1);
-
-        given(bottleCapService.getCatalogCaps()).willReturn(allCaps);
-
-        mvc.perform(get("/catalog")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].id", is(0)))
-                .andExpect(jsonPath("$[0].url", is("link")))
-                .andExpect(jsonPath("$[0].name", is("cap1")))
-                .andExpect(jsonPath("$[0].description", is("Good beer!")))
-                .andExpect(jsonPath("$[1].id", is(0)))
-                .andExpect(jsonPath("$[1].url", is("link1")))
-                .andExpect(jsonPath("$[1].name", is("cap2")))
-                .andExpect(jsonPath("$[1].description", is("The best beer!!")));
-    }
-
-    @Test
     public void getBottleCapSuccess() throws Exception {
         BottleCapDto bottleCapDto = new BottleCapDto();
-        bottleCapDto.setCapName("cap1");
-        bottleCapDto.setFileLocation("");
+        bottleCapDto.setName("cap1");
+        bottleCapDto.setUrl("");
         bottleCapDto.setCreationDate("2021-01-09T19:48:51.438");
         given(bottleCapService.getCapItemDto(anyLong())).willReturn(bottleCapDto);
         this.mvc.perform(get("/caps/1"))
                 .andExpect(status().is(200))
-                .andExpect(jsonPath("$['fileLocation']").isEmpty())
-                .andExpect(jsonPath("$['capName']", is("cap1")))
+                .andExpect(jsonPath("$['url']").isEmpty())
+                .andExpect(jsonPath("$['name']", is("cap1")))
                 .andExpect(jsonPath("$['creationDate']").isNotEmpty())
                 .andExpect(jsonPath("$['description']").isEmpty());
     }

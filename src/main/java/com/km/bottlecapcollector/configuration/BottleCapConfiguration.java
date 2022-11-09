@@ -30,10 +30,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 @EnableAsync
 @EnableScheduling
 @Slf4j
-public class BottleCapConfiguration implements CommandLineRunner, ApplicationRunner {
-
-    @Autowired
-    private ApplicationContext context;
+public class BottleCapConfiguration {
 
     @Bean
     public Docket api() {
@@ -44,77 +41,39 @@ public class BottleCapConfiguration implements CommandLineRunner, ApplicationRun
                 .build();
     }
 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-        args.getNonOptionArgs().forEach(log::info);
-    }
-
-    @Override
-    public void run(String... args) throws Exception {
-        for(String arg : args){
-            log.info(arg);
-        }
-    }
-
     @Bean
     public HttpTraceRepository httpTraceRepository() {
         return new InMemoryHttpTraceRepository();
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "ImageHistogramUtil")
-    public void conditionalOnMissingBean(){
-        log.info("ImageHistogramUtil is not available");
-    }
-
-    @Bean
-    @ConditionalOnProperty(
-            value = "server.port",
-            havingValue = "8083")
-    public void conditionalOnProperty(){
-        log.info("Server port set to 8083");
-    }
-
-    @Bean
-    @ConditionalOnExpression(
-            "${spring.h2.console.enabled.enable:true}")
-    public void conditionalOnExpression(){
-        log.info("H2 console access is enabled");
-    }
-
-    @Bean
     @ConditionalOnResource(resources = "img/captest.jpg")
-    public void conditionalOnResource(){
+    public void conditionalOnResource() {
         log.info("Test picture captest1 is available");
     }
 
     @Bean
     @ConditionalOnClass(Imgproc.class)
-    public void conditionalOnClass(){
+    public void conditionalOnClass() {
         log.info("Imgproc class form opencv module is available");
     }
 
     @Bean
     @ConditionalOnJava(JavaVersion.EIGHT)
-    public void conditionalOnJava(){
+    public void conditionalOnJava() {
         log.info("Java 8 is used");
     }
 
     @Bean
     @ConditionalOnWebApplication
-    public void conditionalOnWebApplication(){
+    public void conditionalOnWebApplication() {
         log.info("It is web application");
     }
 
-    @Bean
-    @ConditionalOnNotWebApplication
-    public void conditionalOnNotWebApplication(){
-        log.info("It is not  web application");
-    }
 
     @Bean
     @ConditionalOnCloudPlatform(CloudPlatform.HEROKU)
-    public void conditionalOnCloudPlatform(){
+    public void conditionalOnCloudPlatform() {
         log.info("Application is run on Heroku");
     }
 

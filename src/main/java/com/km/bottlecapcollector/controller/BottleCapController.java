@@ -58,12 +58,7 @@ public class BottleCapController {
     }
 
     @GetMapping("/links")
-    public List<BottleCapPictureDto> getBottleCapsLinks() {
+    public List<CapPictureDto> getBottleCapsLinks() {
         return bottleCapService.getAllBottleCapsLinks();
-    }
-
-    @GetMapping("/catalog")
-    public List<BottleCapCatalogDto> getCapCatalog() {
-        return bottleCapService.getCatalogCaps();
     }
 }
