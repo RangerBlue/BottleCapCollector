@@ -18,4 +18,7 @@ public class AppProperties {
     private String googleDriveFolderId;
     private String googleDriveTokenPath;
     private String googleDriveUpdateCron;
+    private int validationResponseItemSize;
+    private float similaritySearchRange;
+    private int similaritySearchResponseSize;
 }

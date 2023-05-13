@@ -1,0 +1,69 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="kamil (generated)" id="1683562221214-1">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="ABSTRACTIMAGE" columnName="hue"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="abstractimage">
+            <column name="hue" type="FLOAT" defaultValue="0"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="kamil (generated)" id="1683562221214-2">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="abstractimage" columnName="saturation"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="abstractimage">
+            <column name="saturation" type="FLOAT" defaultValue="0"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="kamil (generated)" id="1683562221214-3">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="abstractimage" columnName="brightness"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="abstractimage">
+            <column name="brightness" type="FLOAT" defaultValue="0"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="kamil (generated)" id="1683562221214-4">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="abstractimage" indexName="hue_index" columnNames="hue"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="abstractimage" indexName="hue_index">
+            <column name="hue"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="kamil (generated)" id="1683562221214-5">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="abstractimage" indexName="saturation_index" columnNames="saturation"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="abstractimage" indexName="saturation_index">
+            <column name="saturation"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="kamil (generated)" id="1683562221214-6">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="abstractimage" indexName="brightness_index" columnNames="brightness"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="abstractimage" indexName="brightness_index">
+            <column name="brightness"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

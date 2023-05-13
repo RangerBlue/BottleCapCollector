@@ -11,15 +11,23 @@ import com.km.bottlecapcollector.google.ImageUploader;
 import com.km.bottlecapcollector.model.*;
 import com.km.bottlecapcollector.opencv.HistogramResult;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
+import com.km.bottlecapcollector.property.AppProperties;
 import com.km.bottlecapcollector.repository.CapItemRepository;
 import com.km.bottlecapcollector.util.*;
+import com.km.bottlecapcollector.util.color.HSBColor;
+import com.km.bottlecapcollector.util.color.HSBColorRange;
+import com.km.bottlecapcollector.util.color.HSBColorService;
 import lombok.extern.slf4j.Slf4j;
 import com.km.bottlecapcollector.mapper.BottleCapMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -32,18 +40,30 @@ import java.util.stream.Collectors;
 public class BottleCapService implements SimilarityCalculator{
 
 
-    @Autowired
-    private CapItemRepository capItemRepository;
+    private final CapItemRepository capItemRepository;
 
-    @Autowired
-    private ImageUploader imageUploaderService;
+    private final ImageUploader imageUploaderService;
+    private final ComparisonRangeService comparisonRangeService;
 
-    @Autowired
-    private ComparisonRangeService comparisonRangeService;
+    private final AppProperties appProperties;
 
     private final BottleCapMapper mapper = BottleCapMapper.INSTANCE;
 
     ItemFactory itemFactory = new ItemFactoryImpl();
+
+    public BottleCapService(CapItemRepository capItemRepository, ImageUploader imageUploaderService,
+                            ComparisonRangeService comparisonRangeService, AppProperties appProperties) {
+        this.capItemRepository = capItemRepository;
+        this.imageUploaderService = imageUploaderService;
+        this.comparisonRangeService = comparisonRangeService;
+        this.appProperties = appProperties;
+    }
+
+    public static final String DEFAULT_PAGE_NUMBER = "0";
+    public static final String DEFAULT_PAGE_SIZE = "10";
+    public static final String DEFAULT_SORT_BY = "id";
+    public static final String DEFAULT_SORT_DIRECTION = "asc";
+    public static final String DEFAULT_TEXT= "";
 
     @Caching(evict =
     @CacheEvict(value = "caps", allEntries = true))
@@ -58,6 +78,29 @@ public class BottleCapService implements SimilarityCalculator{
         return (List<CapItem>) capItemRepository.findAll();
     }
 
+    public List<CapItem> getCapsWithSimilarColors(HSBColorRange colorRange) {
+        int responseSize = appProperties.getSimilaritySearchResponseSize();
+        log.trace("Retrieving {}} caps items from database based on colors", responseSize);
+        return capItemRepository.findByColorsValues(
+                colorRange.getHueRange().getMoreThan(),
+                colorRange.getHueRange().getPivotLessThan(),
+                colorRange.getHueRange().getPivotMoreThan(),
+                colorRange.getHueRange().getLessThan(),
+                colorRange.getSaturationRange().getMoreThan(),
+                colorRange.getSaturationRange().getPivotLessThan(),
+                colorRange.getSaturationRange().getPivotMoreThan(),
+                colorRange.getSaturationRange().getLessThan(),
+                colorRange.getBrightnessRange().getMoreThan(),
+                colorRange.getBrightnessRange().getPivotLessThan(),
+                colorRange.getBrightnessRange().getPivotMoreThan(),
+                colorRange.getBrightnessRange().getLessThan(),PageRequest.of(0, responseSize));
+    }
+
+    public List<CapPictureDto> findCapsPaginated(int pageNo, int pageSize, String sortBy, String sortDir) {
+        Page<CapItem> pagedResult = getAllCapsByPageable(pageNo, pageSize, sortBy, sortDir);
+        return pagedResult.stream().map(mapper::capItemToCapPictureDto).collect(Collectors.toList());
+    }
+
     public List<CapPictureDto> getAllBottleCapsLinks() {
         return getAllCapItems().stream().map(mapper::capItemToCapPictureDto)
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -66,7 +109,23 @@ public class BottleCapService implements SimilarityCalculator{
     public List<BottleCapDto> getAllBottleCapsDto() {
         return getAllCapItems().stream().map(mapper::capItemToBottleCapDto).collect(Collectors.toList());
     }
+    private Page<CapItem> getAllCapsByPageable(int pageNo, int pageSize, String sortBy, String sortDir){
 
+        return capItemRepository.findAll(getBottleCapPageable(pageNo, pageSize, sortBy, sortDir));
+    }
+
+    private Pageable getBottleCapPageable(int pageNo, int pageSize, String sortBy, String sortDir){
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        return PageRequest.of(pageNo, pageSize, sort);
+    }
+
+
+    public List<BottleCapDto> findCapByText(int pageNo, int pageSize, String sortBy, String sortDir, String text) {
+        Pageable pageable = getBottleCapPageable(pageNo, pageSize, sortBy, sortDir);
+        final Page<CapItem> byNameOrDescriptionContaining = capItemRepository.findByNameContainingOrDescriptionContainingAllIgnoreCase(text, text, pageable);
+        return byNameOrDescriptionContaining.stream().map(mapper::capItemToBottleCapDto).collect(Collectors.toList());
+    }
 
     @Transactional
     @Caching(evict =
@@ -115,6 +174,10 @@ public class BottleCapService implements SimilarityCalculator{
         capItem.setName(itemName);
         capItem.setDescription(description);
         AbstractImage image = capItem.getImage();
+        HSBColor hsbColor = HSBColorService.calculateColor(file);
+        image.setHue(hsbColor.getHue());
+        image.setSaturation(hsbColor.getSaturation());
+        image.setBrightness(hsbColor.getBrightness());
         AbstractSignature openCVImageSignature = image.getSignature();
         String uploadedImageUrl;
         try {
@@ -139,7 +202,7 @@ public class BottleCapService implements SimilarityCalculator{
 
     public BottleCapValidationResponseDto validateCapItem(String itemName, MultipartFile file) throws ImageSignatureException {
         log.info("Entering validateCapItem method for {}", itemName);
-        SimilarityModel similarityModel = calculateSimilarityModel(itemName, file, SimilarityModel.similarCapAmount);
+        SimilarityModel similarityModel = calculateSimilarityModel(itemName, file, appProperties.getValidationResponseItemSize());
         ArrayList<CapItem> similarCaps = similarityModel.getSimilarCaps().stream().map(HistogramResult::getSecondCap).
                 collect(Collectors.toCollection(ArrayList::new));
         ArrayList<Long> similarCapsIDs = similarCaps.stream().map(CapItem::getId).
@@ -153,7 +216,22 @@ public class BottleCapService implements SimilarityCalculator{
     @Override
     public SimilarityModel calculateSimilarityModel(String itemName, MultipartFile file, int resultSize) throws ImageSignatureException{
         log.info("Calculating size {} similarity model for: {}", resultSize, itemName);
-        List<CapItem> caps = getAllCapItems();
+        StopWatch measurement = new StopWatch();
+        HSBColor hsbColor = HSBColorService.calculateColor(file);
+        HSBColorRange hsbColorRange = HSBColorService.calculateRanges(hsbColor);
+
+        measurement.start("Database call ");
+        List<CapItem> caps = getCapsWithSimilarColors(hsbColorRange);
+        if(caps.size() < appProperties.getValidationResponseItemSize()){
+            log.warn("Did not found sufficient amount of items ({}), extending range..", caps.size());
+            HSBColorRange hsbColorRangeExtended = HSBColorService.calculateRangesExtended(hsbColor);
+            caps = getCapsWithSimilarColors(hsbColorRangeExtended);
+        }
+
+        measurement.stop();
+
+        log.info(measurement.getLastTaskName() + "took " + measurement.getTotalTimeSeconds() + " s");
+
         CapItem candidateCap = itemFactory.getCapItem();
         candidateCap.setName(itemName);
         AbstractImage image = candidateCap.getImage();

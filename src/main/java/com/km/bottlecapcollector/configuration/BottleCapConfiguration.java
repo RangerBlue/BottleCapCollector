@@ -1,12 +1,10 @@
 package com.km.bottlecapcollector.configuration;
 
 import com.km.bottlecapcollector.property.AppProperties;
+import com.km.bottlecapcollector.util.color.HSBColorService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.imgproc.Imgproc;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.actuate.trace.http.HttpTraceRepository;
 import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;
 import org.springframework.boot.autoconfigure.condition.*;
@@ -14,7 +12,6 @@ import org.springframework.boot.cloud.CloudPlatform;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.system.JavaVersion;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -24,14 +21,18 @@ import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
+import javax.annotation.PostConstruct;
+
 @EnableConfigurationProperties(AppProperties.class)
 @Configuration
 @EnableCaching
 @EnableAsync
 @EnableScheduling
 @Slf4j
+@AllArgsConstructor
 public class BottleCapConfiguration {
 
+    private final AppProperties appProperties;
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.OAS_30)
@@ -40,7 +41,6 @@ public class BottleCapConfiguration {
                 .paths(PathSelectors.any())
                 .build();
     }
-
     @Bean
     public HttpTraceRepository httpTraceRepository() {
         return new InMemoryHttpTraceRepository();
@@ -77,4 +77,10 @@ public class BottleCapConfiguration {
         log.info("Application is run on Heroku");
     }
 
+    @PostConstruct
+    public void setupUtilityClasses(){
+        float margin = appProperties.getSimilaritySearchRange();
+        log.info("Setting HSBColorService with margin value {} ", margin);
+        HSBColorService.setMargin(margin);
+    }
 }

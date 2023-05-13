@@ -12,5 +12,6 @@
     <include file="changes/changelog-004-generate-db.xml" relativeToChangelogFile="true"/>
     <include file="changes/changelog-005-generate-db.xml" relativeToChangelogFile="true"/>
     <include file="changes/changelog-006-example-data.sql" relativeToChangelogFile="true"/>
+    <include file="changes/changelog-007-added-color-fields.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -9,4 +9,5 @@
     <include file="changes/changelog-001-generate-db.xml" relativeToChangelogFile="true"/>
     <include file="changes/changelog-002-generate-db.xml" relativeToChangelogFile="true"/>
     <include file="changes/changelog-006-generate-new-structure.xml" relativeToChangelogFile="true"/>
+    <include file="changes/changelog-007-added-color-fields.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

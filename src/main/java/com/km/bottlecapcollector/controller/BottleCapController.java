@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.*;
 
 @RestController
@@ -57,8 +58,28 @@ public class BottleCapController {
         return bottleCapService.getAllBottleCapsDto();
     }
 
+    @GetMapping("/caps-page")
+    public List<BottleCapDto> getBottleCapsPage(
+            @RequestParam(value = "pageNo", defaultValue = BottleCapService.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = BottleCapService.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = BottleCapService.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = BottleCapService.DEFAULT_SORT_DIRECTION, required = false) String sortDir,
+            @RequestParam(value = "searchText", defaultValue = BottleCapService.DEFAULT_TEXT, required = false) String searchText) {
+        return bottleCapService.findCapByText(pageNo, pageSize, sortBy, sortDir, searchText);
+    }
+
     @GetMapping("/links")
     public List<CapPictureDto> getBottleCapsLinks() {
         return bottleCapService.getAllBottleCapsLinks();
+    }
+
+    @GetMapping("/links-page/")
+    public List<CapPictureDto> loadBottleCapsPage(
+            @RequestParam(value = "pageNo", defaultValue = BottleCapService.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = BottleCapService.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = BottleCapService.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = BottleCapService.DEFAULT_SORT_DIRECTION, required = false) String sortDir) {
+
+        return bottleCapService.findCapsPaginated(pageNo, pageSize, sortBy, sortDir);
     }
 }

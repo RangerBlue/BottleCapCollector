@@ -8,13 +8,13 @@ import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.model.ComparisonRange;
 import com.km.bottlecapcollector.opencv.HistogramResult;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
-import com.km.bottlecapcollector.property.AppProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.entity.ContentType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
@@ -35,15 +35,22 @@ public class MaintenanceService {
     private final LocalFileStorageService localFileStorageService;
 
     public void updateGoogleDrivePicturesUrls(){
+        StopWatch measurement = new StopWatch();
+        measurement.start("Getting all entities for update");
         List<? extends AbstractImage> images = abstractImageService.getAllGoogleDriveImages();
+        measurement.stop();
+
         int listSize = images.size();
         log.info("Updating {} pictures", listSize);
+
+        measurement.start("Processing all images");
         images.forEach(image -> {
-            log.info("Updating image {}", image.getId());
             image.setUrl(googleDriveService.getFileUrl(image.getProvider().getImageProviderId()));
             image.getProvider().setUpdateDateTime(LocalDateTime.now());
             abstractImageService.updateGoogleDriveImage(image);
         });
+        measurement.stop();
+        log.info(measurement.getLastTaskName() + "took " + measurement.getTotalTimeSeconds() + " s");
         log.info("Updated {} locations", listSize);
     }
     public String uploadFileToGoogleDrive(MultipartFile multipartFile){

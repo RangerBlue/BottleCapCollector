@@ -15,6 +15,9 @@ public abstract class AbstractImage {
     private long id;
 
     private String url;
+    private float hue;
+    private float saturation;
+    private float brightness;
 
     @OneToOne
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
