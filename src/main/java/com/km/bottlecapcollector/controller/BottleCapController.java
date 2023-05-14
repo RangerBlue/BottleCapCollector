@@ -82,4 +82,9 @@ public class BottleCapController {
 
         return bottleCapService.findCapsPaginated(pageNo, pageSize, sortBy, sortDir);
     }
+
+    @GetMapping("/caps/total")
+    public long getCapAmount(){
+        return bottleCapService.getCapAmount();
+    }
 }

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.km</groupId>
 	<artifactId>BottleCapCollector</artifactId>
-	<version>2.1.0</version>
+	<version>2.1.1</version>
 	<name>BottleCapCollector</name>
 	<description>Backend project for Bottle Cap Collector system</description>
 

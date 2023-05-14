@@ -250,4 +250,8 @@ public class BottleCapService implements SimilarityCalculator{
                 orElse(new CapItem());
         return capItemToBottleCapDto(capItem);
     }
+
+    public long getCapAmount(){
+        return capItemRepository.countAllCapItems();
+    }
 }

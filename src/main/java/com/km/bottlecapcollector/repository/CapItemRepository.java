@@ -20,7 +20,8 @@ public interface CapItemRepository extends CollectionItemRepository<CapItem> {
             "AND (ai.saturation > :saturationMoreThan AND ai.saturation <= :saturationPivotLessThan " +
             "OR ai.saturation > :saturationPivotMoreThan AND ai.saturation <= :saturationLessThan) " +
             "AND (ai.brightness > :brightnessMoreThan AND ai.brightness <= :brightnessPivotLessThan " +
-            "OR ai.brightness > :brightnessPivotMoreThan AND ai.brightness <= :brightnessLessThan)")
+            "OR ai.brightness > :brightnessPivotMoreThan AND ai.brightness <= :brightnessLessThan)" +
+            "AND TYPE(cap) = CapItem")
     List<CapItem> findByColorsValues(
             @Param("hueMoreThan") float hueMoreThan,
             @Param("huePivotLessThan") float huePivotLessThan,
@@ -35,4 +36,8 @@ public interface CapItemRepository extends CollectionItemRepository<CapItem> {
             @Param("brightnessPivotMoreThan") float brightnessPivotMoreThan,
             @Param("brightnessLessThan") float brightnessLessThan,
             Pageable pageable);
+
+    @Query(value = "SELECT COUNT(ci) FROM CollectionItem ci WHERE TYPE(ci) = CapItem ")
+    long countAllCapItems();
+
 }
