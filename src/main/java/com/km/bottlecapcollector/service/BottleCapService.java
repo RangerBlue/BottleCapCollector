@@ -17,6 +17,7 @@ import com.km.bottlecapcollector.util.*;
 import com.km.bottlecapcollector.util.color.HSBColor;
 import com.km.bottlecapcollector.util.color.HSBColorRange;
 import com.km.bottlecapcollector.util.color.HSBColorService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import com.km.bottlecapcollector.mapper.BottleCapMapper;
 import org.springframework.cache.annotation.CacheEvict;
@@ -30,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

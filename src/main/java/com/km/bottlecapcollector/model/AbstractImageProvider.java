@@ -2,11 +2,11 @@ package com.km.bottlecapcollector.model;
 
 import com.km.bottlecapcollector.exception.ImageUploaderException;
 import com.km.bottlecapcollector.google.ImageUploader;
+import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

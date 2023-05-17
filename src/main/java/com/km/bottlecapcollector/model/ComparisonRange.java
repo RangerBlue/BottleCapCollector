@@ -1,8 +1,7 @@
 package com.km.bottlecapcollector.model;
 
 import com.km.bottlecapcollector.opencv.ComparisonMethod;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 public class ComparisonRange {

@@ -5,8 +5,6 @@ import com.km.bottlecapcollector.util.color.HSBColorService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.imgproc.Imgproc;
-import org.springframework.boot.actuate.trace.http.HttpTraceRepository;
-import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.cloud.CloudPlatform;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -33,7 +31,6 @@ import javax.annotation.PostConstruct;
 public class BottleCapConfiguration {
     static{
         nu.pattern.OpenCV.loadShared();
-        System.loadLibrary(org.opencv.core.Core.NATIVE_LIBRARY_NAME);
     }
     private final AppProperties appProperties;
     @Bean
@@ -43,10 +40,6 @@ public class BottleCapConfiguration {
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
                 .build();
-    }
-    @Bean
-    public HttpTraceRepository httpTraceRepository() {
-        return new InMemoryHttpTraceRepository();
     }
 
     @Bean
@@ -62,9 +55,9 @@ public class BottleCapConfiguration {
     }
 
     @Bean
-    @ConditionalOnJava(JavaVersion.EIGHT)
+    @ConditionalOnJava(JavaVersion.SEVENTEEN)
     public void conditionalOnJava() {
-        log.info("Java 8 is used");
+        log.info("Java 17 is used");
     }
 
     @Bean

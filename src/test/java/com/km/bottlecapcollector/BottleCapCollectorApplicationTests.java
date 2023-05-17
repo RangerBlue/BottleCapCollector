@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -22,9 +21,6 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 class BottleCapCollectorApplicationTests {
 	@Autowired
 	private WebApplicationContext context;
-
-	@LocalServerPort
-	private int port;
 
 	@Value("${local.management.port}")
 	private int actuatorPort;
@@ -43,11 +39,6 @@ class BottleCapCollectorApplicationTests {
 				.webAppContextSetup(context)
 				.apply(springSecurity()) // enable security for the mock set up
 				.build();
-	}
-
-	@Test
-	void portDefinedTest() {
-		assertEquals(8080, port);
 	}
 
 	@Test

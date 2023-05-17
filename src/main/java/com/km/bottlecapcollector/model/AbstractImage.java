@@ -1,9 +1,8 @@
 package com.km.bottlecapcollector.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Cascade;
-
-import javax.persistence.*;
 
 @Entity(name = "ABSTRACTIMAGE")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)

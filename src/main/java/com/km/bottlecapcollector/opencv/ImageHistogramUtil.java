@@ -75,7 +75,7 @@ public class ImageHistogramUtil {
         Mat histImage = new Mat();
         Mat inputImage;
         try {
-            inputImage = Imgcodecs.imdecode(new MatOfByte(file.getBytes()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+            inputImage = Imgcodecs.imdecode(new MatOfByte(file.getBytes()), Imgcodecs.IMREAD_UNCHANGED );
         } catch (IOException e){
             throw new ImageSignatureException("OpenCV processing exception", e);
         }

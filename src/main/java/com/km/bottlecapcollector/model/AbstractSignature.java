@@ -1,10 +1,9 @@
 package com.km.bottlecapcollector.model;
 
 import com.km.bottlecapcollector.exception.ImageSignatureException;
+import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.persistence.*;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
