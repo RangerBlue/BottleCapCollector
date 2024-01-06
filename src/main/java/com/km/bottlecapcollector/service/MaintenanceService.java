@@ -1,7 +1,8 @@
 package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.dto.ComparisonRangeDto;
-import com.km.bottlecapcollector.google.GoogleDriveService;
+import com.km.bottlecapcollector.storage.ImageUploader;
+import com.km.bottlecapcollector.storage.google.GoogleDriveService;
 import com.km.bottlecapcollector.mapper.ComparisonRangeMapper;
 import com.km.bottlecapcollector.model.AbstractImage;
 import com.km.bottlecapcollector.model.CapItem;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class MaintenanceService {
     private final AbstractImageService abstractImageService;
-    private final GoogleDriveService googleDriveService;
+    private final ImageUploader googleDriveService;
     private final BottleCapService bottleCapService;
     private final ComparisonRangeService comparisonRangeService;
     private final LocalFileStorageService localFileStorageService;

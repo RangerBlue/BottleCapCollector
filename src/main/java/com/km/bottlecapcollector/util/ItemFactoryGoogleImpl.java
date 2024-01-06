@@ -5,8 +5,12 @@ import com.km.bottlecapcollector.model.enums.CollectionItemType;
 import com.km.bottlecapcollector.model.enums.ImageProviderType;
 import com.km.bottlecapcollector.model.PictureItem;
 import com.km.bottlecapcollector.model.enums.SignatureType;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
-public class ItemFactoryImpl implements ItemFactory{
+@Component
+@ConditionalOnProperty(value = "bcc.image.provider", havingValue = "google")
+public class ItemFactoryGoogleImpl implements ItemFactory{
 
     @Override
     public CapItem getCapItem() {

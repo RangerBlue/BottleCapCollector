@@ -5,11 +5,11 @@ import com.km.bottlecapcollector.dto.BottleCapValidationResponseDto;
 import com.km.bottlecapcollector.dto.CapPictureDto;
 import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.exception.GoogleDriveException;
-import com.km.bottlecapcollector.google.GoogleDriveService;
+import com.km.bottlecapcollector.storage.google.GoogleDriveService;
 import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.service.BottleCapService;
 import com.km.bottlecapcollector.util.ItemFactory;
-import com.km.bottlecapcollector.util.ItemFactoryImpl;
+import com.km.bottlecapcollector.util.ItemFactoryGoogleImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ public class BottleCapControllerTests {
     @MockBean
     private DataSource dataSource;
 
-    ItemFactory itemFactory = new ItemFactoryImpl();
+    ItemFactory itemFactory = new ItemFactoryGoogleImpl();
 
 
     @Test

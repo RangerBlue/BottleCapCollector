@@ -7,7 +7,7 @@ import com.km.bottlecapcollector.dto.CapPictureDto;
 import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.exception.ImageSignatureException;
 import com.km.bottlecapcollector.exception.ImageUploaderException;
-import com.km.bottlecapcollector.google.ImageUploader;
+import com.km.bottlecapcollector.storage.ImageUploader;
 import com.km.bottlecapcollector.model.*;
 import com.km.bottlecapcollector.opencv.HistogramResult;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
@@ -49,14 +49,14 @@ public class BottleCapService implements SimilarityCalculator{
 
     private final BottleCapMapper mapper = BottleCapMapper.INSTANCE;
 
-    ItemFactory itemFactory = new ItemFactoryImpl();
-
+    private final ItemFactory itemFactory ;
     public BottleCapService(CapItemRepository capItemRepository, ImageUploader imageUploaderService,
-                            ComparisonRangeService comparisonRangeService, AppProperties appProperties) {
+                            ComparisonRangeService comparisonRangeService, AppProperties appProperties, ItemFactory itemFactory) {
         this.capItemRepository = capItemRepository;
         this.imageUploaderService = imageUploaderService;
         this.comparisonRangeService = comparisonRangeService;
         this.appProperties = appProperties;
+        this.itemFactory = itemFactory;
     }
 
     public static final String DEFAULT_PAGE_NUMBER = "0";

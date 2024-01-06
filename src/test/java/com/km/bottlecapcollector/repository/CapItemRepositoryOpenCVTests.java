@@ -5,7 +5,7 @@ import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.model.OpenCVImageSignature;
 import com.km.bottlecapcollector.opencv.CustomMat;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
-import com.km.bottlecapcollector.util.ItemFactoryImpl;
+import com.km.bottlecapcollector.util.ItemFactoryGoogleImpl;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class CapItemRepositoryOpenCVTests {
     @Test
     public void testAddCap() throws IOException {
         Mat hist1 = imageHistogramUtil.calculateHistogram(img1Name, resourceFolder);
-        CapItem cap = new ItemFactoryImpl().getCapItem();
+        CapItem cap = new ItemFactoryGoogleImpl().getCapItem();
         cap.setName("Perła");
         cap.setDescription("Description");
         MultipartFile file = new MockMultipartFile(img1Name,

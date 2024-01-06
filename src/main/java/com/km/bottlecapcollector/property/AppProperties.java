@@ -21,4 +21,5 @@ public class AppProperties {
     private int validationResponseItemSize;
     private float similaritySearchRange;
     private int similaritySearchResponseSize;
+    private String imageProvider;
 }

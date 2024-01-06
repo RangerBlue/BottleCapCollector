@@ -1,4 +1,4 @@
-package com.km.bottlecapcollector.google;
+package com.km.bottlecapcollector.storage.google;
 
 public class GoogleDriveItemResponse {
     private String kind;

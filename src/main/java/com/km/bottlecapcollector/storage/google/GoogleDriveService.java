@@ -1,4 +1,4 @@
-package com.km.bottlecapcollector.google;
+package com.km.bottlecapcollector.storage.google;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,14 +11,15 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Value;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
 import com.km.bottlecapcollector.exception.GoogleDriveException;
 import com.km.bottlecapcollector.exception.ImageUploaderException;
 import com.km.bottlecapcollector.property.AppProperties;
+import com.km.bottlecapcollector.storage.ImageUploader;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,8 @@ import java.util.*;
 @Component
 @AllArgsConstructor
 @Slf4j
-public class GoogleDriveService implements ImageUploader{
+@ConditionalOnProperty(value = "bcc.image.provider", havingValue = "google")
+public class GoogleDriveService implements ImageUploader {
 
     private static final String GRANT_TYPE = "refresh_token";
     private static final String AUTH_PROVIDER_X509_CERT_URL = "https://www.googleapis.com/oauth2/v1/certs";

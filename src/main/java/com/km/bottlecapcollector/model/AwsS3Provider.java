@@ -8,9 +8,9 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 @Entity
-@DiscriminatorValue("GoogleDrive")
+@DiscriminatorValue("S3")
 @Data
-public class GoogleDriveProvider extends AbstractImageProvider {
+public class AwsS3Provider extends AbstractImageProvider {
     @Override
     public String upload(MultipartFile file, ImageUploader uploader) throws ImageUploaderException {
         setImageProviderId(uploader.uploadFile(file));

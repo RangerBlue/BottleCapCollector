@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.model;
 
 import com.km.bottlecapcollector.exception.ImageUploaderException;
-import com.km.bottlecapcollector.google.ImageUploader;
+import com.km.bottlecapcollector.storage.ImageUploader;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.UpdateTimestamp;

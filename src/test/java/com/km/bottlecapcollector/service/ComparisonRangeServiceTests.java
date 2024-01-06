@@ -39,7 +39,7 @@ public class ComparisonRangeServiceTests {
     @Spy
     private ImageHistogramUtil imageHistogramUtil;
 
-    ItemFactoryImpl itemFactory = new ItemFactoryImpl();
+    ItemFactoryGoogleImpl itemFactory = new ItemFactoryGoogleImpl();
 
     @Test
     public void testCalculateMethodMaxMinValues() {

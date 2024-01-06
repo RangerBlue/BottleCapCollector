@@ -46,7 +46,16 @@ public class CollectionItemBuilder {
             image.setProvider(abstractImageProvider);
             image.setSignature(openCVImageSignature);
             item.setImage(image);
-        } else {
+        } else if (collectionItemType == CollectionItemType.CAP && imageProviderType == ImageProviderType.AWS && signatureType == SignatureType.OPEN_CV) {
+            item = new CapItem();
+            AbstractImage image = new RoundOpenCVS3Image();
+            AbstractImageProvider abstractImageProvider = ImageProviderFactory.getSignature(imageProviderType);
+            AbstractSignature openCVImageSignature = SignatureFactory.getSignature(signatureType);
+            image.setProvider(abstractImageProvider);
+            image.setSignature(openCVImageSignature);
+            item.setImage(image);
+        }
+        else {
             throw new UnsupportedOperationException();
         }
         return item;
