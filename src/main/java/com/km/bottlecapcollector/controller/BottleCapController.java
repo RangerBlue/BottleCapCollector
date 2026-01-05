@@ -10,6 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
+/*
+    Legacy controller
+ */
 @RestController
 @CrossOrigin
 @AllArgsConstructor

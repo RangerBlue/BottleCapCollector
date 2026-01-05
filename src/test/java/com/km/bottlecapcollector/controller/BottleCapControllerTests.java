@@ -6,7 +6,6 @@ import com.km.bottlecapcollector.dto.CapPictureDto;
 import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.exception.GoogleDriveException;
 import com.km.bottlecapcollector.google.GoogleDriveService;
-import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.service.BottleCapService;
 import com.km.bottlecapcollector.util.ItemFactory;
 import com.km.bottlecapcollector.util.ItemFactoryImpl;

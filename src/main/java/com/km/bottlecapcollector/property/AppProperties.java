@@ -21,4 +21,25 @@ public class AppProperties {
     private int validationResponseItemSize;
     private float similaritySearchRange;
     private int similaritySearchResponseSize;
+
+    // Firestore configuration
+    private String firestoreProjectId;
+    private String firestoreDatabaseId;
+    private String firestoreCredentialsPath;
+    private String firestoreEmulatorHost;
+
+    // Cloud Storage configuration
+    private String cloudStorageBucketName;
+    private String cloudStorageProjectId;
+    private String cloudStorageCredentialsPath;
+
+    // Vertex AI configuration
+    private String vertexAiProjectId;
+    private String vertexAiLocation;
+    private String vertexAiEmbeddingModelId;
+    private String vertexAiCredentialsPath;
+
+    // Vision API configuration
+    private String visionApiProjectId;
+    private String visionApiCredentialsPath;
 }

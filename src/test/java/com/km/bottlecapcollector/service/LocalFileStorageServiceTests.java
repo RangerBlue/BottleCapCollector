@@ -1,6 +1,5 @@
 package com.km.bottlecapcollector.service;
 
-import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.util.BottleCapPair;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
 import org.junit.Test;

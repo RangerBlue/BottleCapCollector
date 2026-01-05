@@ -1,6 +1,5 @@
 package com.km.bottlecapcollector.service;
 
-import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.repository.CapItemRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;

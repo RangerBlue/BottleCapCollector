@@ -2,6 +2,7 @@ package com.km.bottlecapcollector.configuration;
 
 import com.km.bottlecapcollector.property.AppProperties;
 import com.km.bottlecapcollector.util.color.HSBColorService;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.imgproc.Imgproc;
@@ -14,12 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
 
-import javax.annotation.PostConstruct;
 
 @EnableConfigurationProperties(AppProperties.class)
 @Configuration
@@ -29,49 +25,7 @@ import javax.annotation.PostConstruct;
 @Slf4j
 @AllArgsConstructor
 public class BottleCapConfiguration {
-    static{
-        nu.pattern.OpenCV.loadShared();
-    }
     private final AppProperties appProperties;
-    @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.OAS_30)
-                .select()
-                .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.any())
-                .build();
-    }
-
-    @Bean
-    @ConditionalOnResource(resources = "img/captest.jpg")
-    public void conditionalOnResource() {
-        log.info("Test picture captest1 is available");
-    }
-
-    @Bean
-    @ConditionalOnClass(Imgproc.class)
-    public void conditionalOnClass() {
-        log.info("Imgproc class form opencv module is available");
-    }
-
-    @Bean
-    @ConditionalOnJava(JavaVersion.SEVENTEEN)
-    public void conditionalOnJava() {
-        log.info("Java 17 is used");
-    }
-
-    @Bean
-    @ConditionalOnWebApplication
-    public void conditionalOnWebApplication() {
-        log.info("It is web application");
-    }
-
-
-    @Bean
-    @ConditionalOnCloudPlatform(CloudPlatform.HEROKU)
-    public void conditionalOnCloudPlatform() {
-        log.info("Application is run on Heroku");
-    }
 
     @PostConstruct
     public void setupUtilityClasses(){

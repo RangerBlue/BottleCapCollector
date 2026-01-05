@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Import Spring Cloud GCP JSON appender for structured logging -->
+    <include resource="com/google/cloud/spring/logging/logback-json-appender.xml"/>
+
+    <!-- Console appender for local development (human-readable) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan(%logger{36}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Local/default profile: human-readable console output -->
+    <springProfile name="default | local | dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+
+        <logger name="com.km.bottlecapcollector" level="DEBUG"/>
+        <logger name="org.springframework.security" level="DEBUG"/>
+        <logger name="com.google.api.client.util.store.FileDataStoreFactory" level="OFF"/>
+    </springProfile>
+
+    <!-- GCP profile: JSON structured logging to stdout -->
+    <springProfile name="gcp | prod | cloud">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </root>
+
+        <logger name="com.km.bottlecapcollector" level="INFO"/>
+        <logger name="com.google.api.client.util.store.FileDataStoreFactory" level="OFF"/>
+    </springProfile>
+
+</configuration>

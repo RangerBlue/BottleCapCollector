@@ -101,7 +101,7 @@ public class GoogleDriveService implements ImageUploader{
 
         headers.setBearerAuth(getAccessToken());
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.setAccept(Arrays.asList(new MediaType[]{MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_UTF8, MediaType.IMAGE_JPEG}));
+        headers.setAccept(Arrays.asList(new MediaType[]{MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON, MediaType.IMAGE_JPEG}));
         GoogleDriveItemMetadataRequest metadata = new GoogleDriveItemMetadataRequest();
 
         metadata.setMimeType(multipartFile.getContentType());

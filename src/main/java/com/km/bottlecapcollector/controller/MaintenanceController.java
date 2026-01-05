@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@CrossOrigin
 @AllArgsConstructor
 @Slf4j
 @RequestMapping("admin")
@@ -54,3 +53,4 @@ public class MaintenanceController {
         return ResponseEntity.ok("Requested run initial data import on demand");
     }
 }
+
