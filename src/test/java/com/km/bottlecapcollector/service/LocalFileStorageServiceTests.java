@@ -1,23 +1,22 @@
 package com.km.bottlecapcollector.service;
 
+import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.util.BottleCapPair;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(MockitoJUnitRunner.class)
-public class LocalFileStorageServiceTests {
-
-
+@ExtendWith(MockitoExtension.class)
+class LocalFileStorageServiceTests {
 
     @Test
-    public void calculateEachWithEach() {
+    void calculateEachWithEach() {
         List<CapItem> list = new ArrayList<>();
         CapItem cap0 = new CapItem();
         cap0.setName("Pinta");

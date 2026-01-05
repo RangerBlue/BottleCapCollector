@@ -1,15 +1,16 @@
 package com.km.bottlecapcollector.util;
-import com.km.bottlecapcollector.util.color.HSBColor;
-import com.km.bottlecapcollector.util.color.HSBColorRange;
-import com.km.bottlecapcollector.util.color.HSBColorService;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import com.km.bottlecapcollector.color.HSBColor;
+import com.km.bottlecapcollector.color.HSBColorRange;
+import com.km.bottlecapcollector.color.HSBColorService;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class HSBColorTests {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass(){
         HSBColorService.setMargin(0.1f);
     }

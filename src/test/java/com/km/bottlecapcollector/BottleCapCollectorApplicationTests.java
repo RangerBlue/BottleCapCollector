@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,8 +33,8 @@ class BottleCapCollectorApplicationTests {
 
 	private MockMvc mvc;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		mvc = MockMvcBuilders
 				.webAppContextSetup(context)
 				.apply(springSecurity()) // enable security for the mock set up

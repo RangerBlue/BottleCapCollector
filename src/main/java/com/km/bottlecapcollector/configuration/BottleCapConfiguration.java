@@ -1,17 +1,12 @@
 package com.km.bottlecapcollector.configuration;
 
 import com.km.bottlecapcollector.property.AppProperties;
-import com.km.bottlecapcollector.util.color.HSBColorService;
+import com.km.bottlecapcollector.color.HSBColorService;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.opencv.imgproc.Imgproc;
-import org.springframework.boot.autoconfigure.condition.*;
-import org.springframework.boot.cloud.CloudPlatform;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.system.JavaVersion;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;

@@ -1,31 +1,33 @@
 package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.exception.DuplicateCapException;
+import com.km.bottlecapcollector.model.CapItem;
+import com.km.bottlecapcollector.model.ComparisonRange;
 import com.km.bottlecapcollector.model.OpenCVImageSignature;
 import com.km.bottlecapcollector.opencv.ComparisonMethod;
 import com.km.bottlecapcollector.opencv.HistogramResult;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
-import com.km.bottlecapcollector.util.*;
-import org.junit.Test;
+import com.km.bottlecapcollector.repository.ComparisonRangeRepository;
+import com.km.bottlecapcollector.util.ItemFactoryImpl;
+import com.km.bottlecapcollector.util.SimilarityModel;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ComparisonRangeServiceTests {
+@ExtendWith(MockitoExtension.class)
+class ComparisonRangeServiceTests {
 
     @InjectMocks
     private ComparisonRangeService service;
@@ -39,7 +41,7 @@ public class ComparisonRangeServiceTests {
     ItemFactoryImpl itemFactory = new ItemFactoryImpl();
 
     @Test
-    public void testCalculateMethodMaxMinValues() {
+    void testCalculateMethodMaxMinValues() {
         HistogramResult result1 = new HistogramResult(1, 2, 3, 4);
         result1.setFirstCap(new CapItem());
         result1.setSecondCap(new CapItem());
@@ -66,7 +68,7 @@ public class ComparisonRangeServiceTests {
     }
 
     @Test
-    public void testCalculateSimilarityForCorrelationSuccess() {
+    void testCalculateSimilarityForCorrelationSuccess() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9);
         histogramResult.setFirstCap(itemFactory.getCapItem());
@@ -75,17 +77,19 @@ public class ComparisonRangeServiceTests {
         assertEquals(0.8, result);
     }
 
-    @Test(expected = DuplicateCapException.class)
-    public void testCalculateSimilarityForCorrelationFail() {
+    @Test
+    void testCalculateSimilarityForCorrelationFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9);
         histogramResult.setFirstCap(itemFactory.getCapItem());
         histogramResult.setSecondCap(itemFactory.getCapItem());
-        service.calculateSimilarityForCorrelation(histogramResult, range);
+        assertThrows(DuplicateCapException.class, () -> {
+            service.calculateSimilarityForCorrelation(histogramResult, range);
+        });
     }
 
     @Test
-    public void testCalculateSimilarityForChisquareSuccess() {
+    void testCalculateSimilarityForChisquareSuccess() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001);
         histogramResult.setFirstCap(itemFactory.getCapItem());
@@ -94,17 +98,19 @@ public class ComparisonRangeServiceTests {
         assertEquals(0.6, result);
     }
 
-    @Test(expected = DuplicateCapException.class)
-    public void testCalculateSimilarityForChisquareFail() {
+    @Test
+    void testCalculateSimilarityForChisquareFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, -1, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.CHI_SQUARE, 0.4, 0.9);
         histogramResult.setFirstCap(itemFactory.getCapItem());
         histogramResult.setSecondCap(itemFactory.getCapItem());
-        service.calculateSimilarityForChisquare(histogramResult, range);
+        assertThrows(DuplicateCapException.class, () -> {
+            service.calculateSimilarityForChisquare(histogramResult, range);
+        });
     }
 
     @Test
-    public void testCalculateSimilarityForIntersectionSuccess() {
+    void testCalculateSimilarityForIntersectionSuccess() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 7.5, 0.3);
         histogramResult.setFirstCap(itemFactory.getCapItem());
         histogramResult.setSecondCap(itemFactory.getCapItem());
@@ -115,18 +121,20 @@ public class ComparisonRangeServiceTests {
         assertEquals(0.75, result);
     }
 
-    @Test(expected = DuplicateCapException.class)
-    public void testCalculateSimilarityForIntersectionFail() {
+    @Test
+    void testCalculateSimilarityForIntersectionFail() {
         HistogramResult histogramResult = new HistogramResult(1.2, 401, 10, 0.3);
         histogramResult.setFirstCap(itemFactory.getCapItem());
         histogramResult.setSecondCap(itemFactory.getCapItem());
         OpenCVImageSignature openCVImageSignature = (OpenCVImageSignature) histogramResult.getSecondCap().getImage().getSignature();
         openCVImageSignature.setIntersectionValue(10);
-        service.calculateSimilarityForIntersection(histogramResult);
+        assertThrows(DuplicateCapException.class, () -> {
+            service.calculateSimilarityForIntersection(histogramResult);
+        });
     }
 
     @Test
-    public void testCalculateSimilarityForBhattacharyyaSuccess() {
+    void testCalculateSimilarityForBhattacharyyaSuccess() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 0.3);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9);
         histogramResult.setFirstCap(itemFactory.getCapItem());
@@ -135,17 +143,19 @@ public class ComparisonRangeServiceTests {
         assertEquals(0.75, result, 0.00001);
     }
 
-    @Test(expected = DuplicateCapException.class)
-    public void testCalculateSimilarityForBhattacharyyaFail() {
+    @Test
+    void testCalculateSimilarityForBhattacharyyaFail() {
         HistogramResult histogramResult = new HistogramResult(0.8, 401, 8, 1.2);
         ComparisonRange range = new ComparisonRange(ComparisonMethod.BHATTACHARYYA, 0.1, 0.9);
         histogramResult.setFirstCap(itemFactory.getCapItem());
         histogramResult.setSecondCap(itemFactory.getCapItem());
-        service.calculateSimilarityForBhattacharyya(histogramResult, range);
+        assertThrows(DuplicateCapException.class, () -> {
+            service.calculateSimilarityForBhattacharyya(histogramResult, range);
+        });
     }
 
     @Test
-    public void testCalculateSimilarityForAllMethods() {
+    void testCalculateSimilarityForAllMethods() {
         List<ComparisonRange> range = new ArrayList<>();
         range.add(new ComparisonRange(ComparisonMethod.CORRELATION, 0.4, 0.9));
         range.add(new ComparisonRange(ComparisonMethod.CHI_SQUARE, 1, 1001));
@@ -161,14 +171,14 @@ public class ComparisonRangeServiceTests {
     }
 
     @Test()
-    public void testCalculateSimilarityForCap() {
+    void testCalculateSimilarityForCap() {
         List<HistogramResult> histogramResults = prepareData();
         double result = service.calculateSimilarityForCap(histogramResults);
         assertEquals(0.4509521, result, 0.00001);
     }
 
     @Test()
-    public void testCalculateSimilarityModelForCap() {
+    void testCalculateSimilarityModelForCap() {
         List<HistogramResult> histogramResults = prepareData();
         SimilarityModel model = service.calculateSimilarityModelForCap(histogramResults, SimilarityModel.similarCapAmount);
         assertEquals(0, model.getFrom00To10());
@@ -187,7 +197,7 @@ public class ComparisonRangeServiceTests {
 
     @Test()
     @Execution(ExecutionMode.CONCURRENT)
-    public void testCalculateSimilarityModelForTwoIdenticalCaps() {
+    void testCalculateSimilarityModelForTwoIdenticalCaps() {
         List<HistogramResult> histogramResults = prepareData();
         HistogramResult histogramResult = new HistogramResult(
                 imageHistogramUtil.CORRELATION_BASE(),
@@ -214,7 +224,7 @@ public class ComparisonRangeServiceTests {
     }
 
     @Test()
-    public void testSimilarCapsEquals6() {
+    void testSimilarCapsEquals6() {
         List<HistogramResult> histogramResults = prepareData();
         HistogramResult histogramResult = new HistogramResult(0.7, 402, 7, 0.3);
         histogramResult.setFirstCap(histogramResults.get(0).getFirstCap());

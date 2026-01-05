@@ -10,14 +10,12 @@ import com.km.bottlecapcollector.opencv.HistogramResult;
 import com.km.bottlecapcollector.opencv.ImageHistogramUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.entity.ContentType;
-import org.springframework.mock.web.MockMultipartFile;
+import com.km.bottlecapcollector.util.FileMultipartFile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -80,11 +78,8 @@ public class MaintenanceService {
         log.info("Uploading caps from {}", localFileStorageService.getUploadFolderLocation());
         localFileStorageService.getAllPictures().forEach(file -> {
             log.info("Uploading file {}", file.getName());
-            FileInputStream fileInputStream;
             try {
-                fileInputStream = new FileInputStream(file);
-                MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(),
-                        ContentType.IMAGE_JPEG.toString(), fileInputStream);
+                MultipartFile multipartFile = new FileMultipartFile(file, "image/jpeg");
                 bottleCapService.addCapItem(file.getName(), "This cap does not have description yet",
                         multipartFile);
             } catch (IOException e) {

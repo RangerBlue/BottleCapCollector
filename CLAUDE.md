@@ -4,37 +4,26 @@ You are Java Developer who want to deploy application to GCP, the code was not t
 and needs some restructure in order to deploy to cloud smoothly. It is preferred to use GCP managed service but in efficient
 way - the costs should be small.
 
+## Architecture Overview
+
+- do not use wildcards
+
 ## Build Commands
 
 ```bash
 # Build the project
 ./mvnw clean package
-
-# Run tests
-./mvnw test
-
-# Run a single test class
-./mvnw test -Dtest=BottleCapServiceTests
-
-# Run a single test method
-./mvnw test -Dtest=BottleCapServiceTests#testMethodName
-
-# Run the application
-./mvnw spring-boot:run
-
-# Start local PostgreSQL database (requires Docker)
-docker-compose -f docker/docker-compose.yml up -d
 ```
 
 ## Architecture Overview
 
-- This is a Spring Boot 4.0.0 REST API backend for a bottle cap collection system.
+- This is a Spring Boot 4.0.0 REST API backend for a items collection system.
 - Target deployment cloud is GCP
-- It uses Vision API for image analysis to detect duplicate/similar bottle caps
+- It uses Vision API for image analysis to detect duplicate/similar items
 - Images are stored in Cloud Storage
 - Project uses Java 21
 - Database is Firestore - previously it was PostgreSQL
-- Solution chosen in GCP are have wisely to not exceed budget
+- Solution chosen in GCP are wisely to not exceed budget
 
 
 ### Layered Architecture
@@ -83,5 +72,6 @@ The system uses OpenCV to:
 
 ## Related Projects
 
-- Frontend: React application (separate repository)
-- Mobile: Android app (separate repository)
+- Frontend: Legacy React application (separate repository)
+- Mobile: Legacy Android app (separate repository) 
+- Frontend: Angular app (separate repository) - this app would take over functionalities of mobile app

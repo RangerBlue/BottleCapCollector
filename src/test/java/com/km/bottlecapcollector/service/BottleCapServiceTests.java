@@ -1,21 +1,22 @@
 package com.km.bottlecapcollector.service;
 
+import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.repository.CapItemRepository;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BottleCapServiceTests {
+@ExtendWith(MockitoExtension.class)
+class BottleCapServiceTests {
     @InjectMocks
     private BottleCapService service;
 
@@ -24,7 +25,7 @@ public class BottleCapServiceTests {
 
 
     @Test
-    public void addCapTest() {
+    void addCapTest() {
         CapItem cap0 = new CapItem();
         cap0.setName("Pinta");
         service.addBottleCap(cap0);
@@ -32,7 +33,7 @@ public class BottleCapServiceTests {
     }
 
     @Test
-    public void getCapByIdTest() {
+    void getCapByIdTest() {
         String capName = "Pinta";
         long id = 1L;
         CapItem cap0 = new CapItem();
@@ -45,7 +46,7 @@ public class BottleCapServiceTests {
     }
 
     @Test
-    public void getAllBottleCaps() {
+    void getAllBottleCaps() {
         List<CapItem> list = new ArrayList<>();
         CapItem cap0 = new CapItem();
         cap0.setName("Pinta");

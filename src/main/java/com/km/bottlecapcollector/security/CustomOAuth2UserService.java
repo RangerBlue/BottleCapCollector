@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.security;
 
-import com.km.bottlecapcollector.firestore.document.FirestoreUser;
-import com.km.bottlecapcollector.firestore.repository.FirestoreUserRepository;
+import com.km.bottlecapcollector.gcp.document.FirestoreUser;
+import com.km.bottlecapcollector.gcp.repository.FirestoreUserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;

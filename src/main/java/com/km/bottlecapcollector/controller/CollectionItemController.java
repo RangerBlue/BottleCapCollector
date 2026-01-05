@@ -1,8 +1,8 @@
 package com.km.bottlecapcollector.controller;
 
-import com.km.bottlecapcollector.firestore.dto.*;
-import com.km.bottlecapcollector.firestore.service.FirestoreBottleCapService;
-import com.km.bottlecapcollector.firestore.service.FirestoreUserService;
+import com.km.bottlecapcollector.gcp.dto.*;
+import com.km.bottlecapcollector.gcp.service.FirestoreBottleCapService;
+import com.km.bottlecapcollector.gcp.service.FirestoreUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -165,19 +165,6 @@ public class CollectionItemController {
         return ResponseEntity.ok(firestoreBottleCapService.validateItem(collectionName, file));
     }
 
-    @PostMapping("/{collectionName}/items/{id}/acknowledge")
-    public ResponseEntity<CollectionItemResponse> acknowledgeItem(
-            @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
-            @PathVariable String collectionName,
-            @PathVariable String id,
-            @RequestBody(required = false) AcknowledgeCapRequest request) {
-        String userId = getUserId(principal);
-        log.info("User {} acknowledging item {} in collection {}", userId, id, collectionName);
-        String name = request != null ? request.getName() : null;
-        String description = request != null ? request.getDescription() : null;
-        return ResponseEntity.ok(firestoreBottleCapService.acknowledgeItem(collectionName, id, name, description));
-    }
-
     @DeleteMapping("/{collectionName}/items/{id}")
     public ResponseEntity<Void> deleteItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
@@ -186,17 +173,6 @@ public class CollectionItemController {
         String userId = getUserId(principal);
         log.info("User {} deleting item {} from collection {}", userId, id, collectionName);
         firestoreBottleCapService.deleteItem(collectionName, id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/{collectionName}/items/{id}/discard")
-    public ResponseEntity<Void> discardTemporaryItem(
-            @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
-            @PathVariable String collectionName,
-            @PathVariable String id) {
-        String userId = getUserId(principal);
-        log.info("User {} discarding temporary item {} from collection {}", userId, id, collectionName);
-        firestoreBottleCapService.discardTemporaryItem(collectionName, id);
         return ResponseEntity.noContent().build();
     }
 }
