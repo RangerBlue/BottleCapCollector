@@ -45,6 +45,13 @@ public class CollectionItemResponse {
 
     private String userId;
 
+    /**
+     * UUID key used for database operations.
+     */
+    private String collectionKey;
 
-    private String collectionType;
+    /**
+     * Human-readable collection name for display.
+     */
+    private String collectionName;
 }

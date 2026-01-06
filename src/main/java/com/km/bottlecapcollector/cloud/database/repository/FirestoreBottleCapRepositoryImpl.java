@@ -91,22 +91,22 @@ public class FirestoreBottleCapRepositoryImpl implements FirestoreBottleCapRepos
     }
 
     @Override
-    public Optional<ItemEntity> findByCollectionTypeAndId(String collectionName, String collectionType, String id) {
-        log.trace("Finding item by collection type: {} and id: {} in collection '{}'", collectionType, id, collectionName);
+    public Optional<ItemEntity> findByCollectionTypeAndId(String collectionName, String collectionKey, String id) {
+        log.trace("Finding item by collection key: {} and id: {} in collection '{}'", collectionKey, id, collectionName);
         try {
             DocumentSnapshot document = getCollection(collectionName).document(id).get().get();
             if (document.exists()) {
                 ItemEntity item = document.toObject(ItemEntity.class);
-                if (item != null && collectionType.equals(item.getCollectionName())) {
+                if (item != null && collectionKey.equals(item.getCollectionKey())) {
                     return Optional.of(item);
                 }
             }
             return Optional.empty();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new FirestoreException("Interrupted while finding item by collection type and id", e);
+            throw new FirestoreException("Interrupted while finding item by collection key and id", e);
         } catch (ExecutionException e) {
-            throw new FirestoreException("Failed to find item by collection type: " + collectionType + " and id: " + id, e.getCause());
+            throw new FirestoreException("Failed to find item by collection key: " + collectionKey + " and id: " + id, e.getCause());
         }
     }
 

@@ -34,4 +34,9 @@ public class CreateCollectionItemRequest {
     private Map<String, String> customTags;
 
     private String userId;
+
+    /**
+     * Human-readable collection name for display purposes.
+     */
+    private String collectionName;
 }

@@ -35,7 +35,8 @@ import java.util.List;
 /**
  * Service layer for managing collection items in Firestore.
  * Handles CRUD operations, Vision API metadata, and Vertex AI embeddings.
- * Supports multiple Firestore collections specified dynamically via collectionName parameter.
+ * Supports multiple Firestore collections specified dynamically via collectionKey parameter.
+ * The collectionKey is a UUID (safe for Firestore), while collectionName is human-readable.
  */
 @Service
 @Slf4j
@@ -117,13 +118,13 @@ public class FirestoreBottleCapService {
      * 6. Extracts tags from Vision API metadata
      * 7. Stores all data to the database
      *
-     * @param collectionName the Firestore collection name (e.g., "bottle_caps", "post_stamps")
-     * @param request the create request with item details
+     * @param collectionKey the UUID key used as Firestore collection name
+     * @param request the create request with item details (includes human-readable collectionName)
      * @param file the image file to process
      * @return the created collection item DTO with all metadata
      */
-    public CollectionItemResponse createCollectionItem(String collectionName, CreateCollectionItemRequest request, MultipartFile file) {
-        log.info("Creating new collection item: {} in collection: {}", request.getName(), collectionName);
+    public CollectionItemResponse createCollectionItem(String collectionKey, CreateCollectionItemRequest request, MultipartFile file) {
+        log.info("Creating new collection item: {} in collection: {}", request.getName(), collectionKey);
 
         // 1. Create initial document to get an ID
         ItemEntity item = ItemEntity.builder()
@@ -132,12 +133,12 @@ public class FirestoreBottleCapService {
                 .tags(request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>())
                 .customTags(request.getCustomTags())
                 .userId(request.getUserId())
-                .collectionName(collectionName)
+                .collectionKey(collectionKey)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
 
-        ItemEntity savedItem = repository.save(collectionName, item);
+        ItemEntity savedItem = repository.save(collectionKey, item);
         String itemId = savedItem.getId();
         log.info("Created collection item with id: {}", itemId);
 
@@ -152,15 +153,17 @@ public class FirestoreBottleCapService {
 
             // Update timestamp and save all data
             savedItem.setUpdatedAt(Instant.now());
-            ItemEntity finalItem = repository.save(collectionName, savedItem);
+            ItemEntity finalItem = repository.save(collectionKey, savedItem);
             log.info("Successfully created and processed collection item with id: {}", itemId);
 
-            // Register collection for the user
+            // Register collection for the user (with both key and human-readable name)
             if (request.getUserId() != null && !request.getUserId().isBlank()) {
-                userService.addCollectionToUser(request.getUserId(), collectionName);
+                userService.addCollectionToUser(request.getUserId(), collectionKey, request.getCollectionName());
             }
 
-            return enrichWithSignedUrl(mapper.toDto(finalItem));
+            CollectionItemResponse response = mapper.toDto(finalItem);
+            response.setCollectionName(request.getCollectionName());
+            return enrichWithSignedUrl(response);
 
         } catch (Exception e) {
             log.error("Error during collection item creation, cleaning up: {}", itemId, e);
@@ -169,7 +172,7 @@ public class FirestoreBottleCapService {
                 if (savedItem.getImage() != null && savedItem.getImage().getObjectName() != null) {
                     cloudStorageService.deleteImage(savedItem.getImage().getObjectName());
                 }
-                repository.deleteById(collectionName, itemId);
+                repository.deleteById(collectionKey, itemId);
             } catch (Exception cleanupError) {
                 log.error("Failed to clean up collection item: {}", itemId, cleanupError);
             }
@@ -236,54 +239,56 @@ public class FirestoreBottleCapService {
     /**
      * Retrieves a collection item by its ID, verifying user ownership.
      *
-     * @param collectionName the Firestore collection name
+     * @param collectionKey the UUID key for the Firestore collection
      * @param id the document ID
      * @param userId the user ID for ownership verification
      * @return the collection item DTO
      * @throws FirestoreDocumentNotFoundException if not found or not owned by user
      */
-    public CollectionItemResponse getCollectionItem(String collectionName, String id, String userId) {
-        log.trace("Getting item with id: {} from collection: {} for user: {}", id, collectionName, userId);
-        ItemEntity item = repository.findByIdAndUserId(collectionName, id, userId)
-                .orElseThrow(() -> new FirestoreDocumentNotFoundException(collectionName, id));
-        return enrichWithSignedUrl(mapper.toDto(item));
+    public CollectionItemResponse getCollectionItem(String collectionKey, String id, String userId) {
+        log.trace("Getting item with id: {} from collection: {} for user: {}", id, collectionKey, userId);
+        ItemEntity item = repository.findByIdAndUserId(collectionKey, id, userId)
+                .orElseThrow(() -> new FirestoreDocumentNotFoundException(collectionKey, id));
+        CollectionItemResponse response = mapper.toDto(item);
+        response.setCollectionName(userService.getCollectionName(userId, collectionKey));
+        return enrichWithSignedUrl(response);
     }
 
     /**
      * Retrieves items with pagination from a collection.
      *
-     * @param collectionName the Firestore collection name
+     * @param collectionKey the UUID key for the Firestore collection
      * @param limit  the maximum number to return
      * @param offset the number to skip
      * @return paginated list of collection item DTOs
      */
-    public List<CollectionItemResponse> getCollectionByTypePaginated(String collectionName, int limit, int offset) {
-        log.trace("Getting items from collection: {} with limit: {}, offset: {}", collectionName, limit, offset);
-        return enrichWithSignedUrls(mapper.toDtoList(repository.findAll(collectionName, limit, offset)));
+    public List<CollectionItemResponse> getCollectionByTypePaginated(String collectionKey, int limit, int offset) {
+        log.trace("Getting items from collection: {} with limit: {}, offset: {}", collectionKey, limit, offset);
+        return enrichWithSignedUrls(mapper.toDtoList(repository.findAll(collectionKey, limit, offset)));
     }
 
     /**
      * Retrieves items by user ID from a collection.
      *
-     * @param collectionName the Firestore collection name
+     * @param collectionKey the UUID key for the Firestore collection
      * @param userId the user ID
      * @return list of collection item DTOs belonging to the user
      */
-    public List<CollectionItemResponse> getItemsByUserId(String collectionName, String userId) {
-        log.trace("Getting items for user: {} from collection: {}", userId, collectionName);
-        return enrichWithSignedUrls(mapper.toDtoList(repository.findByUserId(collectionName, userId)));
+    public List<CollectionItemResponse> getItemsByUserId(String collectionKey, String userId) {
+        log.trace("Getting items for user: {} from collection: {}", userId, collectionKey);
+        return enrichWithSignedUrls(mapper.toDtoList(repository.findByUserId(collectionKey, userId)));
     }
 
     /**
      * Searches items across multiple fields: name, description, tags, customTags,
      * and Vision API metadata (labels, text, logos).
      *
-     * @param collectionName the Firestore collection name
+     * @param collectionKey the UUID key for the Firestore collection
      * @param query the search query (case-insensitive)
      * @return list of matching collection item DTOs
      */
-    public List<CollectionItemResponse> searchItems(String collectionName, String query) {
-        log.info("Searching items in collection: {} with query: {}", collectionName, query);
+    public List<CollectionItemResponse> searchItems(String collectionKey, String query) {
+        log.info("Searching items in collection: {} with query: {}", collectionKey, query);
 
         if (query == null || query.isBlank()) {
             return new ArrayList<>();
@@ -292,7 +297,7 @@ public class FirestoreBottleCapService {
         String searchTerm = query.toLowerCase().trim();
 
         // Fetch all items from collection (Firestore doesn't support full-text search)
-        List<ItemEntity> allItems = repository.findAll(collectionName);
+        List<ItemEntity> allItems = repository.findAll(collectionKey);
 
         List<ItemEntity> matchingItems = allItems.stream()
                 .filter(item -> matchesSearchQuery(item, searchTerm))
@@ -309,15 +314,15 @@ public class FirestoreBottleCapService {
      * If query is null or blank, returns all user's items paginated.
      * Otherwise uses searchTokens field for efficient prefix search.
      *
-     * @param collectionName the Firestore collection name
+     * @param collectionKey the UUID key for the Firestore collection
      * @param query the optional search query (case-insensitive prefix)
      * @param userId the user ID to filter items by
      * @param pageable pagination information
      * @return page of lightweight summary DTOs belonging to the user
      */
-    public Page<CollectionItemSummary> searchItemsPaginated(String collectionName, String query, String userId, Pageable pageable) {
+    public Page<CollectionItemSummary> searchItemsPaginated(String collectionKey, String query, String userId, Pageable pageable) {
         log.info("Searching items in collection: {} with query: '{}' for user: {}, page: {}, size: {}",
-                collectionName, query, userId, pageable.getPageNumber(), pageable.getPageSize());
+                collectionKey, query, userId, pageable.getPageNumber(), pageable.getPageSize());
 
         int limit = pageable.getPageSize();
         int offset = (int) pageable.getOffset();
@@ -327,13 +332,13 @@ public class FirestoreBottleCapService {
 
         if (query == null || query.isBlank()) {
             // No search query - return all user's items with pagination
-            items = repository.findByUserId(collectionName, userId, limit, offset);
-            totalElements = repository.countByUserId(collectionName, userId);
+            items = repository.findByUserId(collectionKey, userId, limit, offset);
+            totalElements = repository.countByUserId(collectionKey, userId);
         } else {
             // Use search token for efficient Firestore query filtered by userId
             String searchToken = query.toLowerCase().trim();
-            items = repository.findBySearchTokenAndUserId(collectionName, searchToken, userId, limit, offset);
-            totalElements = repository.countBySearchTokenAndUserId(collectionName, searchToken, userId);
+            items = repository.findBySearchTokenAndUserId(collectionKey, searchToken, userId, limit, offset);
+            totalElements = repository.countBySearchTokenAndUserId(collectionKey, searchToken, userId);
         }
 
         log.info("Returning page {} of {} items (total: {})", pageable.getPageNumber(), items.size(), totalElements);
@@ -423,17 +428,17 @@ public class FirestoreBottleCapService {
     /**
      * Updates a collection item's basic information.
      *
-     * @param collectionName the Firestore collection name
+     * @param collectionKey the UUID key for the Firestore collection
      * @param id the document ID
      * @param userId the user ID for ownership verification
      * @param request the update request
      * @return the updated collection item DTO
      */
-    public CollectionItemResponse updateItem(String collectionName, String id, String userId, UpdateCollectionItem request) {
-        log.info("Updating item with id: {} in collection: {} for user: {}", id, collectionName, userId);
+    public CollectionItemResponse updateItem(String collectionKey, String id, String userId, UpdateCollectionItem request) {
+        log.info("Updating item with id: {} in collection: {} for user: {}", id, collectionKey, userId);
 
-        ItemEntity item = repository.findByIdAndUserId(collectionName, id, userId)
-                .orElseThrow(() -> new FirestoreDocumentNotFoundException(collectionName, id));
+        ItemEntity item = repository.findByIdAndUserId(collectionKey, id, userId)
+                .orElseThrow(() -> new FirestoreDocumentNotFoundException(collectionKey, id));
 
         boolean needsTokenRegeneration = false;
 
@@ -461,26 +466,28 @@ public class FirestoreBottleCapService {
 
         item.setUpdatedAt(Instant.now());
 
-        ItemEntity saved = repository.save(collectionName, item);
+        ItemEntity saved = repository.save(collectionKey, item);
         log.info("Successfully updated item with id: {}", id);
-        return enrichWithSignedUrl(mapper.toDto(saved));
+        CollectionItemResponse response = mapper.toDto(saved);
+        response.setCollectionName(userService.getCollectionName(userId, collectionKey));
+        return enrichWithSignedUrl(response);
     }
 
     /**
      * Updates the image for a collection item with full processing.
      * Deletes the old image, uploads the new one, and performs all analysis.
      *
-     * @param collectionName the Firestore collection name
+     * @param collectionKey the UUID key for the Firestore collection
      * @param id the document ID
      * @param userId the user ID for ownership verification
      * @param file the new image file
      * @return the updated collection item DTO
      */
-    public CollectionItemResponse updateImage(String collectionName, String id, String userId, MultipartFile file) throws IOException {
-        log.info("Updating image for item with id: {} in collection: {} for user: {}", id, collectionName, userId);
+    public CollectionItemResponse updateImage(String collectionKey, String id, String userId, MultipartFile file) throws IOException {
+        log.info("Updating image for item with id: {} in collection: {} for user: {}", id, collectionKey, userId);
 
-        ItemEntity item = repository.findByIdAndUserId(collectionName, id, userId)
-                .orElseThrow(() -> new FirestoreDocumentNotFoundException(collectionName, id));
+        ItemEntity item = repository.findByIdAndUserId(collectionKey, id, userId)
+                .orElseThrow(() -> new FirestoreDocumentNotFoundException(collectionKey, id));
 
         // Delete old image if exists
         if (item.getImage() != null && item.getImage().getObjectName() != null) {
@@ -497,27 +504,29 @@ public class FirestoreBottleCapService {
         log.info("Regenerated {} search tokens for item: {}", searchTokens.size(), id);
 
         item.setUpdatedAt(Instant.now());
-        ItemEntity saved = repository.save(collectionName, item);
+        ItemEntity saved = repository.save(collectionKey, item);
         log.info("Successfully updated image for item with id: {}", id);
-        return enrichWithSignedUrl(mapper.toDto(saved));
+        CollectionItemResponse response = mapper.toDto(saved);
+        response.setCollectionName(userService.getCollectionName(userId, collectionKey));
+        return enrichWithSignedUrl(response);
     }
 
     /**
      * Deletes a collection item after verifying user ownership.
      *
-     * @param collectionName the Firestore collection name
+     * @param collectionKey the UUID key for the Firestore collection
      * @param id the document ID
      * @param userId the user ID for ownership verification
      */
-    public void deleteItem(String collectionName, String id, String userId) {
-        log.info("Deleting item with id: {} from collection: {} for user: {}", id, collectionName, userId);
+    public void deleteItem(String collectionKey, String id, String userId) {
+        log.info("Deleting item with id: {} from collection: {} for user: {}", id, collectionKey, userId);
 
         // Verify ownership at database level before deleting
-        if (repository.findByIdAndUserId(collectionName, id, userId).isEmpty()) {
-            throw new FirestoreDocumentNotFoundException(collectionName, id);
+        if (repository.findByIdAndUserId(collectionKey, id, userId).isEmpty()) {
+            throw new FirestoreDocumentNotFoundException(collectionKey, id);
         }
 
-        repository.deleteById(collectionName, id);
+        repository.deleteById(collectionKey, id);
         log.info("Successfully deleted item with id: {}", id);
     }
 
@@ -528,14 +537,14 @@ public class FirestoreBottleCapService {
      * 1. First pass (cheap): HSB color filtering to narrow down candidates
      * 2. Second pass (accurate): Embedding cosine similarity for precise matching
      *
-     * @param collectionName the Firestore collection name to search within
+     * @param collectionKey the UUID key for the Firestore collection to search within
      * @param userId the user ID to filter items by
      * @param file the image file to analyze
-     * @return CheckCapResponse with list of similar items found
+     * @return ValidateItemResponse with list of similar items found
      * @throws IOException if image analysis fails
      */
-    public ValidateItemResponse validateItem(String collectionName, String userId, MultipartFile file) throws IOException {
-        log.info("Validating if similar item exists in collection: {} for user: {}", collectionName, userId);
+    public ValidateItemResponse validateItem(String collectionKey, String userId, MultipartFile file) throws IOException {
+        log.info("Validating if similar item exists in collection: {} for user: {}", collectionKey, userId);
 
         // 1. Calculate HSB color from the uploaded image (cheap pre-filter)
         HSBColor hsbColor = HSBColorService.calculateColor(file);
@@ -552,9 +561,9 @@ public class FirestoreBottleCapService {
 
         // 3. Find similar items using HSB pre-filter + embedding comparison (filtered by userId)
         List<ValidateItemResponse.SimilarItem> similarItems = findSimilarItemsWithEmbeddings(
-                collectionName, userId, hsbColor, uploadedEmbedding);
+                collectionKey, userId, hsbColor, uploadedEmbedding);
 
-        log.info("Found {} similar items in collection: {}", similarItems.size(), collectionName);
+        log.info("Found {} similar items in collection: {}", similarItems.size(), collectionKey);
 
         return ValidateItemResponse.builder()
                 .similarCaps(similarItems)
@@ -570,7 +579,7 @@ public class FirestoreBottleCapService {
      * If embeddings are not available, falls back to HSB-only comparison.
      */
     private List<ValidateItemResponse.SimilarItem> findSimilarItemsWithEmbeddings(
-            String collectionName,
+            String collectionKey,
             String userId,
             HSBColor hsbColor,
             Embedding uploadedEmbedding) {
@@ -587,7 +596,7 @@ public class FirestoreBottleCapService {
         int candidateLimit = uploadedEmbedding != null ? SIMILAR_CAPS_LIMIT * 3 : SIMILAR_CAPS_LIMIT + 1;
 
         List<ItemEntity> candidates = repository.findByHSBColorRangeAndUserId(
-                collectionName, hueMin, hueMax, satMin, satMax, briMin, briMax, userId, candidateLimit);
+                collectionKey, hueMin, hueMax, satMin, satMax, briMin, briMax, userId, candidateLimit);
 
         log.debug("HSB pre-filter found {} candidates", candidates.size());
 

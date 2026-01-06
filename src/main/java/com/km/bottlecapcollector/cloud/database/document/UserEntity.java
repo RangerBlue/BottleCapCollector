@@ -30,24 +30,46 @@ public class UserEntity {
     private Role role;
 
     @Builder.Default
-    private List<String> collectionNames = new ArrayList<>();
+    private List<UserCollectionEntity> collections = new ArrayList<>();
 
     private Instant createdAt;
 
     private Instant updatedAt;
 
     /**
-     * Adds a collection name to the user's list of collections if not already present.
-     * @param collectionName the collection name to add
+     * Adds a collection to the user's list if not already present (by key).
+     * @param collectionKey the UUID key for the collection
+     * @param collectionName the human-readable name
      * @return true if the collection was added (not already present)
      */
-    public boolean addCollectionName(String collectionName) {
-        if (collectionNames == null) {
-            collectionNames = new ArrayList<>();
+    public boolean addCollection(String collectionKey, String collectionName) {
+        if (collections == null) {
+            collections = new ArrayList<>();
         }
-        if (!collectionNames.contains(collectionName)) {
-            return collectionNames.add(collectionName);
+        boolean exists = collections.stream()
+                .anyMatch(c -> c.getCollectionKey().equals(collectionKey));
+        if (!exists) {
+            return collections.add(UserCollectionEntity.builder()
+                    .collectionKey(collectionKey)
+                    .collectionName(collectionName)
+                    .build());
         }
         return false;
+    }
+
+    /**
+     * Finds the human-readable name for a collection key.
+     * @param collectionKey the UUID key
+     * @return the collection name or null if not found
+     */
+    public String getCollectionName(String collectionKey) {
+        if (collections == null) {
+            return null;
+        }
+        return collections.stream()
+                .filter(c -> c.getCollectionKey().equals(collectionKey))
+                .map(UserCollectionEntity::getCollectionName)
+                .findFirst()
+                .orElse(null);
     }
 }

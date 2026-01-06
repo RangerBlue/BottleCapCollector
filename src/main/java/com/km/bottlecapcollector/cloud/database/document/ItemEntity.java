@@ -49,7 +49,10 @@ public class ItemEntity {
 
     private String userId;
 
-    private String collectionName;
+    /**
+     * UUID key used as Firestore collection name (safe, no special chars).
+     */
+    private String collectionKey;
 
     /**
      * Searchable tokens for efficient prefix search in Firestore.

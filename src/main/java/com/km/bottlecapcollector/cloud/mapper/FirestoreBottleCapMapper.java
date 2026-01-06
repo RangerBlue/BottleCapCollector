@@ -55,7 +55,7 @@ public interface FirestoreBottleCapMapper {
 
     List<ItemEntity> toDocumentList(List<CollectionItemResponse> dtos);
 
-    @Mapping(source = "collectionName", target = "collectionType")
+    @Mapping(source = "collectionKey", target = "collectionKey")
     @Mapping(source = "image.objectName", target = "objectName")
     CollectionItemSummary toSummary(ItemEntity document);
 
