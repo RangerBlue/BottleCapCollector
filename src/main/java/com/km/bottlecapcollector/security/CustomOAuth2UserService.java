@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.security;
 
-import com.km.bottlecapcollector.gcp.document.FirestoreUser;
-import com.km.bottlecapcollector.gcp.repository.FirestoreUserRepository;
+import com.km.bottlecapcollector.cloud.database.document.UserEntity;
+import com.km.bottlecapcollector.cloud.database.repository.FirestoreUserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -32,9 +32,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = oauth2User.getAttribute("email");
         String name = oauth2User.getAttribute("name");
 
-        FirestoreUser user = userRepository.findById(googleId)
+        UserEntity user = userRepository.findById(googleId)
                 .orElseGet(() -> {
-                    FirestoreUser newUser = FirestoreUser.builder()
+                    UserEntity newUser = UserEntity.builder()
                             .id(googleId)
                             .email(email)
                             .name(name)

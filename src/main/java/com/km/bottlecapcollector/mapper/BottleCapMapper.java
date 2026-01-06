@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.mapper;
 
-import com.km.bottlecapcollector.dto.BottleCapDto;
-import com.km.bottlecapcollector.dto.CapPictureDto;
+import com.km.bottlecapcollector.api.legacy.model.BottleCapDto;
+import com.km.bottlecapcollector.api.legacy.model.CapPictureDto;
 import com.km.bottlecapcollector.model.CapItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

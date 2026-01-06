@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.service;
 
-import com.km.bottlecapcollector.dto.ComparisonRangeDto;
+import com.km.bottlecapcollector.api.legacy.model.ComparisonRangeDto;
 import com.km.bottlecapcollector.google.GoogleDriveService;
 import com.km.bottlecapcollector.mapper.ComparisonRangeMapper;
 import com.km.bottlecapcollector.model.AbstractImage;

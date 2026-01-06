@@ -1,9 +1,9 @@
 package com.km.bottlecapcollector.service;
 
 
-import com.km.bottlecapcollector.dto.BottleCapDto;
-import com.km.bottlecapcollector.dto.BottleCapValidationResponseDto;
-import com.km.bottlecapcollector.dto.CapPictureDto;
+import com.km.bottlecapcollector.api.legacy.model.BottleCapDto;
+import com.km.bottlecapcollector.api.legacy.model.BottleCapValidationResponseDto;
+import com.km.bottlecapcollector.api.legacy.model.CapPictureDto;
 import com.km.bottlecapcollector.exception.CapNotFoundException;
 import com.km.bottlecapcollector.exception.ImageSignatureException;
 import com.km.bottlecapcollector.exception.ImageUploaderException;

@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.security;
 
-import com.km.bottlecapcollector.gcp.repository.FirestoreUserRepository;
+import com.km.bottlecapcollector.cloud.database.repository.FirestoreUserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
