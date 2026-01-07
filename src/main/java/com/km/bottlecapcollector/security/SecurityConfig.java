@@ -46,8 +46,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/caps").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/caps/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/caps/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/validateCap").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/whatCapAreYou").hasRole("ADMIN")
                         .requestMatchers("/admin/*").hasRole("ADMIN")
                         .requestMatchers("/management/*").hasRole("ADMIN")
+                        // Collection API - requires authentication
+                        .requestMatchers("/api/v1/collections/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 // Browser-based OAuth2 login (for web frontend)

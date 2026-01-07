@@ -42,4 +42,9 @@ public class AppProperties {
     // Vision API configuration
     private String visionApiProjectId;
     private String visionApiCredentialsPath;
+
+    // Legacy API configuration
+    private String legacyUserId;
+    private String legacyCollectionKey;
+    private String legacyCollectionName;
 }
