@@ -11,5 +11,5 @@ public interface StorageService {
 
     boolean deleteImage(String objectName);
 
-    String generateSignedUrl(String objectName, int durationMinutes);
+    String generateSignedUrl(String objectName);
 }

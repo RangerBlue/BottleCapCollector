@@ -1,6 +1,5 @@
 package com.km.bottlecapcollector.api.model.response;
 
-import com.km.bottlecapcollector.cloud.dto.FirestoreImageDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,7 +28,7 @@ public class CollectionItemResponse {
 
     private Instant updatedAt;
 
-    private FirestoreImageDto image;
+    private ImageResponse image;
 
     private ImageAnalysisMetadataResponse visionMetadata;
 

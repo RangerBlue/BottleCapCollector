@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.model;
 
-import com.km.bottlecapcollector.exception.ImageUploaderException;
+import com.km.bottlecapcollector.api.legacy.exception.ImageUploaderException;
 import com.km.bottlecapcollector.google.ImageUploader;
 import jakarta.persistence.*;
 import lombok.Data;

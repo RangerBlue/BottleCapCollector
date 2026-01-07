@@ -3,12 +3,10 @@ package com.km.bottlecapcollector.cloud.mapper;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
 import com.km.bottlecapcollector.api.model.response.ImageAnalysisMetadataResponse;
-import com.km.bottlecapcollector.cloud.database.document.HSBColorEntity;
-import com.km.bottlecapcollector.cloud.database.document.ItemEntity;
-import com.km.bottlecapcollector.cloud.image.ml.api.Embedding;
+import com.km.bottlecapcollector.api.model.response.ImageResponse;
+import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
 import com.km.bottlecapcollector.cloud.image.analysis.api.ImageAnalysisMetadata;
 import com.km.bottlecapcollector.cloud.storage.api.StorageImage;
-import com.km.bottlecapcollector.cloud.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -27,9 +25,9 @@ public interface FirestoreBottleCapMapper {
 
     ItemEntity toDocument(CollectionItemResponse dto);
 
-    FirestoreImageDto toImageDto(StorageImage image);
+    ImageResponse toImageDto(StorageImage image);
 
-    StorageImage toImageDocument(FirestoreImageDto dto);
+    StorageImage toImageDocument(ImageResponse dto);
 
     ImageAnalysisMetadataResponse toVisionMetadataDto(ImageAnalysisMetadata metadata);
 

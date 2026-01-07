@@ -25,6 +25,7 @@ public class CloudStorageService implements StorageService {
 
     private final Storage storage;
     private final String bucketName;
+    private static final int SIGNED_URL_DURATION_MINUTES = 15;
 
     public CloudStorageService(Storage storage, AppProperties appProperties) {
         this.storage = storage;
@@ -40,7 +41,7 @@ public class CloudStorageService implements StorageService {
      * @throws IOException if upload fails
      */
     @Override
-    public StorageImage uploadImage(MultipartFile file, String itemId)throws IOException {
+    public StorageImage uploadImage(MultipartFile file, String itemId){
         log.info("Uploading image for bottle cap: {}", itemId);
 
         String originalFilename = file.getOriginalFilename();
@@ -60,7 +61,12 @@ public class CloudStorageService implements StorageService {
                 .setContentType(contentType)
                 .build();
 
-        Blob blob = storage.create(blobInfo, file.getBytes());
+        Blob blob = null;
+        try {
+            blob = storage.create(blobInfo, file.getBytes());
+        } catch (IOException e) {
+            throw new CloudStorageException(e.getMessage());
+        }
         log.info("Successfully uploaded image to: gs://{}/{}", bucketName, objectName);
 
         return StorageImage.builder()
@@ -118,9 +124,9 @@ public class CloudStorageService implements StorageService {
      * @return the signed URL
      */
     @Override
-    public String generateSignedUrl(String objectName, int durationMinutes) {
+    public String generateSignedUrl(String objectName) {
         BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(bucketName, objectName)).build();
-        return storage.signUrl(blobInfo, durationMinutes, TimeUnit.MINUTES).toString();
+        return storage.signUrl(blobInfo, SIGNED_URL_DURATION_MINUTES, TimeUnit.MINUTES).toString();
     }
 
 

@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.security;
 
-import com.km.bottlecapcollector.cloud.database.document.UserEntity;
-import com.km.bottlecapcollector.cloud.database.repository.FirestoreUserRepository;
+import com.km.bottlecapcollector.cloud.database.user.entity.UserEntity;
+import com.km.bottlecapcollector.cloud.database.user.repository.UserEntityRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -14,10 +14,10 @@ import java.util.*;
 
 public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
-    private final FirestoreUserRepository userRepository;
+    private final UserEntityRepository userRepository;
     private final RestTemplate restTemplate;
 
-    public GoogleOpaqueTokenIntrospector(FirestoreUserRepository userRepository) {
+    public GoogleOpaqueTokenIntrospector(UserEntityRepository userRepository) {
         this.userRepository = userRepository;
         this.restTemplate = new RestTemplate();
     }

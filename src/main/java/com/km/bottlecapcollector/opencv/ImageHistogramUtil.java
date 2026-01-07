@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.opencv;
 
-import com.km.bottlecapcollector.exception.ImageSignatureException;
+import com.km.bottlecapcollector.api.legacy.exception.ImageSignatureException;
 import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.model.OpenCVImageSignature;
 import com.km.bottlecapcollector.util.BottleCapPair;

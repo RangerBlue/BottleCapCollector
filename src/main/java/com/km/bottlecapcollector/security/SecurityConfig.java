@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.security;
 
-import com.km.bottlecapcollector.cloud.database.repository.FirestoreUserRepository;
+import com.km.bottlecapcollector.cloud.database.user.repository.UserEntityRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,12 +22,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final FirestoreUserRepository userRepository;
+    private final UserEntityRepository userRepository;
 
     @Value("${bcc.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, FirestoreUserRepository userRepository) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, UserEntityRepository userRepository) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.userRepository = userRepository;
     }

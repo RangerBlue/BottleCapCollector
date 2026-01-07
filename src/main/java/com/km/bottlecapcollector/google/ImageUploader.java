@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.google;
 
-import com.km.bottlecapcollector.exception.ImageUploaderException;
+import com.km.bottlecapcollector.api.legacy.exception.ImageUploaderException;
 import org.springframework.web.multipart.MultipartFile;
 
 

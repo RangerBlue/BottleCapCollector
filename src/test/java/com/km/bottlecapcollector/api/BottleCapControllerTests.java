@@ -4,9 +4,9 @@ import com.km.bottlecapcollector.api.legacy.BottleCapController;
 import com.km.bottlecapcollector.api.legacy.model.BottleCapDto;
 import com.km.bottlecapcollector.api.legacy.model.BottleCapValidationResponseDto;
 import com.km.bottlecapcollector.api.legacy.model.CapPictureDto;
-import com.km.bottlecapcollector.exception.CapNotFoundException;
+import com.km.bottlecapcollector.api.legacy.exception.CapNotFoundException;
 import com.km.bottlecapcollector.api.handler.ControllerExceptionHandler;
-import com.km.bottlecapcollector.exception.GoogleDriveException;
+import com.km.bottlecapcollector.api.legacy.exception.GoogleDriveException;
 import com.km.bottlecapcollector.service.BottleCapService;
 import com.km.bottlecapcollector.util.ItemFactory;
 import com.km.bottlecapcollector.util.ItemFactoryImpl;
@@ -87,7 +87,7 @@ class BottleCapControllerTests {
                         .file(file)
                         .param("name", capName)
                         .param("desc", description))
-                .andExpect(status().is(400));
+                .andExpect(status().is(500));
     }
 
     @Test

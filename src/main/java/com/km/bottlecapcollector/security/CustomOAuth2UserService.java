@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.security;
 
-import com.km.bottlecapcollector.cloud.database.document.UserEntity;
-import com.km.bottlecapcollector.cloud.database.repository.FirestoreUserRepository;
+import com.km.bottlecapcollector.cloud.database.user.entity.UserEntity;
+import com.km.bottlecapcollector.cloud.database.user.repository.UserEntityRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -18,9 +18,9 @@ import java.util.Set;
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final FirestoreUserRepository userRepository;
+    private final UserEntityRepository userRepository;
 
-    public CustomOAuth2UserService(FirestoreUserRepository userRepository) {
+    public CustomOAuth2UserService(UserEntityRepository userRepository) {
         this.userRepository = userRepository;
     }
 

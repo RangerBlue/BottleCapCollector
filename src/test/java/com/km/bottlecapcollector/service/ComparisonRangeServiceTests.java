@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.service;
 
-import com.km.bottlecapcollector.exception.DuplicateCapException;
+import com.km.bottlecapcollector.api.legacy.exception.DuplicateCapException;
 import com.km.bottlecapcollector.model.CapItem;
 import com.km.bottlecapcollector.model.ComparisonRange;
 import com.km.bottlecapcollector.model.OpenCVImageSignature;

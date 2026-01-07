@@ -52,10 +52,15 @@ public class VisionApiService {
      * @return FirestoreVisionMetadata with analysis results
      * @throws IOException if reading file fails
      */
-    public ImageAnalysisMetadata analyzeImageFromFile(MultipartFile file) throws IOException {
+    public ImageAnalysisMetadata analyzeImageFromFile(MultipartFile file){
         log.info("Analyzing image from file: {}", file.getOriginalFilename());
 
-        ByteString imgBytes = ByteString.copyFrom(file.getBytes());
+        ByteString imgBytes = null;
+        try {
+            imgBytes = ByteString.copyFrom(file.getBytes());
+        } catch (IOException e) {
+            throw new VisionApiException(e.getMessage());
+        }
         Image image = Image.newBuilder()
                 .setContent(imgBytes)
                 .build();

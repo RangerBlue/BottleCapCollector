@@ -1,7 +1,7 @@
 package com.km.bottlecapcollector.cloud.service;
 
-import com.km.bottlecapcollector.cloud.database.document.ItemEntity;
-import com.km.bottlecapcollector.cloud.database.document.ImageAnalysisMetadataEntity;
+import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
+import com.km.bottlecapcollector.cloud.database.item.entity.ImageAnalysisMetadataEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

@@ -225,7 +225,7 @@ class CloudStorageServiceTests {
                 .thenReturn(new URL(expectedUrl));
 
         // When
-        String result = cloudStorageService.generateSignedUrl(objectName, durationMinutes);
+        String result = cloudStorageService.generateSignedUrl(objectName);
 
         // Then
         assertEquals(expectedUrl, result);

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface EmbeddingService {
-    Embedding generateEmbedding(MultipartFile file) throws IOException;
+    Embedding generateEmbedding(MultipartFile file);
 
     double calculateCosineSimilarity(List<Float> embedding1, List<Float> embedding2);
 

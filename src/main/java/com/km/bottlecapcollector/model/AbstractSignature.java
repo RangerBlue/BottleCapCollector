@@ -1,6 +1,6 @@
 package com.km.bottlecapcollector.model;
 
-import com.km.bottlecapcollector.exception.ImageSignatureException;
+import com.km.bottlecapcollector.api.legacy.exception.ImageSignatureException;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;

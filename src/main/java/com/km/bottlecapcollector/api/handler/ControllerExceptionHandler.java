@@ -1,40 +1,41 @@
 package com.km.bottlecapcollector.api.handler;
 
-import com.km.bottlecapcollector.exception.CapNotFoundException;
-import com.km.bottlecapcollector.exception.GoogleDriveException;
+import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
+import com.km.bottlecapcollector.api.handler.exception.AppForbiddenException;
+import com.km.bottlecapcollector.api.handler.exception.AppResourceNotFoundException;
+import com.km.bottlecapcollector.api.handler.exception.AppValidationException;
+import com.km.bottlecapcollector.api.model.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(CapNotFoundException.class)
-    public ResponseEntity<Object> handleCapNotFoundException(
-            CapNotFoundException ex, WebRequest request) {
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(AppResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAppResourceNotFoundException(AppResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.create(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
     }
 
-    @ExceptionHandler(GoogleDriveException.class)
-    public ResponseEntity<Object> handleGoogleDriveException(
-            GoogleDriveException ex, WebRequest request) {
+    @ExceptionHandler(AppBadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleAppBadRequestException(AppBadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage()));
+    }
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getMessage());
+    @ExceptionHandler(AppForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleAppForbiddenException(AppForbiddenException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.create(HttpStatus.FORBIDDEN.value(), ex.getMessage()));
+    }
 
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(AppValidationException.class)
+    public ResponseEntity<ErrorResponse> handleAppValidationException(AppValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.create(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
     }
 }
