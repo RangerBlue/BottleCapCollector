@@ -221,9 +221,10 @@ public class CollectionService {
     }
 
     private void processAndAttachImage(ItemEntity item, MultipartFile file) {
-        String itemId = item.getId();
+        String userId = item.getUserId();
+        String collectionKey = item.getCollectionKey();
 
-        StorageImage image = cloudStorageService.uploadImage(file, itemId);
+        StorageImage image = cloudStorageService.uploadImage(file, userId, collectionKey);
         log.info("Uploaded image to Cloud Storage: {}", image.getObjectName());
 
         HSBColor hsbColor = HSBColorService.calculateColor(file);

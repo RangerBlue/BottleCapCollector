@@ -2,10 +2,8 @@ package com.km.bottlecapcollector.cloud.storage.api;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 public interface StorageService {
-    StorageImage uploadImage(MultipartFile file, String bottleCapId) throws IOException;
+    StorageImage uploadImage(MultipartFile file, String userId, String collectionKey);
 
     byte[] downloadImage(String objectName);
 

@@ -27,7 +27,8 @@ import static org.mockito.Mockito.*;
 class CloudStorageServiceTests {
 
     private static final String BUCKET_NAME = "test-bucket";
-    private static final String ITEM_ID = "item-123";
+    private static final String USER_ID = "user-123";
+    private static final String COLLECTION_KEY = "collection-456";
 
     @Mock
     private Storage storage;
@@ -66,12 +67,12 @@ class CloudStorageServiceTests {
         when(storage.create(any(BlobInfo.class), eq(fileContent))).thenReturn(blob);
 
         // When
-        StorageImage result = cloudStorageService.uploadImage(multipartFile, ITEM_ID);
+        StorageImage result = cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
 
         // Then
         assertNotNull(result);
         assertEquals(BUCKET_NAME, result.getBucketName());
-        assertTrue(result.getObjectName().startsWith(ITEM_ID + "/"));
+        assertTrue(result.getObjectName().startsWith(USER_ID + "/" + COLLECTION_KEY + "/"));
         assertTrue(result.getObjectName().endsWith(".jpg"));
         assertEquals(contentType, result.getContentType());
         assertEquals(Long.valueOf(fileSize), result.getSizeBytes());
@@ -102,7 +103,7 @@ class CloudStorageServiceTests {
         when(storage.create(any(BlobInfo.class), eq(fileContent))).thenReturn(blob);
 
         // When
-        StorageImage result = cloudStorageService.uploadImage(multipartFile, ITEM_ID);
+        StorageImage result = cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
 
         // Then
         assertEquals("application/octet-stream", result.getContentType());
@@ -122,12 +123,12 @@ class CloudStorageServiceTests {
         when(storage.create(any(BlobInfo.class), eq(fileContent))).thenReturn(blob);
 
         // When
-        StorageImage result = cloudStorageService.uploadImage(multipartFile, ITEM_ID);
+        StorageImage result = cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
 
         // Then
         assertNotNull(result);
-        assertTrue(result.getObjectName().startsWith(ITEM_ID + "/"));
-        assertFalse(result.getObjectName().contains("."));
+        assertTrue(result.getObjectName().startsWith(USER_ID + "/" + COLLECTION_KEY + "/"));
+        assertFalse(result.getObjectName().endsWith("."));
     }
 
     @Test
@@ -143,11 +144,11 @@ class CloudStorageServiceTests {
         when(storage.create(any(BlobInfo.class), eq(fileContent))).thenReturn(blob);
 
         // When
-        StorageImage result = cloudStorageService.uploadImage(multipartFile, ITEM_ID);
+        StorageImage result = cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
 
         // Then
         assertNotNull(result);
-        assertTrue(result.getObjectName().startsWith(ITEM_ID + "/"));
+        assertTrue(result.getObjectName().startsWith(USER_ID + "/" + COLLECTION_KEY + "/"));
     }
 
     @Test
@@ -252,8 +253,8 @@ class CloudStorageServiceTests {
         when(storage.create(any(BlobInfo.class), eq(fileContent))).thenReturn(blob);
 
         // When
-        StorageImage result1 = cloudStorageService.uploadImage(multipartFile, ITEM_ID);
-        StorageImage result2 = cloudStorageService.uploadImage(multipartFile, ITEM_ID);
+        StorageImage result1 = cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
+        StorageImage result2 = cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
 
         // Then
         assertNotEquals(result1.getObjectName(), result2.getObjectName());

@@ -45,7 +45,6 @@ Controller → Service → Repository → Database
 
 ### Image Processing Pipeline
 
-The system uses OpenCV to:
 1. Calculate HSB (Hue, Saturation, Brightness) histograms for image
 2. Upload file to Cloud Storage
 3. Call Vision API to get embeddings and metadata

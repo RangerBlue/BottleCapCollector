@@ -397,7 +397,7 @@ class CollectionServiceTests {
         HSBColor hsbColor = new HSBColor(0.5f, 0.5f, 0.5f);
 
         when(itemEntityService.save(eq(COLLECTION_KEY), any(ItemEntity.class))).thenReturn(savedItem);
-        when(cloudStorageService.uploadImage(multipartFile, ITEM_ID)).thenReturn(storageImage);
+        when(cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY)).thenReturn(storageImage);
         when(visionApiService.analyzeImageFromFile(multipartFile)).thenReturn(visionMetadata);
         when(visionApiService.extractTags(visionMetadata)).thenReturn(List.of("cap", "metal"));
         when(embeddingService.isAvailable()).thenReturn(true);
@@ -415,7 +415,7 @@ class CollectionServiceTests {
 
             // Then
             assertNotNull(result);
-            verify(cloudStorageService).uploadImage(multipartFile, ITEM_ID);
+            verify(cloudStorageService).uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
             verify(visionApiService).analyzeImageFromFile(multipartFile);
             verify(embeddingService).generateEmbedding(multipartFile);
             verify(searchTokenService).generateTokens(any(ItemEntity.class));
@@ -452,7 +452,7 @@ class CollectionServiceTests {
         HSBColor hsbColor = new HSBColor(0.5f, 0.5f, 0.5f);
 
         when(itemEntityService.save(eq(COLLECTION_KEY), any(ItemEntity.class))).thenReturn(savedItem);
-        when(cloudStorageService.uploadImage(multipartFile, ITEM_ID)).thenReturn(storageImage);
+        when(cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY)).thenReturn(storageImage);
         when(visionApiService.analyzeImageFromFile(multipartFile)).thenReturn(visionMetadata);
         when(visionApiService.extractTags(visionMetadata)).thenReturn(List.of());
         when(embeddingService.isAvailable()).thenReturn(false);
@@ -502,7 +502,7 @@ class CollectionServiceTests {
         HSBColor hsbColor = new HSBColor(0.5f, 0.5f, 0.5f);
 
         when(itemEntityService.save(eq(COLLECTION_KEY), any(ItemEntity.class))).thenReturn(savedItem);
-        when(cloudStorageService.uploadImage(multipartFile, ITEM_ID)).thenReturn(storageImage);
+        when(cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY)).thenReturn(storageImage);
         when(visionApiService.analyzeImageFromFile(multipartFile)).thenThrow(new RuntimeException("Vision API error"));
 
         try (MockedStatic<com.km.bottlecapcollector.color.HSBColorService> mockedHSBColorService =
@@ -548,7 +548,7 @@ class CollectionServiceTests {
         HSBColor hsbColor = new HSBColor(0.5f, 0.5f, 0.5f);
 
         when(itemEntityService.findByIdAndUserIdOrThrow(COLLECTION_KEY, ITEM_ID, USER_ID)).thenReturn(existingItem);
-        when(cloudStorageService.uploadImage(multipartFile, ITEM_ID)).thenReturn(newStorageImage);
+        when(cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY)).thenReturn(newStorageImage);
         when(visionApiService.analyzeImageFromFile(multipartFile)).thenReturn(visionMetadata);
         when(visionApiService.extractTags(visionMetadata)).thenReturn(List.of());
         when(embeddingService.isAvailable()).thenReturn(false);
@@ -568,7 +568,7 @@ class CollectionServiceTests {
             // Then
             assertNotNull(result);
             verify(cloudStorageService).deleteImage(oldObjectName);
-            verify(cloudStorageService).uploadImage(multipartFile, ITEM_ID);
+            verify(cloudStorageService).uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
         }
     }
 
@@ -596,7 +596,7 @@ class CollectionServiceTests {
         HSBColor hsbColor = new HSBColor(0.5f, 0.5f, 0.5f);
 
         when(itemEntityService.findByIdAndUserIdOrThrow(COLLECTION_KEY, ITEM_ID, USER_ID)).thenReturn(existingItem);
-        when(cloudStorageService.uploadImage(multipartFile, ITEM_ID)).thenReturn(newStorageImage);
+        when(cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY)).thenReturn(newStorageImage);
         when(visionApiService.analyzeImageFromFile(multipartFile)).thenReturn(visionMetadata);
         when(visionApiService.extractTags(visionMetadata)).thenReturn(List.of());
         when(embeddingService.isAvailable()).thenReturn(false);
@@ -615,7 +615,7 @@ class CollectionServiceTests {
 
             // Then
             verify(cloudStorageService, never()).deleteImage(anyString());
-            verify(cloudStorageService).uploadImage(multipartFile, ITEM_ID);
+            verify(cloudStorageService).uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
         }
     }
 

@@ -33,21 +33,22 @@ public class CloudStorageService implements StorageService {
     }
 
     /**
-     * Uploads a file to Cloud Storage with temporary/permanent folder distinction.
+     * Uploads a file to Cloud Storage with userId/collectionKey folder structure.
      *
      * @param file the multipart file to upload
-     * @param itemId the item ID to associate with the image
+     * @param userId the user ID for the folder path
+     * @param collectionKey the collection key for the folder path
      * @return StorageImage with storage metadata
-     * @throws IOException if upload fails
      */
     @Override
-    public StorageImage uploadImage(MultipartFile file, String itemId){
-        log.info("Uploading image for bottle cap: {}", itemId);
+    public StorageImage uploadImage(MultipartFile file, String userId, String collectionKey) {
+        log.info("Uploading image for userId: {}, collectionKey: {}", userId, collectionKey);
 
         String originalFilename = file.getOriginalFilename();
         String extension = getFileExtension(originalFilename);
-        String objectName = String.format("%s/%s%s",
-                itemId,
+        String objectName = String.format("%s/%s/%s%s",
+                userId,
+                collectionKey,
                 UUID.randomUUID(),
                 extension);
 
