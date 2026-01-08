@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-/**
- * DTO for transferring FirestoreImage data.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,9 +27,5 @@ public class ImageResponse {
 
     private Instant uploadedAt;
 
-    /**
-     * Short-lived signed URL for accessing the image.
-     * This URL expires after a configured duration.
-     */
     private String signedUrl;
 }

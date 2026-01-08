@@ -16,7 +16,8 @@ public class AppValidationException extends RuntimeException {
         super(cause);
     }
 
-    public AppValidationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public AppValidationException(String message, Throwable cause, boolean enableSuppression,
+                                  boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

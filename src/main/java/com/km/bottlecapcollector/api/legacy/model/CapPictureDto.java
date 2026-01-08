@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CapPictureDto {
-    private long id;
+    private String id;
     private String url;
 }

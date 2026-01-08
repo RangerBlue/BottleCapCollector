@@ -8,10 +8,10 @@ import com.km.bottlecapcollector.api.handler.exception.AppResourceNotFoundExcept
 public class FirestoreDocumentNotFoundException extends AppResourceNotFoundException {
 
     public FirestoreDocumentNotFoundException(String documentId) {
-        super("Document not found with id: " + documentId);
+        super("Resource not found with id: " + documentId);
     }
 
     public FirestoreDocumentNotFoundException(String collection, String documentId) {
-        super("Document not found in collection '" + collection + "' with id: " + documentId);
+        super("Resource not found in collection '" + collection + "' with id: " + documentId);
     }
 }

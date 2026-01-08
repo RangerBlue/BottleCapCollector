@@ -9,6 +9,7 @@ import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.service.CollectionFacadeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -40,13 +40,13 @@ public class CollectionItemController {
     private final CollectionFacadeService collectionFacadeService;
 
     @GetMapping
-    public ResponseEntity<List<UserCollectionResponse>> getUserCollections(
+    public ResponseEntity<@NotNull List<UserCollectionResponse>> getUserCollections(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         return ResponseEntity.ok(collectionFacadeService.getUserCollections(principal));
     }
 
     @PostMapping(value = "/{collectionKey}/items", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CollectionItemResponse> createItem(
+    public ResponseEntity<@NotNull CollectionItemResponse> createItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey,
             @RequestPart("file") MultipartFile file,
@@ -56,7 +56,7 @@ public class CollectionItemController {
     }
 
     @GetMapping("/{collectionKey}/items/{id}")
-    public ResponseEntity<CollectionItemResponse> getItem(
+    public ResponseEntity<@NotNull CollectionItemResponse> getItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey,
             @PathVariable String id) {
@@ -64,7 +64,7 @@ public class CollectionItemController {
     }
 
     @GetMapping("/{collectionKey}/items")
-    public ResponseEntity<Page<CollectionItemSummary>> getItems(
+    public ResponseEntity<@NotNull Page<@NotNull CollectionItemSummary>> getItems(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey,
             @RequestParam(required = false) String query,
@@ -73,7 +73,7 @@ public class CollectionItemController {
     }
 
     @PutMapping("/{collectionKey}/items/{id}")
-    public ResponseEntity<CollectionItemResponse> updateItem(
+    public ResponseEntity<@NotNull CollectionItemResponse> updateItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey,
             @PathVariable String id,
@@ -82,24 +82,24 @@ public class CollectionItemController {
     }
 
     @PutMapping(value = "/{collectionKey}/items/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CollectionItemResponse> updateImage(
+    public ResponseEntity<@NotNull CollectionItemResponse> updateImage(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey,
             @PathVariable String id,
-            @RequestParam("file") MultipartFile file){
+            @RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(collectionFacadeService.updateImage(principal, collectionKey, id, file));
     }
 
     @PostMapping(value = "/{collectionKey}/items/validate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ValidateItemResponse> validateItem(
+    public ResponseEntity<@NotNull ValidateItemResponse> validateItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey,
-            @RequestParam("file") MultipartFile file){
+            @RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(collectionFacadeService.validateItem(principal, collectionKey, file));
     }
 
     @DeleteMapping("/{collectionKey}/items/{id}")
-    public ResponseEntity<Void> deleteItem(
+    public ResponseEntity<@NotNull Void> deleteItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey,
             @PathVariable String id) {

@@ -5,6 +5,7 @@ import com.km.bottlecapcollector.api.legacy.model.BottleCapValidationResponseDto
 import com.km.bottlecapcollector.api.legacy.model.CapPictureDto;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -39,26 +40,26 @@ public class BottleCapController {
 
 
     @PostMapping("/caps")
-    public ResponseEntity<Long> addBottleCap(@RequestParam("name") String capName,
-                                             @RequestParam("desc") String description,
-                                             @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<@NotNull String> addBottleCap(@RequestParam("name") String capName,
+                                               @RequestParam("desc") String description,
+                                               @RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(legacyCollectionAdapter.addCapItem(capName, description, file));
     }
 
     @DeleteMapping("/caps/{id}")
-    public ResponseEntity<String> deleteBottleCap(@PathVariable Long id) {
+    public ResponseEntity<@NotNull String> deleteBottleCap(@PathVariable String id) {
         legacyCollectionAdapter.removeCapItem(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/caps/{id}")
-    public ResponseEntity<BottleCapDto> getBottleCap(@PathVariable Long id) {
+    public ResponseEntity<@NotNull BottleCapDto> getBottleCap(@PathVariable String id) {
         return ResponseEntity.ok().body(legacyCollectionAdapter.getCapItemDto(id));
     }
 
     @PutMapping("/caps/{id}")
-    public ResponseEntity<BottleCapDto> updateCap(@PathVariable Long id,
+    public ResponseEntity<@NotNull BottleCapDto> updateCap(@PathVariable String id,
                                                   @RequestParam("newName") String newName,
                                                   @RequestParam("newDesc") String newDesc) {
         return ResponseEntity.ok().body(legacyCollectionAdapter.updateCapItemDto(id, newName, newDesc));
@@ -71,7 +72,7 @@ public class BottleCapController {
     }
 
     @PostMapping("/whatCapAreYou")
-    public ResponseEntity<BottleCapDto> whatCapAreYou(@RequestParam("name") String capName,
+    public ResponseEntity<@NotNull BottleCapDto> whatCapAreYou(@RequestParam("name") String capName,
                                                       MultipartFile file) {
         return ResponseEntity.ok().body(legacyCollectionAdapter.validateWhatCapYouAre(capName, file));
     }

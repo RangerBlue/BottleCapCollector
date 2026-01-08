@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * Request DTO for checking if a bottle cap already exists in the collection.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

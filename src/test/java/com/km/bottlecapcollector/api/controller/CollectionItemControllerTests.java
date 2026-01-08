@@ -11,6 +11,7 @@ import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import com.km.bottlecapcollector.cloud.database.exception.FirestoreDocumentNotFoundException;
 import com.km.bottlecapcollector.service.CollectionFacadeService;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,8 +75,8 @@ class CollectionItemControllerTests {
             }
 
             @Override
-            public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                          NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+            public Object resolveArgument(@NotNull MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                          @NotNull NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
                 return principal;
             }
         };
@@ -221,7 +222,8 @@ class CollectionItemControllerTests {
                         .signedUrl("https://url2.com")
                         .build()
         );
-        Page<CollectionItemSummary> page = new PageImpl<>(summaries, PageRequest.of(0, 10), 2);
+        Page<@NotNull CollectionItemSummary> page =
+                new PageImpl<>(summaries, PageRequest.of(0, 10), 2);
 
         when(collectionFacadeService.getItems(any(OAuth2AuthenticatedPrincipal.class),
                 eq(COLLECTION_KEY), eq(null), any()))

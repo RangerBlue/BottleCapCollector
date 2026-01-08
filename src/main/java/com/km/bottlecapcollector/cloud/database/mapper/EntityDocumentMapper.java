@@ -19,43 +19,43 @@ public interface EntityDocumentMapper {
     EntityDocumentMapper INSTANCE = Mappers.getMapper(EntityDocumentMapper.class);
 
 
-    HSBColorEntity toFirestore(HSBColor source);
+    HSBColorEntity toEntity(HSBColor source);
 
     HSBColor toDomain(HSBColorEntity source);
 
-    StorageImageEntity toFirestore(StorageImage source);
+    StorageImageEntity toEntity(StorageImage source);
 
     StorageImage toDomain(StorageImageEntity source);
 
-    EmbeddingEntity toFirestore(Embedding source);
+    EmbeddingEntity toEntity(Embedding source);
 
     Embedding toDomain(EmbeddingEntity source);
 
-    ImageAnalysisMetadataEntity toFirestore(ImageAnalysisMetadata source);
+    ImageAnalysisMetadataEntity toEntity(ImageAnalysisMetadata source);
 
     ImageAnalysisMetadata toDomain(ImageAnalysisMetadataEntity source);
 
-    ImageAnalysisMetadataEntity.FirestoreImageLabel toFirestore(ImageAnalysisMetadata.ImageLabel source);
+    ImageAnalysisMetadataEntity.FirestoreImageLabel toEntity(ImageAnalysisMetadata.ImageLabel source);
 
     ImageAnalysisMetadata.ImageLabel toDomain(ImageAnalysisMetadataEntity.FirestoreImageLabel source);
 
-    ImageAnalysisMetadataEntity.FirestoreImageColor toFirestore(ImageAnalysisMetadata.ImageColor source);
+    ImageAnalysisMetadataEntity.FirestoreImageColor toEntity(ImageAnalysisMetadata.ImageColor source);
 
     ImageAnalysisMetadata.ImageColor toDomain(ImageAnalysisMetadataEntity.FirestoreImageColor source);
 
-    ImageAnalysisMetadataEntity.FirestoreImageText toFirestore(ImageAnalysisMetadata.ImageText source);
+    ImageAnalysisMetadataEntity.FirestoreImageText toEntity(ImageAnalysisMetadata.ImageText source);
 
     ImageAnalysisMetadata.ImageText toDomain(ImageAnalysisMetadataEntity.FirestoreImageText source);
 
-    ImageAnalysisMetadataEntity.FirestoreImageLogo toFirestore(ImageAnalysisMetadata.ImageLogo source);
+    ImageAnalysisMetadataEntity.FirestoreImageLogo toEntity(ImageAnalysisMetadata.ImageLogo source);
 
     ImageAnalysisMetadata.ImageLogo toDomain(ImageAnalysisMetadataEntity.FirestoreImageLogo source);
 
-    List<ImageAnalysisMetadataEntity.FirestoreImageLabel> toFirestoreLabels(List<ImageAnalysisMetadata.ImageLabel> source);
+    List<ImageAnalysisMetadataEntity.FirestoreImageLabel> toEntityLabels(List<ImageAnalysisMetadata.ImageLabel> source);
 
     List<ImageAnalysisMetadata.ImageLabel> toDomainLabels(List<ImageAnalysisMetadataEntity.FirestoreImageLabel> source);
 
-    List<ImageAnalysisMetadataEntity.FirestoreImageColor> toFirestoreColors(List<ImageAnalysisMetadata.ImageColor> source);
+    List<ImageAnalysisMetadataEntity.FirestoreImageColor> toEntityColors(List<ImageAnalysisMetadata.ImageColor> source);
 
     List<ImageAnalysisMetadata.ImageColor> toDomainColors(List<ImageAnalysisMetadataEntity.FirestoreImageColor> source);
 }

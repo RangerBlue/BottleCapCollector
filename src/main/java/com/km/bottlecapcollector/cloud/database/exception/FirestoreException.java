@@ -2,9 +2,6 @@ package com.km.bottlecapcollector.cloud.database.exception;
 
 import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
 
-/**
- * Exception thrown when Firestore operations fail.
- */
 public class FirestoreException extends AppBadRequestException {
 
     public FirestoreException() {
@@ -22,7 +19,8 @@ public class FirestoreException extends AppBadRequestException {
         super(cause);
     }
 
-    public FirestoreException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public FirestoreException(String message, Throwable cause, boolean enableSuppression,
+                              boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

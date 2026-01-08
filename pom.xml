@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.km</groupId>
 	<artifactId>BottleCapCollector</artifactId>
-	<version>2.2.0</version>
+	<version>3.0.0</version>
 	<name>BottleCapCollector</name>
 	<description>Backend project for Bottle Cap Collector system</description>
 
@@ -146,6 +146,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-hateoas</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>26.0.2</version>
+            <scope>compile</scope>
         </dependency>
 	</dependencies>
 

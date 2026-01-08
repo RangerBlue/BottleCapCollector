@@ -32,25 +32,13 @@ public class CollectionItemResponse {
 
     private ImageAnalysisMetadataResponse visionMetadata;
 
-    /**
-     * Simple string tags (auto-generated from Vision API).
-     */
     private List<String> tags;
 
-    /**
-     * Custom key-value tags provided by the user.
-     */
     private Map<String, String> customTags;
 
     private String userId;
 
-    /**
-     * UUID key used for database operations.
-     */
     private String collectionKey;
 
-    /**
-     * Human-readable collection name for display.
-     */
     private String collectionName;
 }

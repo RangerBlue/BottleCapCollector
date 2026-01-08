@@ -1,7 +1,6 @@
 package com.km.bottlecapcollector.api.handler.exception;
 
-public class AppForbiddenException extends RuntimeException
-{
+public class AppForbiddenException extends RuntimeException {
     public AppForbiddenException() {
     }
 
@@ -17,7 +16,8 @@ public class AppForbiddenException extends RuntimeException
         super(cause);
     }
 
-    public AppForbiddenException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public AppForbiddenException(String message, Throwable cause, boolean enableSuppression,
+                                 boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

@@ -32,7 +32,7 @@ public class SimilarityService {
     private final ItemEntityService itemEntityService;
     private final EmbeddingService embeddingService;
     private final CloudStorageService cloudStorageService;
-    private final EntityDocumentMapper documentMapper = EntityDocumentMapper.INSTANCE;
+    private static final EntityDocumentMapper documentMapper = EntityDocumentMapper.INSTANCE;
 
     /**
      * Finds similar items for an uploaded image.

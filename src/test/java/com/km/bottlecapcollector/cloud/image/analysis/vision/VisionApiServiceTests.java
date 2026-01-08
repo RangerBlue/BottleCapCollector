@@ -8,7 +8,6 @@ import com.google.cloud.vision.v1.DominantColorsAnnotation;
 import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.cloud.vision.v1.ImageProperties;
-import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.rpc.Status;
 import com.google.type.Color;
 import com.km.bottlecapcollector.cloud.image.analysis.api.ImageAnalysisMetadata;

@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.service;
 
+import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
@@ -12,7 +13,7 @@ import com.km.bottlecapcollector.cloud.image.analysis.api.ImageAnalysisMetadata;
 import com.km.bottlecapcollector.cloud.image.analysis.vision.VisionApiService;
 import com.km.bottlecapcollector.cloud.image.ml.api.Embedding;
 import com.km.bottlecapcollector.cloud.image.ml.api.EmbeddingService;
-import com.km.bottlecapcollector.cloud.mapper.FirestoreBottleCapMapper;
+import com.km.bottlecapcollector.api.mapper.ApiMapper;
 import com.km.bottlecapcollector.cloud.service.SearchTokenService;
 import com.km.bottlecapcollector.cloud.storage.CloudStorageService;
 import com.km.bottlecapcollector.cloud.storage.api.StorageImage;
@@ -20,13 +21,13 @@ import com.km.bottlecapcollector.color.HSBColor;
 import com.km.bottlecapcollector.color.HSBColorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,18 +49,20 @@ public class CollectionService {
     private final EmbeddingService embeddingService;
     private final SearchTokenService searchTokenService;
     private final SimilarityService similarityService;
-    private final FirestoreBottleCapMapper mapper = FirestoreBottleCapMapper.INSTANCE;
-    private final EntityDocumentMapper documentMapper = EntityDocumentMapper.INSTANCE;
+    private static final ApiMapper apiMapper = ApiMapper.INSTANCE;
+    private static final EntityDocumentMapper documentMapper = EntityDocumentMapper.INSTANCE;
 
-    public CollectionItemResponse createCollectionItem(String collectionKey, CreateCollectionItemRequest request, MultipartFile file) {
-        log.info("Creating new collection item: {} in collection: {}", request.getName(), collectionKey);
+    public CollectionItemResponse createCollectionItem(String collectionKey, String userId,
+                                                       CreateCollectionItemRequest request, MultipartFile file) {
+        log.info("Creating new collection item: {} in collection: {} for user: {}", request.getName(), collectionKey,
+                userId);
 
         ItemEntity item = ItemEntity.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .tags(request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>())
                 .customTags(request.getCustomTags())
-                .userId(request.getUserId())
+                .userId(userId)
                 .collectionKey(collectionKey)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
@@ -80,11 +83,9 @@ public class CollectionService {
             ItemEntity finalItem = itemEntityService.save(collectionKey, savedItem);
             log.info("Successfully created and processed collection item with id: {}", itemId);
 
-            if (request.getUserId() != null && !request.getUserId().isBlank()) {
-                userService.addCollectionToUser(request.getUserId(), collectionKey, request.getCollectionName());
-            }
+            userService.addCollectionToUser(userId, collectionKey, request.getCollectionName());
 
-            CollectionItemResponse response = mapper.toDto(finalItem);
+            CollectionItemResponse response = apiMapper.toResponse(finalItem);
             response.setCollectionName(request.getCollectionName());
             return enrichWithSignedUrl(response);
 
@@ -98,19 +99,20 @@ public class CollectionService {
             } catch (Exception cleanupError) {
                 log.error("Failed to clean up collection item: {}", itemId, cleanupError);
             }
-            throw new RuntimeException("Failed to create collection item: " + e.getMessage(), e);
+            throw new AppBadRequestException("Failed to create collection item: " + e.getMessage(), e);
         }
     }
 
     public CollectionItemResponse getCollectionItem(String collectionKey, String id, String userId) {
         log.trace("Getting item with id: {} from collection: {} for user: {}", id, collectionKey, userId);
         ItemEntity item = itemEntityService.findByIdAndUserIdOrThrow(collectionKey, id, userId);
-        CollectionItemResponse response = mapper.toDto(item);
+        CollectionItemResponse response = apiMapper.toResponse(item);
         response.setCollectionName(userService.getCollectionName(userId, collectionKey));
         return enrichWithSignedUrl(response);
     }
 
-    public Page<CollectionItemSummary> searchItemsPaginated(String collectionKey, String query, String userId, Pageable pageable) {
+    public Page<@NotNull  CollectionItemSummary> searchItemsPaginated(String collectionKey, String query,
+                                                                      String userId, Pageable pageable) {
         log.info("Searching items in collection: {} with query: '{}' for user: {}, page: {}, size: {}",
                 collectionKey, query, userId, pageable.getPageNumber(), pageable.getPageSize());
 
@@ -130,7 +132,7 @@ public class CollectionService {
         }
 
         log.info("Returning page {} of {} items (total: {})", pageable.getPageNumber(), items.size(), totalElements);
-        List<CollectionItemSummary> content = enrichSummariesWithSignedUrl(mapper.toSummaryList(items));
+        List<CollectionItemSummary> content = enrichSummariesWithSignedUrl(apiMapper.toSummaryList(items));
         return new PageImpl<>(content, pageable, totalElements);
     }
 
@@ -158,14 +160,14 @@ public class CollectionService {
         if (needsTokenRegeneration) {
             List<String> searchTokens = searchTokenService.generateTokens(item);
             item.setSearchTokens(searchTokens);
-            log.info("Regenerated {} search tokens for item: {}", searchTokens.size(), id);
+            log.info("Regenerated {} search tokens for updating item: {}", searchTokens.size(), id);
         }
 
         item.setUpdatedAt(Instant.now());
         ItemEntity saved = itemEntityService.save(collectionKey, item);
         log.info("Successfully updated item with id: {}", id);
 
-        CollectionItemResponse response = mapper.toDto(saved);
+        CollectionItemResponse response = apiMapper.toResponse(saved);
         response.setCollectionName(userService.getCollectionName(userId, collectionKey));
         return enrichWithSignedUrl(response);
     }
@@ -180,17 +182,18 @@ public class CollectionService {
             cloudStorageService.deleteImage(item.getImage().getObjectName());
         }
 
+        item.setTags(null);
         processAndAttachImage(item, file);
 
         List<String> searchTokens = searchTokenService.generateTokens(item);
         item.setSearchTokens(searchTokens);
-        log.info("Regenerated {} search tokens for item: {}", searchTokens.size(), id);
+        log.info("Regenerated {} search tokens for updating image item: {}", searchTokens.size(), id);
 
         item.setUpdatedAt(Instant.now());
         ItemEntity saved = itemEntityService.save(collectionKey, item);
         log.info("Successfully updated image for item with id: {}", id);
 
-        CollectionItemResponse response = mapper.toDto(saved);
+        CollectionItemResponse response = apiMapper.toResponse(saved);
         response.setCollectionName(userService.getCollectionName(userId, collectionKey));
         return enrichWithSignedUrl(response);
     }
@@ -229,17 +232,17 @@ public class CollectionService {
 
         HSBColor hsbColor = HSBColorService.calculateColor(file);
         image.setHsbColor(hsbColor);
-        item.setImage(documentMapper.toFirestore(image));
+        item.setImage(documentMapper.toEntity(image));
         log.info("Calculated HSB color - H:{}, S:{}, B:{}", hsbColor.getHue(), hsbColor.getSaturation(), hsbColor.getBrightness());
 
         ImageAnalysisMetadata visionMetadata = visionApiService.analyzeImageFromFile(file);
-        item.setVisionMetadata(documentMapper.toFirestore(visionMetadata));
+        item.setVisionMetadata(documentMapper.toEntity(visionMetadata));
         log.info("Analyzed image with Vision API");
 
         if (embeddingService.isAvailable()) {
             Embedding embedding = embeddingService.generateEmbedding(file);
             if (embedding != null) {
-                item.setEmbedding(documentMapper.toFirestore(embedding));
+                item.setEmbedding(documentMapper.toEntity(embedding));
                 log.info("Generated embedding with {} dimensions", embedding.getDimensions());
             }
         } else {

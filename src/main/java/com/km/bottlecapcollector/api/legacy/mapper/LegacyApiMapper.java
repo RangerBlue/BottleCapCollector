@@ -30,25 +30,23 @@ public interface LegacyApiMapper {
             .ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneId.systemDefault());
 
-    @Mapping(target = "id", source = "id", qualifiedByName = "stringToLong")
     @Mapping(target = "url", source = "image.signedUrl")
     @Mapping(target = "creationDate", source = "createdAt", qualifiedByName = "instantToString")
     BottleCapDto toBottleCapDto(CollectionItemResponse response);
 
     @Named("summaryToBottleCapDto")
-    @Mapping(target = "id", source = "id", qualifiedByName = "stringToLong")
     @Mapping(target = "url", source = "signedUrl")
     @Mapping(target = "creationDate", ignore = true)
     BottleCapDto toBottleCapDtoFromSummary(CollectionItemSummary summary);
 
-    @Mapping(target = "id", source = "id", qualifiedByName = "stringToLong")
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "url", source = "imageUrl")
+    @Mapping(target = "name", source = "name")
     @Mapping(target = "description", ignore = true)
     @Mapping(target = "creationDate", ignore = true)
     BottleCapDto toBottleCapDtoFromSimilarItem(ValidateItemResponse.SimilarItem item);
 
     @Named("summaryToCapPictureDto")
-    @Mapping(target = "id", source = "id", qualifiedByName = "stringToLong")
     @Mapping(target = "url", source = "signedUrl")
     CapPictureDto toCapPictureDto(CollectionItemSummary summary);
 
@@ -59,12 +57,12 @@ public interface LegacyApiMapper {
     List<CapPictureDto> toCapPictureDtoList(List<CollectionItemSummary> summaries);
 
     default BottleCapValidationResponseDto toValidationResponseDto(ValidateItemResponse response) {
-        List<Long> similarIds = new ArrayList<>();
+        List<String> similarIds = new ArrayList<>();
         List<String> similarUrls = new ArrayList<>();
 
         if (response.getSimilarCaps() != null) {
             for (ValidateItemResponse.SimilarItem item : response.getSimilarCaps()) {
-                similarIds.add(stringToLong(item.getId()));
+                similarIds.add(item.getId());
                 similarUrls.add(item.getImageUrl());
             }
         }
@@ -75,18 +73,6 @@ public interface LegacyApiMapper {
                 similarUrls,
                 new int[0]
         );
-    }
-
-    @Named("stringToLong")
-    default Long stringToLong(String id) {
-        if (id == null) {
-            return 0L;
-        }
-        try {
-            return Long.parseLong(id);
-        } catch (NumberFormatException e) {
-            return (long) Math.abs(id.hashCode());
-        }
     }
 
     @Named("instantToString")

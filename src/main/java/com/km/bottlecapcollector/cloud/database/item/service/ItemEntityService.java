@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Service responsible for managing ItemEntity document state in Firestore.
- * Contains only repository-related operations.
- */
+
 @Service
 @Slf4j
 @RequiredArgsConstructor

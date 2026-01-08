@@ -8,6 +8,7 @@ import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -53,8 +54,7 @@ public class CollectionFacadeService {
                                              MultipartFile file) {
         String userId = userService.getUserId(principal);
         log.info("User {} creating item in collection {}", userId, collectionKey);
-        request.setUserId(userId);
-        return collectionService.createCollectionItem(collectionKey, request, file);
+        return collectionService.createCollectionItem(collectionKey, userId, request, file);
     }
 
     /**
@@ -71,10 +71,10 @@ public class CollectionFacadeService {
     /**
      * Searches items in a collection for the authenticated user.
      */
-    public Page<CollectionItemSummary> getItems(OAuth2AuthenticatedPrincipal principal,
-                                                String collectionKey,
-                                                String query,
-                                                Pageable pageable) {
+    public Page<@NotNull CollectionItemSummary> getItems(OAuth2AuthenticatedPrincipal principal,
+                                                         String collectionKey,
+                                                         String query,
+                                                         Pageable pageable) {
         String userId = userService.getUserId(principal);
         log.info("User {} getting items from collection {} with query '{}', page: {}, size: {}",
                 userId, collectionKey, query, pageable.getPageNumber(), pageable.getPageSize());

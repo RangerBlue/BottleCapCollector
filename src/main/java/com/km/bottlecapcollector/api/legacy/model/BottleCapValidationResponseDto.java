@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class BottleCapValidationResponseDto {
     boolean isDuplicate;
-    List<Long> similarCapsIDs;
+    List<String> similarCapsIDs;
     List<String> similarCapsURLs;
     int[] similarityDistribution;
 }

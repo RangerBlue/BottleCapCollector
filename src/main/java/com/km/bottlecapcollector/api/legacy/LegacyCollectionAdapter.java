@@ -43,25 +43,25 @@ public class LegacyCollectionAdapter {
      * @param capName     name of the cap
      * @param description description of the cap
      * @param file        image file
-     * @return the generated Long ID (parsed from Firestore document ID)
+     * @return the generated String ID (Firestore document ID)
      */
-    public Long addCapItem(String capName, String description, MultipartFile file) {
+    public String addCapItem(String capName, String description, MultipartFile file) {
         log.info("Legacy API: Adding cap item: {}", capName);
 
         CreateCollectionItemRequest request = CreateCollectionItemRequest.builder()
                 .name(capName)
                 .description(description)
-                .userId(getLegacyUserId())
                 .collectionName(getLegacyCollectionName())
                 .build();
 
         CollectionItemResponse response = collectionService.createCollectionItem(
                 getLegacyCollectionKey(),
+                getLegacyUserId(),
                 request,
                 file
         );
 
-        return mapper.stringToLong(response.getId());
+        return response.getId();
     }
 
     /**
@@ -69,11 +69,11 @@ public class LegacyCollectionAdapter {
      *
      * @param id the cap ID
      */
-    public void removeCapItem(Long id) {
+    public void removeCapItem(String id) {
         log.info("Legacy API: Removing cap item: {}", id);
         collectionService.deleteItem(
                 getLegacyCollectionKey(),
-                id.toString(),
+                id,
                 getLegacyUserId()
         );
     }
@@ -84,11 +84,11 @@ public class LegacyCollectionAdapter {
      * @param id the cap ID
      * @return the cap as BottleCapDto
      */
-    public BottleCapDto getCapItemDto(Long id) {
+    public BottleCapDto getCapItemDto(String id) {
         log.trace("Legacy API: Getting cap item: {}", id);
         CollectionItemResponse response = collectionService.getCollectionItem(
                 getLegacyCollectionKey(),
-                id.toString(),
+                id,
                 getLegacyUserId()
         );
         return mapper.toBottleCapDto(response);
@@ -102,7 +102,7 @@ public class LegacyCollectionAdapter {
      * @param newDesc new description
      * @return updated BottleCapDto
      */
-    public BottleCapDto updateCapItemDto(Long id, String newName, String newDesc) {
+    public BottleCapDto updateCapItemDto(String id, String newName, String newDesc) {
         log.info("Legacy API: Updating cap item: {} with name: {}", id, newName);
 
         UpdateCollectionItem request = UpdateCollectionItem.builder()
@@ -112,7 +112,7 @@ public class LegacyCollectionAdapter {
 
         CollectionItemResponse response = collectionService.updateItem(
                 getLegacyCollectionKey(),
-                id.toString(),
+                id,
                 getLegacyUserId(),
                 request
         );

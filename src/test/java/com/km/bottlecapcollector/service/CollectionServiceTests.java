@@ -368,7 +368,6 @@ class CollectionServiceTests {
                 .name("New Cap")
                 .description("A nice cap")
                 .tags(List.of("beer"))
-                .userId(USER_ID)
                 .collectionName(COLLECTION_NAME)
                 .build();
 
@@ -411,7 +410,7 @@ class CollectionServiceTests {
                     .thenReturn(hsbColor);
 
             // When
-            CollectionItemResponse result = collectionService.createCollectionItem(COLLECTION_KEY, request, multipartFile);
+            CollectionItemResponse result = collectionService.createCollectionItem(COLLECTION_KEY, USER_ID, request, multipartFile);
 
             // Then
             assertNotNull(result);
@@ -428,7 +427,6 @@ class CollectionServiceTests {
         // Given
         CreateCollectionItemRequest request = CreateCollectionItemRequest.builder()
                 .name("New Cap")
-                .userId(USER_ID)
                 .collectionName(COLLECTION_NAME)
                 .build();
 
@@ -465,7 +463,7 @@ class CollectionServiceTests {
                     .thenReturn(hsbColor);
 
             // When
-            collectionService.createCollectionItem(COLLECTION_KEY, request, multipartFile);
+            collectionService.createCollectionItem(COLLECTION_KEY, USER_ID, request, multipartFile);
 
             // Then
             verify(embeddingService, never()).generateEmbedding(any());
@@ -477,7 +475,6 @@ class CollectionServiceTests {
         // Given
         CreateCollectionItemRequest request = CreateCollectionItemRequest.builder()
                 .name("New Cap")
-                .userId(USER_ID)
                 .collectionName(COLLECTION_NAME)
                 .build();
 
@@ -512,7 +509,7 @@ class CollectionServiceTests {
 
             // When / Then
             assertThrows(RuntimeException.class, () -> {
-                collectionService.createCollectionItem(COLLECTION_KEY, request, multipartFile);
+                collectionService.createCollectionItem(COLLECTION_KEY, USER_ID, request, multipartFile);
             });
 
             verify(cloudStorageService).deleteImage(OBJECT_NAME);

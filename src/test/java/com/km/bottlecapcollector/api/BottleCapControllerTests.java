@@ -2,9 +2,9 @@ package com.km.bottlecapcollector.api;
 
 import com.km.bottlecapcollector.api.handler.ControllerExceptionHandler;
 import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
+import com.km.bottlecapcollector.api.handler.exception.AppResourceNotFoundException;
 import com.km.bottlecapcollector.api.legacy.BottleCapController;
 import com.km.bottlecapcollector.api.legacy.LegacyCollectionAdapter;
-import com.km.bottlecapcollector.api.legacy.exception.CapNotFoundException;
 import com.km.bottlecapcollector.api.legacy.model.BottleCapDto;
 import com.km.bottlecapcollector.api.legacy.model.BottleCapValidationResponseDto;
 import com.km.bottlecapcollector.api.legacy.model.CapPictureDto;
@@ -26,7 +26,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -62,14 +62,14 @@ class BottleCapControllerTests {
         String description = "Good bear!";
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
-        given(legacyCollectionAdapter.addCapItem(anyString(), anyString(), any())).willReturn(12L);
+        given(legacyCollectionAdapter.addCapItem(anyString(), anyString(), any())).willReturn("uuid-12345");
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/caps")
                         .file(file)
                         .param("name", capName)
                         .param("desc", description))
                 .andExpect(status().is(201))
-                .andExpect(jsonPath("$", is(12)));
+                .andExpect(jsonPath("$", is("uuid-12345")));
     }
 
     @Test
@@ -95,7 +95,7 @@ class BottleCapControllerTests {
         MockMultipartFile file = new MockMultipartFile("file", fileName,
                 "text/plain", "test data".getBytes());
         given(legacyCollectionAdapter.validateCapItem(anyString(), any())).willReturn(new BottleCapValidationResponseDto(false,
-                Arrays.asList(1L, 2L), Arrays.asList("www.google.pl", "www.google.pl"),
+                Arrays.asList("uuid-1", "uuid-2"), Arrays.asList("www.google.pl", "www.google.pl"),
                 new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/validateCap")
@@ -119,7 +119,7 @@ class BottleCapControllerTests {
                         .file(file)
                         .param("name", fileName))
                 .andExpect(status().is(200))
-                .andExpect(jsonPath("$['id']", is(0)));
+                .andExpect(jsonPath("$['id']", nullValue()));
     }
 
     @Test
@@ -152,10 +152,10 @@ class BottleCapControllerTests {
     @Test
     void getLinksSuccess() throws Exception {
         CapPictureDto cap = new CapPictureDto();
-        cap.setId(1);
+        cap.setId("uuid-1");
         cap.setUrl("link");
         CapPictureDto cap1 = new CapPictureDto();
-        cap1.setId(2);
+        cap1.setId("uuid-2");
         cap1.setUrl("link1");
         List<CapPictureDto> allCaps = Arrays.asList(cap, cap1);
 
@@ -165,9 +165,9 @@ class BottleCapControllerTests {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].id", is(1)))
+                .andExpect(jsonPath("$[0].id", is("uuid-1")))
                 .andExpect(jsonPath("$[0].url", is("link")))
-                .andExpect(jsonPath("$[1].id", is(2)))
+                .andExpect(jsonPath("$[1].id", is("uuid-2")))
                 .andExpect(jsonPath("$[1].url", is("link1")));
     }
 
@@ -177,8 +177,8 @@ class BottleCapControllerTests {
         bottleCapDto.setName("cap1");
         bottleCapDto.setUrl("");
         bottleCapDto.setCreationDate("2021-01-09T19:48:51.438");
-        given(legacyCollectionAdapter.getCapItemDto(anyLong())).willReturn(bottleCapDto);
-        this.mvc.perform(get("/caps/1"))
+        given(legacyCollectionAdapter.getCapItemDto(anyString())).willReturn(bottleCapDto);
+        this.mvc.perform(get("/caps/uuid-1"))
                 .andExpect(status().is(200))
                 .andExpect(jsonPath("$['url']").isEmpty())
                 .andExpect(jsonPath("$['name']", is("cap1")))
@@ -188,9 +188,9 @@ class BottleCapControllerTests {
 
     @Test
     void getBottleCapWrongIDException() throws Exception {
-        long id = 1;
-        given(legacyCollectionAdapter.getCapItemDto(id)).willThrow(new CapNotFoundException(id));
-        this.mvc.perform(get("/caps/1"))
+        String id = "uuid-1";
+        given(legacyCollectionAdapter.getCapItemDto(id)).willThrow(new AppResourceNotFoundException(id));
+        this.mvc.perform(get("/caps/uuid-1"))
                 .andExpect(status().is(404));
     }
 
@@ -204,11 +204,11 @@ class BottleCapControllerTests {
 
     @Test
     void updateBottleCapWrongIDException() throws Exception {
-        long id = 1;
+        String id = "uuid-1";
         String newName = "Beer";
         String newDesc = "Good beer";
-        given(legacyCollectionAdapter.updateCapItemDto(id, newName, newDesc)).willThrow(new CapNotFoundException(id));
-        this.mvc.perform(put("/caps/1")
+        given(legacyCollectionAdapter.updateCapItemDto(id, newName, newDesc)).willThrow(new AppResourceNotFoundException(id));
+        this.mvc.perform(put("/caps/uuid-1")
                         .param("newName", newName)
                         .param("newDesc", newDesc))
                 .andExpect(status().is(404));
@@ -222,8 +222,8 @@ class BottleCapControllerTests {
 
     @Test
     void deleteBottleCapNotFoundWithAdminRoleException() throws Exception {
-        long capId = 12L;
-        doThrow(new CapNotFoundException(capId)).when(legacyCollectionAdapter).removeCapItem(capId);
+        String capId = "uuid-12";
+        doThrow(new AppResourceNotFoundException(capId)).when(legacyCollectionAdapter).removeCapItem(capId);
         this.mvc.perform(delete("/caps/" + capId))
                 .andExpect(status().is(404));
     }

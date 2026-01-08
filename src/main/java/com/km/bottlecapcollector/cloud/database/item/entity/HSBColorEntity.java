@@ -5,11 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Firestore embedded document representing HSB (Hue, Saturation, Brightness) color values.
- * Used for pre-filtering bottle caps before applying embedding-based similarity search.
- * Values are stored as floats in range 0.0 to 1.0.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

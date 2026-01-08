@@ -1,4 +1,5 @@
 package com.km.bottlecapcollector.util;
+
 import com.km.bottlecapcollector.color.HSBColor;
 import com.km.bottlecapcollector.color.HSBColorRange;
 import com.km.bottlecapcollector.color.HSBColorService;
@@ -8,15 +9,15 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class HSBColorTests {
+class HSBColorTests {
 
     @BeforeAll
-    public static void beforeClass(){
+    static void beforeClass(){
         HSBColorService.setMargin(0.1f);
     }
 
     @Test
-    public void testParametersWithoutOverflow(){
+    void testParametersWithoutOverflow(){
         final HSBColor color = new HSBColor(0.5f, 0.4f, 0.3f);
         final HSBColorRange colorRange = HSBColorService.calculateRanges(color);
         assertEquals(0.4f, colorRange.getHueRange().getMoreThan(), 0.0001f);
@@ -36,7 +37,7 @@ public class HSBColorTests {
     }
 
     @Test
-    public void testParametersWithOverflowTo0(){
+    void testParametersWithOverflowTo0(){
         final HSBColor color = new HSBColor(0.05f, 0.3f, 0.4f);
         final HSBColorRange colorRange = HSBColorService.calculateRanges(color);
         assertEquals(0.95f, colorRange.getHueRange().getMoreThan(), 0.0001f);
@@ -56,7 +57,7 @@ public class HSBColorTests {
     }
 
     @Test
-    public void testParametersWithOverflowTo1(){
+    void testParametersWithOverflowTo1(){
         final HSBColor color = new HSBColor(0.95f, 0.2f, 0.8f);
         final HSBColorRange colorRange = HSBColorService.calculateRanges(color);
 
@@ -77,7 +78,7 @@ public class HSBColorTests {
     }
 
     @Test
-    public void testParametersWithOverflowEdgeCase(){
+    void testParametersWithOverflowEdgeCase(){
         final HSBColor color = new HSBColor(1f, 0f, 1f);
         final HSBColorRange colorRange = HSBColorService.calculateRanges(color);
 

@@ -7,10 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * Response DTO for the checkCap operation containing the temporary cap ID
- * and a list of similar caps found in the collection.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

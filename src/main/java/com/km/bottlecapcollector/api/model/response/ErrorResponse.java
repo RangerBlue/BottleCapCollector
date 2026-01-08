@@ -16,7 +16,7 @@ public class ErrorResponse {
     private int status;
     private Object error;
 
-    public static ErrorResponse create(int status, String error){
+    public static ErrorResponse create(int status, String error) {
         return ErrorResponse.builder()
                 .timestamp(Instant.now())
                 .status(status)
