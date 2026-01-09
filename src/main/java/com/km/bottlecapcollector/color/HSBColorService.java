@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.color;
 
+import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +16,9 @@ public class HSBColorService {
     private static final float OVERFLOW_1 = 1f;
     private static final float OVERFLOW_0 = 0f;
 
+    private HSBColorService() {
+    }
+
     public static HSBColor calculateColor(MultipartFile file) {
         BufferedImage img;
 
@@ -22,7 +26,7 @@ public class HSBColorService {
         try {
             img = ImageIO.read(file.getInputStream());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new AppBadRequestException(e);
         }
 
         // get image width and height
@@ -30,7 +34,9 @@ public class HSBColorService {
         int height = img.getHeight();
 
         // calculate the average color of all the pixels in the image
-        long sumRed = 0, sumGreen = 0, sumBlue = 0;
+        long sumRed = 0;
+        long sumGreen = 0;
+        long sumBlue = 0;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 Color pixelColor = new Color(img.getRGB(x, y));

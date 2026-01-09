@@ -35,7 +35,7 @@ public class LegacyCollectionAdapter {
     private final CollectionService collectionService;
     private final AppProperties appProperties;
 
-    private final LegacyApiMapper mapper = LegacyApiMapper.INSTANCE;
+    private static final LegacyApiMapper mapper = LegacyApiMapper.INSTANCE;
 
     /**
      * Creates a new cap item using the legacy API format.

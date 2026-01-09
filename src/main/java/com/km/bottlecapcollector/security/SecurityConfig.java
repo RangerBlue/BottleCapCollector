@@ -41,6 +41,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         // OpenAPI / Swagger UI
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        // Public collection API
+                        .requestMatchers(HttpMethod.GET, "/api/v1/public/**").permitAll()
                         // Admin endpoints
                         .requestMatchers(HttpMethod.POST, "/caps").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/caps").hasRole("ADMIN")
