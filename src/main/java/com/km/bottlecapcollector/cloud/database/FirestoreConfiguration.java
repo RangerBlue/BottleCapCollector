@@ -1,6 +1,5 @@
 package com.km.bottlecapcollector.cloud.database;
 
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.km.bottlecapcollector.property.AppProperties;
@@ -12,7 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
- * Configuration class for Google Cloud Firestore.
+ * Firestore configuration: works locally with emulator, and on Cloud Run with ADC
  */
 @Configuration
 @Slf4j
@@ -29,12 +28,13 @@ public class FirestoreConfiguration {
         log.info("Initializing Firestore connection");
 
         String emulatorHost = appProperties.getFirestoreEmulatorHost();
+        String projectId = appProperties.getFirestoreProjectId();
+        String databaseId = appProperties.getFirestoreDatabaseId();
+        String credentialsPath = appProperties.getFirestoreCredentialsPath();
 
-        // Check if emulator host is configured
+        // --- Emulator mode ---
         if (emulatorHost != null && !emulatorHost.isEmpty()) {
             log.info("Connecting to Firestore emulator at: {}", emulatorHost);
-
-            String projectId = appProperties.getFirestoreProjectId();
             if (projectId == null || projectId.isEmpty()) {
                 projectId = "demo-project";
             }
@@ -44,39 +44,38 @@ public class FirestoreConfiguration {
                     .setEmulatorHost(emulatorHost)
                     .build();
 
-            Firestore firestore = options.getService();
             log.info("Firestore emulator connection initialized successfully");
-            return firestore;
+            return options.getService();
         }
 
-        // Production configuration
-        FirestoreOptions.Builder optionsBuilder = FirestoreOptions.newBuilder();
+        // --- Production mode (Cloud Run) ---
+        FirestoreOptions.Builder builder = FirestoreOptions.newBuilder();
 
-        String projectId = appProperties.getFirestoreProjectId();
         if (projectId != null && !projectId.isEmpty()) {
-            optionsBuilder.setProjectId(projectId);
+            builder.setProjectId(projectId);
             log.info("Using Firestore project ID: {}", projectId);
         }
 
-        String databaseId = appProperties.getFirestoreDatabaseId();
         if (databaseId != null && !databaseId.isEmpty()) {
-            optionsBuilder.setDatabaseId(databaseId);
+            builder.setDatabaseId(databaseId);
             log.info("Using Firestore database ID: {}", databaseId);
         }
 
-        String credentialsPath = appProperties.getFirestoreCredentialsPath();
         if (credentialsPath != null && !credentialsPath.isEmpty()) {
             log.info("Loading Firestore credentials from: {}", credentialsPath);
-            GoogleCredentials credentials = GoogleCredentials.fromStream(
-                    new FileInputStream(credentialsPath));
-            optionsBuilder.setCredentials(credentials);
+            builder.setCredentials(
+                    com.google.auth.oauth2.GoogleCredentials.fromStream(new FileInputStream(credentialsPath))
+            );
         } else {
-            log.info("Using default Firestore credentials (Application Default Credentials)");
+            log.info("Using Application Default Credentials");
+            // Cloud Run automatically provides credentials via attached service account
         }
 
-        FirestoreOptions options = optionsBuilder.build();
-        Firestore firestore = options.getService();
+        // --- FORCE TLS (disable mTLS) ---
+        // Latest SDK uses gRPC; we can prevent mTLS by forcing JDK TLS
+        System.setProperty("com.google.auth.mtls.enabled", "false");
 
+        Firestore firestore = builder.build().getService();
         log.info("Firestore connection initialized successfully");
         return firestore;
     }
