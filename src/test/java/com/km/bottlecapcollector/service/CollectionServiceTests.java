@@ -4,7 +4,6 @@ import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
-import com.km.bottlecapcollector.api.model.response.ImageResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
 import com.km.bottlecapcollector.cloud.database.item.entity.StorageImageEntity;
@@ -17,13 +16,15 @@ import com.km.bottlecapcollector.cloud.service.SearchTokenService;
 import com.km.bottlecapcollector.cloud.storage.CloudStorageService;
 import com.km.bottlecapcollector.cloud.storage.api.StorageImage;
 import com.km.bottlecapcollector.color.HSBColor;
+import com.km.bottlecapcollector.property.AppProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.quality.Strictness;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +50,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class CollectionServiceTests {
 
     private static final String COLLECTION_KEY = "test-collection-key";
@@ -81,12 +82,18 @@ class CollectionServiceTests {
     private SimilarityService similarityService;
 
     @Mock
+    private AppProperties appProperties;
+
+    @Mock
     private MultipartFile multipartFile;
 
     private CollectionService collectionService;
 
     @BeforeEach
     void setUp() {
+        when(appProperties.getMaxItemsPerUser()).thenReturn(100);
+        when(itemEntityService.countAllByUserId(USER_ID)).thenReturn(0L);
+
         collectionService = new CollectionService(
                 itemEntityService,
                 userService,
@@ -94,7 +101,8 @@ class CollectionServiceTests {
                 visionApiService,
                 embeddingService,
                 searchTokenService,
-                similarityService
+                similarityService,
+                appProperties
         );
     }
 
