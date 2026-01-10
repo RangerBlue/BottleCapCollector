@@ -24,7 +24,8 @@ import static com.km.bottlecapcollector.cloud.database.FirestoreExecutor.execute
 @RequiredArgsConstructor
 @Slf4j
 public class CollectionItemEntityFirestoreRepository implements CollectionItemEntityRepository {
-
+    private static final String COLLECTIONS_ROOT = "collections";
+    private static final String ITEMS_SUBCOLLECTION = "items";
     private final Firestore firestore;
 
     @Override
@@ -237,21 +238,30 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
 
     @Override
     public long countAllByUserId(String userId) {
-        log.trace("Counting all items for user: {} across all collections", userId);
+        log.trace("Counting all items for user: {}", userId);
 
-        AggregateQuerySnapshot snapshot = execute(
-                firestore.collectionGroup(ITEMS_SUBCOLLECTION)
-                        .whereEqualTo("userId", userId)
-                        .count()
-                        .get(),
-                "count all items for userId: " + userId
-        );
+        try {
+            AggregateQuerySnapshot snapshot = execute(
+                    firestore.collectionGroup(ITEMS_SUBCOLLECTION)
+                            .whereEqualTo("userId", userId)
+                            .count()
+                            .get(),
+                    "count all items for userId: " + userId
+            );
 
-        return snapshot.getCount();
+            return snapshot.getCount();
+
+        } catch (Exception e) {
+            log.info(
+                    "No '{}' subcollections exist yet. Returning count = 0 for userId={}",
+                    ITEMS_SUBCOLLECTION,
+                    userId
+            );
+            return 0;
+        }
     }
 
-    private static final String COLLECTIONS_ROOT = "collections";
-    private static final String ITEMS_SUBCOLLECTION = "items";
+
 
     private CollectionReference getCollection(String collectionId) {
         return firestore.collection(COLLECTIONS_ROOT)
