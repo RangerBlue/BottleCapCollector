@@ -1,6 +1,7 @@
 package com.km.bottlecapcollector.security;
 
 import com.km.bottlecapcollector.cloud.database.user.repository.UserEntityRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,18 +27,16 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @EnableWebSecurity
 @Slf4j
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final UserEntityRepository userRepository;
+    private final GoogleOpaqueTokenIntrospector googleOpaqueTokenIntrospector;
 
     @Value("${bcc.cors.allowed-origins:}")
     private String allowedOrigins;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, UserEntityRepository userRepository) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.userRepository = userRepository;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -74,16 +73,12 @@ public class SecurityConfig {
                 // Bearer token authentication (for Postman/API clients)
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .opaqueToken(opaque -> opaque
-                                .introspector(googleOpaqueTokenIntrospector())
+                                .introspector(googleOpaqueTokenIntrospector)
                         )
                 );
         return http.build();
     }
 
-    @Bean
-    public OpaqueTokenIntrospector googleOpaqueTokenIntrospector() {
-        return new GoogleOpaqueTokenIntrospector(userRepository);
-    }
 
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {

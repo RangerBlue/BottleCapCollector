@@ -2,31 +2,32 @@ package com.km.bottlecapcollector.security;
 
 import com.km.bottlecapcollector.cloud.database.user.entity.UserEntity;
 import com.km.bottlecapcollector.cloud.database.user.repository.UserEntityRepository;
+import com.km.bottlecapcollector.property.AppProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.server.resource.introspection.OAuth2IntrospectionAuthenticatedPrincipal;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.*;
 
+@Service
+@RequiredArgsConstructor
 public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
 
     private final UserEntityRepository userRepository;
-    private final RestTemplate restTemplate;
-
-    public GoogleOpaqueTokenIntrospector(UserEntityRepository userRepository) {
-        this.userRepository = userRepository;
-        this.restTemplate = new RestTemplate();
-    }
+    private RestTemplate restTemplate;
+    private final AppProperties appProperties;
 
     @Override
     public OAuth2AuthenticatedPrincipal introspect(String token) {
         // Call Google's tokeninfo endpoint to validate the access token
         String url = "https://oauth2.googleapis.com/tokeninfo?access_token=" + token;
-
+        restTemplate = new RestTemplate();
         @SuppressWarnings("unchecked")
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
@@ -51,6 +52,7 @@ public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
                             .role(Role.USER)
                             .createdAt(Instant.now())
                             .updatedAt(Instant.now())
+                            .maxItems(appProperties.getMaxItemsPerUser())
                             .build();
                     return userRepository.save(newUser);
                 });

@@ -2,6 +2,8 @@ package com.km.bottlecapcollector.security;
 
 import com.km.bottlecapcollector.cloud.database.user.entity.UserEntity;
 import com.km.bottlecapcollector.cloud.database.user.repository.UserEntityRepository;
+import com.km.bottlecapcollector.property.AppProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -16,13 +18,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserEntityRepository userRepository;
-
-    public CustomOAuth2UserService(UserEntityRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final AppProperties appProperties;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -41,6 +41,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .role(Role.USER)
                             .createdAt(Instant.now())
                             .updatedAt(Instant.now())
+                            .maxItems(appProperties.getMaxItemsPerUser())
                             .build();
                     return userRepository.save(newUser);
                 });
