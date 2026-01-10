@@ -8,6 +8,7 @@ import com.google.cloud.firestore.FieldPath;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.common.collect.Lists;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
 import com.km.bottlecapcollector.color.HSBColorService;
 import lombok.RequiredArgsConstructor;
@@ -170,16 +171,19 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
             return List.of();
         }
 
-        QuerySnapshot querySnapshot = execute(
-                getCollection(collectionName)
-                        .whereEqualTo("userId", userId)
-                        .whereIn("image.hsbBucket", buckets)
-                        .limit(limit * 3) // allow post-filtering
-                        .get(),
-                "find items by HSB bucket for userId: " + userId
-        );
+        List<ItemEntity> result = new ArrayList<>();
+        for (List<String> chunk : Lists.partition(buckets, 10)) {
+            QuerySnapshot snapshot = execute(
+                    getCollection(collectionName)
+                            .whereEqualTo("userId", userId)
+                            .whereIn("image.hsbBucket", chunk)
+                            .get(),
+                    "find items by HSB bucket chunk for userId: " + userId
+            );
+            result.addAll(toItemList(snapshot));
+        }
 
-        return toItemList(querySnapshot).stream()
+        return result.stream()
                 .filter(item -> item.getImage() != null && item.getImage().getHsbColor() != null)
                 .filter(item -> isWithinSaturationAndBrightnessRange(
                         item, saturationMin, saturationMax, brightnessMin, brightnessMax))
