@@ -22,4 +22,5 @@ public class StorageImageEntity {
     private Integer height;
     private Instant uploadedAt;
     private HSBColorEntity hsbColor;
+    private String hsbBucket;
 }

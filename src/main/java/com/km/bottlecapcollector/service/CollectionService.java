@@ -242,8 +242,10 @@ public class CollectionService {
 
         HSBColor hsbColor = HSBColorService.calculateColor(file);
         image.setHsbColor(hsbColor);
+        image.setHsbBucket(HSBColorService.toBucket(hsbColor));
         item.setImage(documentMapper.toEntity(image));
-        log.info("Calculated HSB color - H:{}, S:{}, B:{}", hsbColor.getHue(), hsbColor.getSaturation(), hsbColor.getBrightness());
+        log.info("Calculated HSB color - H:{}, S:{}, B:{}, bucket: {}", hsbColor.getHue(), hsbColor.getSaturation(),
+                hsbColor.getBrightness(), image.getHsbBucket());
 
         ImageAnalysisMetadata visionMetadata = visionApiService.analyzeImageFromFile(file);
         item.setVisionMetadata(documentMapper.toEntity(visionMetadata));

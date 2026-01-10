@@ -32,6 +32,14 @@
         { "fieldPath": "searchTokens", "arrayConfig": "CONTAINS" },
         { "fieldPath": "userId", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "items",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "`image.hsbBucket`", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

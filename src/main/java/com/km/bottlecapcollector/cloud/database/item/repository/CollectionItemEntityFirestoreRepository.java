@@ -9,6 +9,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
+import com.km.bottlecapcollector.color.HSBColorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -157,16 +158,24 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
             float brightnessMin, float brightnessMax,
             String userId,
             int limit) {
-        log.trace("Finding items in collection '{}' by HSB color range for user: {} - H:[{}-{}], S:[{}-{}], B:[{}-{}]",
-                collectionName, userId, hueMin, hueMax, saturationMin, saturationMax, brightnessMin, brightnessMax);
+
+        List<String> buckets = HSBColorService.generateBuckets(
+                hueMin, hueMax,
+                saturationMin, saturationMax,
+                brightnessMin, brightnessMax
+        );
+
+        if (buckets.isEmpty()) {
+            return List.of();
+        }
 
         QuerySnapshot querySnapshot = execute(
                 getCollection(collectionName)
                         .whereEqualTo("userId", userId)
-                        .whereGreaterThanOrEqualTo("image.hsbColor.hue", hueMin)
-                        .whereLessThanOrEqualTo("image.hsbColor.hue", hueMax)
+                        .whereIn("image.hsbBucket", buckets)
+                        .limit(limit * 3) // allow post-filtering
                         .get(),
-                "find items by HSB color range for userId: " + userId
+                "find items by HSB bucket for userId: " + userId
         );
 
         return toItemList(querySnapshot).stream()

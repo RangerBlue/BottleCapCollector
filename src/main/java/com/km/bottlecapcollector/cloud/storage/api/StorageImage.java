@@ -36,4 +36,6 @@ public class StorageImage {
     private Instant uploadedAt;
 
     private HSBColor hsbColor;
+
+    private String hsbBucket;
 }

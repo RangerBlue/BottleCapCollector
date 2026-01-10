@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class HSBColorService {
@@ -15,6 +17,9 @@ public class HSBColorService {
     private static float margin = 0;
     private static final float OVERFLOW_1 = 1f;
     private static final float OVERFLOW_0 = 0f;
+    private static final int HUE_BUCKETS = 20;
+    private static final int SAT_BUCKETS = 10;
+    private static final int BRI_BUCKETS = 10;
 
     private HSBColorService() {
     }
@@ -132,4 +137,34 @@ public class HSBColorService {
     public static void setMargin(float margin) {
         HSBColorService.margin = margin;
     }
+
+    public static String toBucket(HSBColor color) {
+        int h = Math.min((int) (color.getHue() * HUE_BUCKETS), HUE_BUCKETS - 1);
+        int s = Math.min((int) (color.getSaturation() * SAT_BUCKETS), SAT_BUCKETS - 1);
+        int b = Math.min((int) (color.getBrightness() * BRI_BUCKETS), BRI_BUCKETS - 1);
+
+        return h + "_" + s + "_" + b;
+    }
+
+    public static List<String> generateBuckets(
+            float hueMin, float hueMax,
+            float satMin, float satMax,
+            float briMin, float briMax) {
+
+        List<String> buckets = new ArrayList<>();
+
+        for (int h = (int)(hueMin * 20); h <= (int)(hueMax * 20); h++) {
+            for (int s = (int)(satMin * 10); s <= (int)(satMax * 10); s++) {
+                for (int b = (int)(briMin * 10); b <= (int)(briMax * 10); b++) {
+                    buckets.add(h + "_" + s + "_" + b);
+                    if (buckets.size() == 30) {
+                        return buckets; // Firestore IN limit
+                    }
+                }
+            }
+        }
+        return buckets;
+    }
+
+
 }
