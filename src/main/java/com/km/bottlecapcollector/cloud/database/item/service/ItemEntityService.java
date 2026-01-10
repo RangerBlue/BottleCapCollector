@@ -64,6 +64,11 @@ public class ItemEntityService {
         return repository.countBySearchTokenAndUserId(collectionKey, searchToken, userId);
     }
 
+    public long countAllByUserId(String userId) {
+        log.trace("Counting all items for userId: {}", userId);
+        return repository.countAllByUserId(userId);
+    }
+
     public List<ItemEntity> findByHSBColorRangeAndUserId(String collectionKey,
                                                           float hueMin, float hueMax,
                                                           float satMin, float satMax,

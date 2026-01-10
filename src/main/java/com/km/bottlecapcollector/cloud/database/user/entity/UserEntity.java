@@ -37,6 +37,12 @@ public class UserEntity {
     private Instant updatedAt;
 
     /**
+     * Maximum number of items this user can have across all collections.
+     * If null, the global default from AppProperties is used.
+     */
+    private Integer maxItems;
+
+    /**
      * Adds a collection to the user's list if not already present (by key).
      * @param collectionKey the UUID key for the collection
      * @param collectionName the human-readable name

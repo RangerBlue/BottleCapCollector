@@ -141,4 +141,12 @@ public interface CollectionItemEntityRepository {
      * @return the count of matching items belonging to the user
      */
     long countBySearchTokenAndUserId(String collectionName, String token, String userId);
+
+    /**
+     * Counts all items for a user across all collections using collection group query.
+     *
+     * @param userId the user ID
+     * @return the total count of items belonging to the user across all collections
+     */
+    long countAllByUserId(String userId);
 }

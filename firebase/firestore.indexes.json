@@ -13,7 +13,7 @@
       "queryScope": "COLLECTION_GROUP",
       "fields": [
         { "fieldPath": "userId", "order": "ASCENDING" },
-        { "fieldPath": "image.hsbColor.hue", "order": "ASCENDING" }
+        { "fieldPath": "`image.hsbColor.hue`", "order": "ASCENDING" }
       ]
     },
     {

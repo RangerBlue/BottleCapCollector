@@ -1,6 +1,8 @@
 package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
+import com.km.bottlecapcollector.api.handler.exception.AppForbiddenException;
+import com.km.bottlecapcollector.cloud.database.user.entity.UserEntity;
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
@@ -19,6 +21,7 @@ import com.km.bottlecapcollector.cloud.storage.CloudStorageService;
 import com.km.bottlecapcollector.cloud.storage.api.StorageImage;
 import com.km.bottlecapcollector.color.HSBColor;
 import com.km.bottlecapcollector.color.HSBColorService;
+import com.km.bottlecapcollector.property.AppProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -51,6 +54,7 @@ public class CollectionService {
     private final EmbeddingService embeddingService;
     private final SearchTokenService searchTokenService;
     private final SimilarityService similarityService;
+    private final AppProperties appProperties;
     private static final ApiMapper apiMapper = ApiMapper.INSTANCE;
     private static final EntityDocumentMapper documentMapper = EntityDocumentMapper.INSTANCE;
 
@@ -58,6 +62,8 @@ public class CollectionService {
                                                        CreateCollectionItemRequest request, MultipartFile file) {
         log.info("Creating new collection item: {} in collection: {} for user: {}", request.getName(), collectionKey,
                 userId);
+
+        checkItemLimit(userId);
 
         ItemEntity item = ItemEntity.builder()
                 .name(request.getName())
@@ -292,5 +298,29 @@ public class CollectionService {
         if (customTags != null && !customTags.isEmpty()) {
             userService.mergeCollectionAvailableTags(userId, collectionKey, new HashSet<>(customTags.keySet()));
         }
+    }
+
+    private void checkItemLimit(String userId) {
+        long currentCount = itemEntityService.countAllByUserId(userId);
+        int maxItems = getMaxItemsForUser(userId);
+
+        if (currentCount >= maxItems) {
+            log.warn("User {} has reached item limit: {}/{}", userId, currentCount, maxItems);
+            throw new AppForbiddenException(
+                    String.format("Item limit exceeded. You have %d items, maximum allowed is %d.", currentCount, maxItems));
+        }
+        log.trace("User {} item count: {}/{}", userId, currentCount, maxItems);
+    }
+
+    private int getMaxItemsForUser(String userId) {
+        try {
+            UserEntity user = userService.getUser(userId);
+            if (user.getMaxItems() != null) {
+                return user.getMaxItems();
+            }
+        } catch (Exception e) {
+            log.trace("User {} not found, using global default", userId);
+        }
+        return appProperties.getMaxItemsPerUser();
     }
 }

@@ -226,6 +226,21 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
         return snapshot.getCount();
     }
 
+    @Override
+    public long countAllByUserId(String userId) {
+        log.trace("Counting all items for user: {} across all collections", userId);
+
+        AggregateQuerySnapshot snapshot = execute(
+                firestore.collectionGroup(ITEMS_SUBCOLLECTION)
+                        .whereEqualTo("userId", userId)
+                        .count()
+                        .get(),
+                "count all items for userId: " + userId
+        );
+
+        return snapshot.getCount();
+    }
+
     private static final String COLLECTIONS_ROOT = "collections";
     private static final String ITEMS_SUBCOLLECTION = "items";
 

@@ -47,4 +47,7 @@ public class AppProperties {
     private String legacyUserId;
     private String legacyCollectionKey;
     private String legacyCollectionName;
+
+    // User limits
+    private int maxItemsPerUser = 100;
 }
