@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -43,5 +44,13 @@ public class UserService {
 
     public boolean userExists(String userId) {
         return userEntityService.userExists(userId);
+    }
+
+    public void mergeCollectionAvailableTags(String userId, String collectionKey, Set<String> tagKeys) {
+        userEntityService.mergeCollectionAvailableTags(userId, collectionKey, tagKeys);
+    }
+
+    public List<String> getCollectionAvailableTags(String userId, String collectionKey) {
+        return userEntityService.getCollectionAvailableTags(userId, collectionKey);
     }
 }

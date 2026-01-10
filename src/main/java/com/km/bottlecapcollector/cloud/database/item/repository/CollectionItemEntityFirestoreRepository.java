@@ -226,8 +226,13 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
         return snapshot.getCount();
     }
 
-    private CollectionReference getCollection(String collectionName) {
-        return firestore.collection(collectionName);
+    private static final String COLLECTIONS_ROOT = "collections";
+    private static final String ITEMS_SUBCOLLECTION = "items";
+
+    private CollectionReference getCollection(String collectionId) {
+        return firestore.collection(COLLECTIONS_ROOT)
+                .document(collectionId)
+                .collection(ITEMS_SUBCOLLECTION);
     }
 
     private boolean isWithinSaturationAndBrightnessRange(ItemEntity item,

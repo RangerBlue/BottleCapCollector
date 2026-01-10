@@ -101,28 +101,30 @@ gcloud run deploy bottlecap-collector \
 Cloud Run uses a default service account. Grant it access to GCP services:
 
 ```bash
+SA_NAME=collection-item-prod
 PROJECT_ID=bottlecapcollector-480817
-PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
-SA_EMAIL="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+gcloud iam service-accounts create $SA_NAME
+SA_ACCOUNT=${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
+
 
 # Firestore access
 gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:$SA_EMAIL" \
-  --role="roles/datastore.user"
+  --member="serviceAccount:$SA_ACCOUNT" \
+   --role="roles/firestore.user"
 
 # Cloud Storage access
 gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:$SA_EMAIL" \
+  --member="serviceAccount:$SA_ACCOUNT" \
   --role="roles/storage.objectAdmin"
 
-# Vision API access
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:$SA_EMAIL" \
-  --role="roles/cloudvision.user"
+## Vision API access
+#gcloud projects add-iam-policy-binding $PROJECT_ID \
+#  --member="serviceAccount:$SA_ACCOUNT" \
+#  --role="roles/visionai.admin"
 
 # Vertex AI access (for embeddings)
 gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:$SA_EMAIL" \
+  --member="serviceAccount:$SA_ACCOUNT" \
   --role="roles/aiplatform.user"
 ```
 

@@ -106,4 +106,11 @@ public class CollectionItemController {
         collectionFacadeService.deleteItem(principal, collectionKey, id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{collectionKey}/available-tags")
+    public ResponseEntity<@NotNull List<String>> getAvailableTags(
+            @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
+            @PathVariable String collectionKey) {
+        return ResponseEntity.ok(collectionFacadeService.getCollectionAvailableTags(principal, collectionKey));
+    }
 }

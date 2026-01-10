@@ -30,7 +30,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service responsible for collection item business logic.
@@ -84,6 +86,7 @@ public class CollectionService {
             log.info("Successfully created and processed collection item with id: {}", itemId);
 
             userService.addCollectionToUser(userId, collectionKey, request.getCollectionName());
+            mergeCustomTagsToCollection(userId, collectionKey, request.getCustomTags());
 
             CollectionItemResponse response = apiMapper.toResponse(finalItem);
             response.setCollectionName(request.getCollectionName());
@@ -155,6 +158,7 @@ public class CollectionService {
         if (request.getCustomTags() != null) {
             item.setCustomTags(request.getCustomTags());
             needsTokenRegeneration = true;
+            mergeCustomTagsToCollection(userId, collectionKey, request.getCustomTags());
         }
 
         if (needsTokenRegeneration) {
@@ -282,5 +286,11 @@ public class CollectionService {
             }
         });
         return summaries;
+    }
+
+    private void mergeCustomTagsToCollection(String userId, String collectionKey, Map<String, String> customTags) {
+        if (customTags != null && !customTags.isEmpty()) {
+            userService.mergeCollectionAvailableTags(userId, collectionKey, new HashSet<>(customTags.keySet()));
+        }
     }
 }

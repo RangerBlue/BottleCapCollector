@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -125,5 +124,15 @@ public class CollectionFacadeService {
         String userId = userService.getUserId(principal);
         log.info("User {} deleting item {} from collection {}", userId, id, collectionKey);
         collectionService.deleteItem(collectionKey, id, userId);
+    }
+
+    /**
+     * Gets available custom tag keys for a collection.
+     */
+    public List<String> getCollectionAvailableTags(OAuth2AuthenticatedPrincipal principal,
+                                                    String collectionKey) {
+        String userId = userService.getUserId(principal);
+        log.trace("User {} getting available tags for collection {}", userId, collectionKey);
+        return userService.getCollectionAvailableTags(userId, collectionKey);
     }
 }
