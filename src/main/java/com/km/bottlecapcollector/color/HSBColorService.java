@@ -139,10 +139,9 @@ public class HSBColorService {
     }
 
     public static String toBucket(HSBColor color) {
-        int h = Math.min((int) (color.getHue() * HUE_BUCKETS), HUE_BUCKETS - 1);
-        int s = Math.min((int) (color.getSaturation() * SAT_BUCKETS), SAT_BUCKETS - 1);
-        int b = Math.min((int) (color.getBrightness() * BRI_BUCKETS), BRI_BUCKETS - 1);
-
+        int h = bucket(color.getHue(), HUE_BUCKETS);
+        int s = bucket(color.getSaturation(), SAT_BUCKETS);
+        int b = bucket(color.getBrightness(), BRI_BUCKETS);
         return h + "_" + s + "_" + b;
     }
 
@@ -151,20 +150,41 @@ public class HSBColorService {
             float satMin, float satMax,
             float briMin, float briMax) {
 
+        int hMin = bucket(hueMin, HUE_BUCKETS) - 1;
+        int hMax = bucket(hueMax, HUE_BUCKETS) + 1;
+
+        int sMin = bucket(satMin, SAT_BUCKETS) - 1;
+        int sMax = bucket(satMax, SAT_BUCKETS) + 1;
+
+        int bMin = bucket(briMin, BRI_BUCKETS) - 1;
+        int bMax = bucket(briMax, BRI_BUCKETS) + 1;
+
+        // clamp
+        hMin = Math.max(0, hMin);
+        sMin = Math.max(0, sMin);
+        bMin = Math.max(0, bMin);
+
+        hMax = Math.min(HUE_BUCKETS - 1, hMax);
+        sMax = Math.min(SAT_BUCKETS - 1, sMax);
+        bMax = Math.min(BRI_BUCKETS - 1, bMax);
+
         List<String> buckets = new ArrayList<>();
 
-        for (int h = (int)(hueMin * 20); h <= (int)(hueMax * 20); h++) {
-            for (int s = (int)(satMin * 10); s <= (int)(satMax * 10); s++) {
-                for (int b = (int)(briMin * 10); b <= (int)(briMax * 10); b++) {
+        for (int h = hMin; h <= hMax; h++) {
+            for (int s = sMin; s <= sMax; s++) {
+                for (int b = bMin; b <= bMax; b++) {
                     buckets.add(h + "_" + s + "_" + b);
-                    if (buckets.size() == 30) {
-                        return buckets; // Firestore IN limit
-                    }
                 }
             }
         }
+
         return buckets;
     }
 
-
+    private static int bucket(float value, int buckets) {
+        return Math.min(
+                Math.round(value * (buckets - 1)),
+                buckets - 1
+        );
+    }
 }
