@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.cloud.database.item.repository;
 
+import com.google.cloud.firestore.Query;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
 
 import java.util.List;
@@ -69,15 +70,16 @@ public interface CollectionItemEntityRepository {
     List<ItemEntity> findByUserId(String collectionName, String userId);
 
     /**
-     * Finds items by user ID with pagination.
+     * Finds items by user ID with pagination and sorting.
      *
      * @param collectionName the Firestore collection name
      * @param userId the user ID
      * @param limit maximum number of results
      * @param offset number of results to skip
+     * @param sortDirection the sort direction for createdAt field
      * @return a paginated list of items belonging to the user
      */
-    List<ItemEntity> findByUserId(String collectionName, String userId, int limit, int offset);
+    List<ItemEntity> findByUserId(String collectionName, String userId, int limit, int offset, Query.Direction sortDirection);
 
     /**
      * Counts items by user ID.
@@ -121,16 +123,17 @@ public interface CollectionItemEntityRepository {
 
 
     /**
-     * Finds items by search token and user ID with pagination.
+     * Finds items by search token and user ID with pagination and sorting.
      *
      * @param collectionName the Firestore collection name
      * @param token the search token (lowercase prefix)
      * @param userId the user ID
      * @param limit maximum number of results
      * @param offset number of results to skip
+     * @param sortDirection the sort direction for createdAt field
      * @return a paginated list of items containing the token and belonging to the user
      */
-    List<ItemEntity> findBySearchTokenAndUserId(String collectionName, String token, String userId, int limit, int offset);
+    List<ItemEntity> findBySearchTokenAndUserId(String collectionName, String token, String userId, int limit, int offset, Query.Direction sortDirection);
 
     /**
      * Counts items by search token and user ID.

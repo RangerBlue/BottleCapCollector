@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.cloud.database.item.service;
 
+import com.google.cloud.firestore.Query;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
 import com.km.bottlecapcollector.cloud.database.item.repository.CollectionItemEntityRepository;
 import com.km.bottlecapcollector.cloud.database.exception.FirestoreDocumentNotFoundException;
@@ -168,28 +169,30 @@ class ItemEntityServiceTests {
         // Given
         int limit = 10;
         int offset = 0;
+        Query.Direction sortDirection = Query.Direction.DESCENDING;
         List<ItemEntity> items = List.of(
                 createItemEntity("item-1", "Item 1"),
                 createItemEntity("item-2", "Item 2")
         );
-        when(repository.findByUserId(COLLECTION_KEY, USER_ID, limit, offset)).thenReturn(items);
+        when(repository.findByUserId(COLLECTION_KEY, USER_ID, limit, offset, sortDirection)).thenReturn(items);
 
         // When
-        List<ItemEntity> result = itemEntityService.findByUserId(COLLECTION_KEY, USER_ID, limit, offset);
+        List<ItemEntity> result = itemEntityService.findByUserId(COLLECTION_KEY, USER_ID, limit, offset, sortDirection);
 
         // Then
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(repository).findByUserId(COLLECTION_KEY, USER_ID, limit, offset);
+        verify(repository).findByUserId(COLLECTION_KEY, USER_ID, limit, offset, sortDirection);
     }
 
     @Test
     void findByUserId_shouldReturnEmptyListWhenNoItems() {
         // Given
-        when(repository.findByUserId(COLLECTION_KEY, USER_ID, 10, 0)).thenReturn(List.of());
+        Query.Direction sortDirection = Query.Direction.DESCENDING;
+        when(repository.findByUserId(COLLECTION_KEY, USER_ID, 10, 0, sortDirection)).thenReturn(List.of());
 
         // When
-        List<ItemEntity> result = itemEntityService.findByUserId(COLLECTION_KEY, USER_ID, 10, 0);
+        List<ItemEntity> result = itemEntityService.findByUserId(COLLECTION_KEY, USER_ID, 10, 0, sortDirection);
 
         // Then
         assertNotNull(result);
@@ -227,19 +230,20 @@ class ItemEntityServiceTests {
         String searchToken = "beer";
         int limit = 10;
         int offset = 0;
+        Query.Direction sortDirection = Query.Direction.DESCENDING;
         List<ItemEntity> items = List.of(createItemEntity("item-1", "Beer Cap"));
 
-        when(repository.findBySearchTokenAndUserId(COLLECTION_KEY, searchToken, USER_ID, limit, offset))
+        when(repository.findBySearchTokenAndUserId(COLLECTION_KEY, searchToken, USER_ID, limit, offset, sortDirection))
                 .thenReturn(items);
 
         // When
         List<ItemEntity> result = itemEntityService.findBySearchTokenAndUserId(
-                COLLECTION_KEY, searchToken, USER_ID, limit, offset);
+                COLLECTION_KEY, searchToken, USER_ID, limit, offset, sortDirection);
 
         // Then
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(repository).findBySearchTokenAndUserId(COLLECTION_KEY, searchToken, USER_ID, limit, offset);
+        verify(repository).findBySearchTokenAndUserId(COLLECTION_KEY, searchToken, USER_ID, limit, offset, sortDirection);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.cloud.database.item.service;
 
+import com.google.cloud.firestore.Query;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
 import com.km.bottlecapcollector.cloud.database.item.repository.CollectionItemEntityRepository;
 import com.km.bottlecapcollector.cloud.database.exception.FirestoreDocumentNotFoundException;
@@ -44,9 +45,9 @@ public class ItemEntityService {
     }
 
 
-    public List<ItemEntity> findByUserId(String collectionKey, String userId, int limit, int offset) {
-        log.trace("Finding items by userId: {} in collection: {} with limit: {}, offset: {}", userId, collectionKey, limit, offset);
-        return repository.findByUserId(collectionKey, userId, limit, offset);
+    public List<ItemEntity> findByUserId(String collectionKey, String userId, int limit, int offset, Query.Direction sortDirection) {
+        log.trace("Finding items by userId: {} in collection: {} with limit: {}, offset: {}, sort: {}", userId, collectionKey, limit, offset, sortDirection);
+        return repository.findByUserId(collectionKey, userId, limit, offset, sortDirection);
     }
 
     public long countByUserId(String collectionKey, String userId) {
@@ -54,9 +55,9 @@ public class ItemEntityService {
         return repository.countByUserId(collectionKey, userId);
     }
 
-    public List<ItemEntity> findBySearchTokenAndUserId(String collectionKey, String searchToken, String userId, int limit, int offset) {
-        log.trace("Finding items by searchToken: {} and userId: {} in collection: {}", searchToken, userId, collectionKey);
-        return repository.findBySearchTokenAndUserId(collectionKey, searchToken, userId, limit, offset);
+    public List<ItemEntity> findBySearchTokenAndUserId(String collectionKey, String searchToken, String userId, int limit, int offset, Query.Direction sortDirection) {
+        log.trace("Finding items by searchToken: {} and userId: {} in collection: {}, sort: {}", searchToken, userId, collectionKey, sortDirection);
+        return repository.findBySearchTokenAndUserId(collectionKey, searchToken, userId, limit, offset, sortDirection);
     }
 
     public long countBySearchTokenAndUserId(String collectionKey, String searchToken, String userId) {

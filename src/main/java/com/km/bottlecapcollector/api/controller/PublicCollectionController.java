@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +34,7 @@ public class PublicCollectionController {
     @GetMapping("/items")
     public ResponseEntity<@NotNull Page<@NotNull CollectionItemSummary>> getItems(
             @RequestParam(required = false) String query,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         String collectionKey = appProperties.getLegacyCollectionKey();
         String userId = appProperties.getLegacyUserId();
         log.info("Public access: getting items from legacy collection {} with query '{}', page: {}, size: {}",

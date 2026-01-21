@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.service;
 
+import com.google.cloud.firestore.Query;
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
@@ -168,7 +169,7 @@ class CollectionServiceTests {
                 createItemEntity("item-2", "Cap 2")
         );
 
-        when(itemEntityService.findByUserId(COLLECTION_KEY, USER_ID, 10, 0)).thenReturn(items);
+        when(itemEntityService.findByUserId(COLLECTION_KEY, USER_ID, 10, 0, Query.Direction.DESCENDING)).thenReturn(items);
         when(itemEntityService.countByUserId(COLLECTION_KEY, USER_ID)).thenReturn(2L);
         when(cloudStorageService.generateSignedUrl(anyString())).thenReturn(SIGNED_URL);
 
@@ -179,8 +180,8 @@ class CollectionServiceTests {
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
         assertEquals(2, result.getTotalElements());
-        verify(itemEntityService).findByUserId(COLLECTION_KEY, USER_ID, 10, 0);
-        verify(itemEntityService, never()).findBySearchTokenAndUserId(anyString(), anyString(), anyString(), anyInt(), anyInt());
+        verify(itemEntityService).findByUserId(COLLECTION_KEY, USER_ID, 10, 0, Query.Direction.DESCENDING);
+        verify(itemEntityService, never()).findBySearchTokenAndUserId(anyString(), anyString(), anyString(), anyInt(), anyInt(), any(Query.Direction.class));
     }
 
     @Test
@@ -190,7 +191,7 @@ class CollectionServiceTests {
         String query = "BEER";
         List<ItemEntity> items = List.of(createItemEntity("item-1", "Beer Cap"));
 
-        when(itemEntityService.findBySearchTokenAndUserId(COLLECTION_KEY, "beer", USER_ID, 10, 0)).thenReturn(items);
+        when(itemEntityService.findBySearchTokenAndUserId(COLLECTION_KEY, "beer", USER_ID, 10, 0, Query.Direction.DESCENDING)).thenReturn(items);
         when(itemEntityService.countBySearchTokenAndUserId(COLLECTION_KEY, "beer", USER_ID)).thenReturn(1L);
         when(cloudStorageService.generateSignedUrl(anyString())).thenReturn(SIGNED_URL);
 
@@ -201,7 +202,7 @@ class CollectionServiceTests {
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         assertEquals(1, result.getTotalElements());
-        verify(itemEntityService).findBySearchTokenAndUserId(COLLECTION_KEY, "beer", USER_ID, 10, 0);
+        verify(itemEntityService).findBySearchTokenAndUserId(COLLECTION_KEY, "beer", USER_ID, 10, 0, Query.Direction.DESCENDING);
     }
 
     @Test
@@ -210,7 +211,7 @@ class CollectionServiceTests {
         Pageable pageable = PageRequest.of(0, 10);
         String query = "  COCA COLA  ";
 
-        when(itemEntityService.findBySearchTokenAndUserId(eq(COLLECTION_KEY), eq("coca cola"), eq(USER_ID), anyInt(), anyInt()))
+        when(itemEntityService.findBySearchTokenAndUserId(eq(COLLECTION_KEY), eq("coca cola"), eq(USER_ID), anyInt(), anyInt(), any(Query.Direction.class)))
                 .thenReturn(List.of());
         when(itemEntityService.countBySearchTokenAndUserId(COLLECTION_KEY, "coca cola", USER_ID)).thenReturn(0L);
 
@@ -218,7 +219,7 @@ class CollectionServiceTests {
         collectionService.searchItemsPaginated(COLLECTION_KEY, query, USER_ID, pageable);
 
         // Then
-        verify(itemEntityService).findBySearchTokenAndUserId(COLLECTION_KEY, "coca cola", USER_ID, 10, 0);
+        verify(itemEntityService).findBySearchTokenAndUserId(COLLECTION_KEY, "coca cola", USER_ID, 10, 0, Query.Direction.DESCENDING);
     }
 
     @Test

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -68,7 +69,7 @@ public class CollectionItemController {
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey,
             @RequestParam(required = false) String query,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(collectionFacadeService.getItems(principal, collectionKey, query, pageable));
     }
 

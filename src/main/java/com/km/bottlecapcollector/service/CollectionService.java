@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.service;
 
+import com.google.cloud.firestore.Query;
 import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
 import com.km.bottlecapcollector.api.handler.exception.AppForbiddenException;
 import com.km.bottlecapcollector.cloud.database.user.entity.UserEntity;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -127,22 +129,32 @@ public class CollectionService {
 
         int limit = pageable.getPageSize();
         int offset = (int) pageable.getOffset();
+        Query.Direction sortDirection = extractSortDirection(pageable);
 
         List<ItemEntity> items;
         long totalElements;
 
         if (query == null || query.isBlank()) {
-            items = itemEntityService.findByUserId(collectionKey, userId, limit, offset);
+            items = itemEntityService.findByUserId(collectionKey, userId, limit, offset, sortDirection);
             totalElements = itemEntityService.countByUserId(collectionKey, userId);
         } else {
             String searchToken = query.toLowerCase().trim();
-            items = itemEntityService.findBySearchTokenAndUserId(collectionKey, searchToken, userId, limit, offset);
+            items = itemEntityService.findBySearchTokenAndUserId(collectionKey, searchToken, userId, limit, offset, sortDirection);
             totalElements = itemEntityService.countBySearchTokenAndUserId(collectionKey, searchToken, userId);
         }
 
         log.info("Returning page {} of {} items (total: {})", pageable.getPageNumber(), items.size(), totalElements);
         List<CollectionItemSummary> content = enrichSummariesWithSignedUrl(apiMapper.toSummaryList(items));
         return new PageImpl<>(content, pageable, totalElements);
+    }
+
+    private Query.Direction extractSortDirection(Pageable pageable) {
+        Sort sort = pageable.getSort();
+        Sort.Order createdAtOrder = sort.getOrderFor("createdAt");
+        if (createdAtOrder != null && createdAtOrder.isAscending()) {
+            return Query.Direction.ASCENDING;
+        }
+        return Query.Direction.DESCENDING;
     }
 
     public CollectionItemResponse updateItem(String collectionKey, String id, String userId, UpdateCollectionItem request) {

@@ -120,14 +120,14 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
     }
 
     @Override
-    public List<ItemEntity> findByUserId(String collectionName, String userId, int limit, int offset) {
-        log.trace("Finding items by user id: {} in collection '{}' with limit: {}, offset: {}",
-                userId, collectionName, limit, offset);
+    public List<ItemEntity> findByUserId(String collectionName, String userId, int limit, int offset, Query.Direction sortDirection) {
+        log.trace("Finding items by user id: {} in collection '{}' with limit: {}, offset: {}, sort: {}",
+                userId, collectionName, limit, offset, sortDirection);
 
         QuerySnapshot querySnapshot = execute(
                 getCollection(collectionName)
                         .whereEqualTo("userId", userId)
-                        .orderBy("createdAt", Query.Direction.DESCENDING)
+                        .orderBy("createdAt", sortDirection)
                         .offset(offset)
                         .limit(limit)
                         .get(),
@@ -205,15 +205,15 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
 
     @Override
     public List<ItemEntity> findBySearchTokenAndUserId(String collectionName, String token, String userId,
-                                                       int limit, int offset) {
-        log.trace("Finding items by search token: {} and user id: {} in collection '{}' with limit: {}, offset: {}",
-                token, userId, collectionName, limit, offset);
+                                                       int limit, int offset, Query.Direction sortDirection) {
+        log.trace("Finding items by search token: {} and user id: {} in collection '{}' with limit: {}, offset: {}, sort: {}",
+                token, userId, collectionName, limit, offset, sortDirection);
 
         QuerySnapshot querySnapshot = execute(
                 getCollection(collectionName)
                         .whereArrayContains("searchTokens", token)
                         .whereEqualTo("userId", userId)
-                        .orderBy("createdAt", Query.Direction.DESCENDING)
+                        .orderBy("createdAt", sortDirection)
                         .offset(offset)
                         .limit(limit)
                         .get(),
