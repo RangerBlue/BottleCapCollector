@@ -13,6 +13,7 @@ import com.km.bottlecapcollector.cloud.image.analysis.api.ImageAnalysisMetadata;
 import com.km.bottlecapcollector.cloud.image.analysis.vision.VisionApiService;
 import com.km.bottlecapcollector.cloud.image.ml.api.Embedding;
 import com.km.bottlecapcollector.cloud.image.ml.api.EmbeddingService;
+import com.km.bottlecapcollector.cloud.image.identification.gemini.GeminiIdentificationService;
 import com.km.bottlecapcollector.cloud.service.SearchTokenService;
 import com.km.bottlecapcollector.cloud.storage.CloudStorageService;
 import com.km.bottlecapcollector.cloud.storage.api.StorageImage;
@@ -77,6 +78,9 @@ class CollectionServiceTests {
     private EmbeddingService embeddingService;
 
     @Mock
+    private GeminiIdentificationService geminiIdentificationService;
+
+    @Mock
     private SearchTokenService searchTokenService;
 
     @Mock
@@ -101,6 +105,7 @@ class CollectionServiceTests {
                 cloudStorageService,
                 visionApiService,
                 embeddingService,
+                geminiIdentificationService,
                 searchTokenService,
                 similarityService,
                 appProperties

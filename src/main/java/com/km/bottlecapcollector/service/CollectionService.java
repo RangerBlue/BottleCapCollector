@@ -8,12 +8,15 @@ import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
+import com.km.bottlecapcollector.api.model.response.ItemIdentificationResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
 import com.km.bottlecapcollector.cloud.database.item.service.ItemEntityService;
 import com.km.bottlecapcollector.cloud.database.mapper.EntityDocumentMapper;
 import com.km.bottlecapcollector.cloud.image.analysis.api.ImageAnalysisMetadata;
-import com.km.bottlecapcollector.cloud.image.analysis.vision.VisionApiService;
+import com.km.bottlecapcollector.cloud.image.analysis.api.ImageAnalysisService;
+import com.km.bottlecapcollector.cloud.image.identification.api.ImageIdentification;
+import com.km.bottlecapcollector.cloud.image.identification.gemini.IdentificationService;
 import com.km.bottlecapcollector.cloud.image.ml.api.Embedding;
 import com.km.bottlecapcollector.cloud.image.ml.api.EmbeddingService;
 import com.km.bottlecapcollector.api.mapper.ApiMapper;
@@ -52,8 +55,9 @@ public class CollectionService {
     private final ItemEntityService itemEntityService;
     private final UserService userService;
     private final CloudStorageService cloudStorageService;
-    private final VisionApiService visionApiService;
+    private final ImageAnalysisService visionApiService;
     private final EmbeddingService embeddingService;
+    private final IdentificationService identificationService;
     private final SearchTokenService searchTokenService;
     private final SimilarityService similarityService;
     private final AppProperties appProperties;
@@ -243,6 +247,28 @@ public class CollectionService {
 
     public ValidateItemResponse validateItem(String collectionKey, String userId, MultipartFile file) {
         return similarityService.findSimilarItems(collectionKey, userId, file);
+    }
+
+    /**
+     * Identifies an item using Gemini Vision from an uploaded file.
+     * Uses AI to determine what the item is and suggest names/tags.
+     * This can be used before creating an item to help with naming/description.
+     *
+     * @param userId the user ID
+     * @param file the image file
+     * @return identification results
+     */
+    public ItemIdentificationResponse identifyItem(String userId, MultipartFile file) {
+        log.info("Identifying item from file for user: {}", userId);
+
+        if (!identificationService.isAvailable()) {
+            throw new AppBadRequestException("Item identification service is not available");
+        }
+
+        ImageIdentification identification = identificationService.identifyItem(file);
+
+        log.info("Successfully identified item: {}", identification.getPrimaryName());
+        return apiMapper.toIdentificationResponse(identification);
     }
 
     private void processAndAttachImage(ItemEntity item, MultipartFile file) {

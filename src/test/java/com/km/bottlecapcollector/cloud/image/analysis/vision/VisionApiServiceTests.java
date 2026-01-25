@@ -398,4 +398,5 @@ class VisionApiServiceTests {
         assertNull(result.getLogoAnnotation());
         assertNull(result.getOverallConfidence());
     }
+
 }

@@ -4,6 +4,7 @@ import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
+import com.km.bottlecapcollector.api.model.response.ItemIdentificationResponse;
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.service.CollectionFacadeService;
@@ -113,5 +114,12 @@ public class CollectionItemController {
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
             @PathVariable String collectionKey) {
         return ResponseEntity.ok(collectionFacadeService.getCollectionAvailableTags(principal, collectionKey));
+    }
+
+    @PostMapping(value = "/items/identify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<@NotNull ItemIdentificationResponse> identifyItem(
+            @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(collectionFacadeService.identifyItem(principal, file));
     }
 }

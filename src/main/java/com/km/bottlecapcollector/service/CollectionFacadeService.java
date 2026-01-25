@@ -4,6 +4,7 @@ import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
+import com.km.bottlecapcollector.api.model.response.ItemIdentificationResponse;
 import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import lombok.RequiredArgsConstructor;
@@ -134,5 +135,21 @@ public class CollectionFacadeService {
         String userId = userService.getUserId(principal);
         log.trace("User {} getting available tags for collection {}", userId, collectionKey);
         return userService.getCollectionAvailableTags(userId, collectionKey);
+    }
+
+    /**
+     * Identifies an item using Gemini Vision from an uploaded file.
+     * Uses AI to determine what the item is.
+     * This helps users name/describe items before creating them.
+     *
+     * @param principal the authenticated user
+     * @param file the image file
+     * @return identification results
+     */
+    public ItemIdentificationResponse identifyItem(OAuth2AuthenticatedPrincipal principal,
+                                                   MultipartFile file) {
+        String userId = userService.getUserId(principal);
+        log.info("User {} identifying item from uploaded file", userId);
+        return collectionService.identifyItem(userId, file);
     }
 }

@@ -18,6 +18,7 @@ public class ImageAnalysisMetadataEntity {
     private List<FirestoreImageColor> dominantColors;
     private FirestoreImageText textAnnotation;
     private FirestoreImageLogo logoAnnotation;
+    private FirestoreImageWebDetection webDetection;
     private Double overallConfidence;
     private Instant analyzedAt;
 
@@ -58,6 +59,27 @@ public class ImageAnalysisMetadataEntity {
     @AllArgsConstructor
     @Builder
     public static class FirestoreImageLogo {
+        private String description;
+        private Double score;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class FirestoreImageWebDetection {
+        private String bestGuessLabel;
+        private List<FirestoreWebEntity> webEntities;
+        private List<String> pagesWithMatchingImages;
+        private List<String> visuallySimilarImages;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class FirestoreWebEntity {
+        private String entityId;
         private String description;
         private Double score;
     }

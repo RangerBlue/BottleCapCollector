@@ -3,6 +3,7 @@ package com.km.bottlecapcollector.cloud.image.analysis.vision;
 import com.google.cloud.vision.v1.*;
 import com.google.protobuf.ByteString;
 import com.km.bottlecapcollector.cloud.image.analysis.api.ImageAnalysisMetadata;
+import com.km.bottlecapcollector.cloud.image.analysis.api.ImageAnalysisService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class VisionApiService {
+public class VisionApiService implements ImageAnalysisService {
 
     private final ImageAnnotatorClient visionClient;
 

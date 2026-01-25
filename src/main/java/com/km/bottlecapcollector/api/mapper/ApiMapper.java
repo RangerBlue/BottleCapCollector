@@ -2,7 +2,9 @@ package com.km.bottlecapcollector.api.mapper;
 
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
+import com.km.bottlecapcollector.api.model.response.ItemIdentificationResponse;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
+import com.km.bottlecapcollector.cloud.image.identification.api.ImageIdentification;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -27,4 +29,6 @@ public interface ApiMapper {
     List<ItemEntity> toEntityList(List<CollectionItemResponse> responses);
 
     List<CollectionItemSummary> toSummaryList(List<ItemEntity> entities);
+
+    ItemIdentificationResponse toIdentificationResponse(ImageIdentification identification);
 }

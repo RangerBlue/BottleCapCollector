@@ -38,6 +38,7 @@ public class AppProperties {
     private String vertexAiLocation;
     private String vertexAiEmbeddingModelId;
     private String vertexAiCredentialsPath;
+    private String vertexAiGeminiModelId;
 
     // Vision API configuration
     private String visionApiProjectId;
