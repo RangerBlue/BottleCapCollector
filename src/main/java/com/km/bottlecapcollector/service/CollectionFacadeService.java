@@ -5,6 +5,7 @@ import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
 import com.km.bottlecapcollector.api.model.response.ItemIdentificationResponse;
+import com.km.bottlecapcollector.api.model.response.RateLimitInfo;
 import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class CollectionFacadeService {
 
     private final UserService userService;
     private final CollectionService collectionService;
+    private final RateLimitService rateLimitService;
 
     /**
      * Gets all collections for the authenticated user.
@@ -141,15 +143,26 @@ public class CollectionFacadeService {
      * Identifies an item using Gemini Vision from an uploaded file.
      * Uses AI to determine what the item is.
      * This helps users name/describe items before creating them.
+     * Rate-limited: USER role has daily limits, ADMIN has unlimited access.
      *
      * @param principal the authenticated user
      * @param file the image file
-     * @return identification results
+     * @return identification results with rate limit info
      */
     public ItemIdentificationResponse identifyItem(OAuth2AuthenticatedPrincipal principal,
                                                    MultipartFile file) {
         String userId = userService.getUserId(principal);
         log.info("User {} identifying item from uploaded file", userId);
-        return collectionService.identifyItem(userId, file);
+
+        // Check and increment rate limit (throws RateLimitExceededException if exceeded)
+        RateLimitInfo rateLimitInfo = rateLimitService.checkAndIncrementIdentificationUsage(userId);
+
+        // Perform identification
+        ItemIdentificationResponse response = collectionService.identifyItem(userId, file);
+
+        // Attach rate limit info to response
+        response.setRateLimit(rateLimitInfo);
+
+        return response;
     }
 }

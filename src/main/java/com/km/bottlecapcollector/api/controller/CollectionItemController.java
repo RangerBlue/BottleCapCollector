@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.api.controller;
 
+import com.km.bottlecapcollector.api.model.response.ErrorResponse;
 import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
@@ -8,6 +9,13 @@ import com.km.bottlecapcollector.api.model.response.ItemIdentificationResponse;
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.service.CollectionFacadeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +45,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/collections")
 @RequiredArgsConstructor
+@Tag(name = "Collection Items", description = "Operations for managing collection items")
 public class CollectionItemController {
 
     private final CollectionFacadeService collectionFacadeService;
@@ -47,6 +56,26 @@ public class CollectionItemController {
         return ResponseEntity.ok(collectionFacadeService.getUserCollections(principal));
     }
 
+    @Operation(summary = "Create a new collection item", description = "Creates a new item in the specified collection with an image file")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Item created successfully",
+                    content = @Content(schema = @Schema(implementation = CollectionItemResponse.class))),
+            @ApiResponse(responseCode = "429", description = "Item limit exceeded",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "timestamp": "2026-01-25T12:00:00Z",
+                                      "status": 429,
+                                      "error": {
+                                        "message": "Item limit exceeded. You have 100 items, maximum allowed is 100.",
+                                        "limitType": "items",
+                                        "limit": 100,
+                                        "used": 100,
+                                        "remaining": 0
+                                      }
+                                    }
+                                    """)))
+    })
     @PostMapping(value = "/{collectionKey}/items", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<@NotNull CollectionItemResponse> createItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
@@ -116,6 +145,27 @@ public class CollectionItemController {
         return ResponseEntity.ok(collectionFacadeService.getCollectionAvailableTags(principal, collectionKey));
     }
 
+    @Operation(summary = "Identify an item using AI",
+            description = "Uses Gemini Vision AI to identify an item from an uploaded image. Rate-limited: USER role has daily limits, ADMIN has unlimited access.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Item identified successfully",
+                    content = @Content(schema = @Schema(implementation = ItemIdentificationResponse.class))),
+            @ApiResponse(responseCode = "429", description = "Daily identification limit exceeded",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "timestamp": "2026-01-25T12:00:00Z",
+                                      "status": 429,
+                                      "error": {
+                                        "message": "Daily identification limit exceeded. Used 20 of 20 allowed calls.",
+                                        "limitType": "identification",
+                                        "limit": 20,
+                                        "used": 20,
+                                        "remaining": 0
+                                      }
+                                    }
+                                    """)))
+    })
     @PostMapping(value = "/items/identify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<@NotNull ItemIdentificationResponse> identifyItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,

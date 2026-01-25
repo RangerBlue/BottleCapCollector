@@ -1,5 +1,6 @@
 package com.km.bottlecapcollector.api.model.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,17 +12,27 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Schema(description = "AI-powered item identification response")
 public class ItemIdentificationResponse {
 
+    @Schema(description = "Primary name identified for the item", example = "Heineken Bottle Cap")
     private String primaryName;
 
+    @Schema(description = "Brand name if identified", example = "Heineken")
     private String brand;
 
+    @Schema(description = "Category of the item", example = "Beer Bottle Cap")
     private String category;
 
+    @Schema(description = "Detailed description of the item")
     private String description;
 
+    @Schema(description = "Suggested tags for the item", example = "[\"beer\", \"green\", \"dutch\"]")
     private List<String> suggestedTags;
 
+    @Schema(description = "Confidence score of the identification (0.0 - 1.0)", example = "0.95")
     private Double confidence;
+
+    @Schema(description = "Rate limit information for the current user. Shows daily usage and remaining quota.")
+    private RateLimitInfo rateLimit;
 }

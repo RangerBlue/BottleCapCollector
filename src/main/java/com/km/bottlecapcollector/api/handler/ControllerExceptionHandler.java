@@ -4,7 +4,9 @@ import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
 import com.km.bottlecapcollector.api.handler.exception.AppForbiddenException;
 import com.km.bottlecapcollector.api.handler.exception.AppResourceNotFoundException;
 import com.km.bottlecapcollector.api.handler.exception.AppValidationException;
+import com.km.bottlecapcollector.api.handler.exception.RateLimitExceededException;
 import com.km.bottlecapcollector.api.model.response.ErrorResponse;
+import com.km.bottlecapcollector.api.model.response.RateLimitInfo;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,5 +40,22 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<@NotNull ErrorResponse> handleAppValidationException(AppValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.create(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<@NotNull ErrorResponse> handleRateLimitExceededException(RateLimitExceededException ex) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(java.time.Instant.now())
+                .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                .error(java.util.Map.of(
+                        "message", ex.getMessage(),
+                        "limitType", ex.getLimitType(),
+                        "limit", ex.getLimit(),
+                        "used", ex.getCurrentUsage(),
+                        "remaining", 0
+                ))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
     }
 }

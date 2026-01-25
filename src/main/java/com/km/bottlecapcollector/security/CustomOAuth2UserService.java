@@ -42,6 +42,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .createdAt(Instant.now())
                             .updatedAt(Instant.now())
                             .maxItems(appProperties.getMaxItemsPerUser())
+                            .maxIdentificationsPerDay(appProperties.getMaxIdentificationsPerDay())
                             .build();
                     return userRepository.save(newUser);
                 });

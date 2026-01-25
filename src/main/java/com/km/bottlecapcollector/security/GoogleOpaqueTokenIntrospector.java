@@ -53,6 +53,7 @@ public class GoogleOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
                             .createdAt(Instant.now())
                             .updatedAt(Instant.now())
                             .maxItems(appProperties.getMaxItemsPerUser())
+                            .maxIdentificationsPerDay(appProperties.getMaxIdentificationsPerDay())
                             .build();
                     return userRepository.save(newUser);
                 });

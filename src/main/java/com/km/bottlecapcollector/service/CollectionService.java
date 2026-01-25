@@ -2,7 +2,7 @@ package com.km.bottlecapcollector.service;
 
 import com.google.cloud.firestore.Query;
 import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
-import com.km.bottlecapcollector.api.handler.exception.AppForbiddenException;
+import com.km.bottlecapcollector.api.handler.exception.RateLimitExceededException;
 import com.km.bottlecapcollector.cloud.database.user.entity.UserEntity;
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
@@ -345,9 +345,8 @@ public class CollectionService {
         int maxItems = getMaxItemsForUser(userId);
 
         if (currentCount >= maxItems) {
-            log.warn("User {} has reached item limit: {}/{}", userId, currentCount, maxItems);
-            throw new AppForbiddenException(
-                    String.format("Item limit exceeded. You have %d items, maximum allowed is %d.", currentCount, maxItems));
+            log.info("User {} has reached item limit: {}/{}", userId, currentCount, maxItems);
+            throw RateLimitExceededException.itemLimitExceeded(maxItems, currentCount);
         }
         log.trace("User {} item count: {}/{}", userId, currentCount, maxItems);
     }
@@ -359,7 +358,7 @@ public class CollectionService {
                 return user.getMaxItems();
             }
         } catch (Exception e) {
-            log.trace("User {} not found, using global default", userId);
+            log.info("User {} not found, using global default", userId);
         }
         return appProperties.getMaxItemsPerUser();
     }

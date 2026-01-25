@@ -256,10 +256,10 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
             return snapshot.getCount();
 
         } catch (Exception e) {
-            log.info(
-                    "No '{}' subcollections exist yet. Returning count = 0 for userId={}",
-                    ITEMS_SUBCOLLECTION,
-                    userId
+            log.warn(
+                    "Failed to count items for userId={}. Collection group query may require an index. Error: {}",
+                    userId,
+                    e.getMessage()
             );
             return 0;
         }

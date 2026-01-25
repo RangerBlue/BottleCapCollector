@@ -51,4 +51,7 @@ public class AppProperties {
 
     // User limits
     private int maxItemsPerUser = 100;
+
+    // Rate limiting
+    private int maxIdentificationsPerDay = 20;
 }

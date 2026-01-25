@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +42,22 @@ public class UserEntity {
      * If null, the global default from AppProperties is used.
      */
     private Integer maxItems;
+
+    /**
+     * Current count of identification API calls for the current day.
+     */
+    private Integer identificationUsageCount;
+
+    /**
+     * Date when the identification usage counter was last reset.
+     */
+    private Instant lastIdentificationResetDate;
+
+    /**
+     * Per-user override for max identifications per day.
+     * If null, the global default from AppProperties is used.
+     */
+    private Integer maxIdentificationsPerDay;
 
     /**
      * Adds a collection to the user's list if not already present (by key).
