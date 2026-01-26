@@ -30,9 +30,10 @@ public class GeminiIdentificationService implements IdentificationService {
 
             Use this hint to help narrow down your identification. Provide your response in the following format:
 
-            PRIMARY_NAME: [The most specific name for this item, e.g., "Heineken Bottle Cap" or "Coca-Cola Crown Cap"]
-            BRAND: [The brand name if identifiable, or "Unknown" if not clear]
-            CATEGORY: [The category of the item, e.g., "Beer Bottle Cap", "Soda Cap", "Crown Cap"]
+            PRIMARY_NAME: [The most specific name for this item, e.g., "Heineken" or "Coca-Cola"]
+            COMPANY: [The company that produces this item, e.g., brewery for beer caps like "Heineken N.V.", "Anheuser-Busch InBev", or manufacturer for other items, for example Nintendo for video games. Use "Unknown" if not identifiable]
+            COUNTRY: [The country of origin where the company is based or where the item is produced, e.g., "Netherlands", "United States", "Germany". Use "Unknown" if not identifiable]
+            CATEGORY: [The category of the item, e.g., "Beer", "Soda", "Video game"]
             DESCRIPTION: [A brief description of the item, including any visible text, colors, or distinctive features]
             SUGGESTED_TAGS: [Comma-separated tags that would help categorize this item, e.g., "beer, green, heineken, dutch, crown cap"]
             CONFIDENCE: [Your confidence level from 0.0 to 1.0]
@@ -99,7 +100,8 @@ public class GeminiIdentificationService implements IdentificationService {
         ImageIdentification.ImageIdentificationBuilder builder = ImageIdentification.builder();
 
         builder.primaryName(extractField(responseText, "PRIMARY_NAME"));
-        builder.brand(extractField(responseText, "BRAND"));
+        builder.company(extractField(responseText, "COMPANY"));
+        builder.country(extractField(responseText, "COUNTRY"));
         builder.category(extractField(responseText, "CATEGORY"));
         builder.description(extractField(responseText, "DESCRIPTION"));
         builder.suggestedTags(extractTags(responseText));

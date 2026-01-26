@@ -18,10 +18,13 @@ public class ItemIdentificationResponse {
     @Schema(description = "Primary name identified for the item", example = "Heineken Bottle Cap")
     private String primaryName;
 
-    @Schema(description = "Brand name if identified", example = "Heineken")
-    private String brand;
+    @Schema(description = "Company that produces the item (e.g., brewery for beer caps)", example = "Heineken N.V.")
+    private String company;
 
-    @Schema(description = "Category of the item", example = "Beer Bottle Cap")
+    @Schema(description = "Country of origin where the company is based", example = "Netherlands")
+    private String country;
+
+    @Schema(description = "Category of the item", example = "Beer")
     private String category;
 
     @Schema(description = "Detailed description of the item")

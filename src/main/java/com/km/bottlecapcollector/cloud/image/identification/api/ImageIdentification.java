@@ -15,7 +15,9 @@ public class ImageIdentification {
 
     private String primaryName;
 
-    private String brand;
+    private String company;
+
+    private String country;
 
     private String category;
 
