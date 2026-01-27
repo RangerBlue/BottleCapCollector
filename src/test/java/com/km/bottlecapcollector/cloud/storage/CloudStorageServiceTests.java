@@ -91,23 +91,29 @@ class CloudStorageServiceTests {
     }
 
     @Test
-    void uploadImage_shouldUseDefaultContentTypeWhenNull() throws IOException {
+    void uploadImage_shouldRejectFileWithNullContentType() {
         // Given
-        String originalFilename = "test-file";
-        byte[] fileContent = "test content".getBytes();
-
-        when(multipartFile.getOriginalFilename()).thenReturn(originalFilename);
+        when(multipartFile.isEmpty()).thenReturn(false);
         when(multipartFile.getContentType()).thenReturn(null);
-        when(multipartFile.getBytes()).thenReturn(fileContent);
-        when(multipartFile.getSize()).thenReturn((long) fileContent.length);
-        when(blob.getMd5()).thenReturn("hash");
-        when(storage.create(any(BlobInfo.class), eq(fileContent))).thenReturn(blob);
 
-        // When
-        StorageImage result = cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY);
+        // When / Then - security validation should reject files without valid image content type
+        CloudStorageException exception = assertThrows(CloudStorageException.class, () ->
+            cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY)
+        );
+        assertTrue(exception.getMessage().contains("Invalid file type"));
+    }
 
-        // Then
-        assertEquals("application/octet-stream", result.getContentType());
+    @Test
+    void uploadImage_shouldRejectNonImageContentType() {
+        // Given
+        when(multipartFile.isEmpty()).thenReturn(false);
+        when(multipartFile.getContentType()).thenReturn("application/octet-stream");
+
+        // When / Then - security validation should reject non-image files
+        CloudStorageException exception = assertThrows(CloudStorageException.class, () ->
+            cloudStorageService.uploadImage(multipartFile, USER_ID, COLLECTION_KEY)
+        );
+        assertTrue(exception.getMessage().contains("Invalid file type"));
     }
 
     @Test

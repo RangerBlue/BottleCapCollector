@@ -6,17 +6,19 @@ import com.km.bottlecapcollector.api.handler.exception.AppResourceNotFoundExcept
 import com.km.bottlecapcollector.api.handler.exception.AppValidationException;
 import com.km.bottlecapcollector.api.handler.exception.RateLimitExceededException;
 import com.km.bottlecapcollector.api.model.response.ErrorResponse;
-import com.km.bottlecapcollector.api.model.response.RateLimitInfo;
+import com.km.bottlecapcollector.cloud.storage.CloudStorageException;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 
 @ControllerAdvice
-public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
+@Slf4j
+public class ControllerExceptionHandler {
 
     @ExceptionHandler(AppResourceNotFoundException.class)
     public ResponseEntity<@NotNull ErrorResponse> handleAppResourceNotFoundException(AppResourceNotFoundException ex) {
@@ -57,5 +59,25 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<@NotNull ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.create(HttpStatus.FORBIDDEN.value(), "Access denied"));
+    }
+
+    @ExceptionHandler(CloudStorageException.class)
+    public ResponseEntity<@NotNull ErrorResponse> handleCloudStorageException(CloudStorageException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.create(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<@NotNull ErrorResponse> handleGenericException(Exception ex) {
+        // Log the full exception for debugging, but don't expose details to client
+        log.error("Unexpected error occurred", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred"));
     }
 }

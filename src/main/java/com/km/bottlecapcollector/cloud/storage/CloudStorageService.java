@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +27,18 @@ public class CloudStorageService implements StorageService {
     private final Storage storage;
     private final String bucketName;
     private static final int SIGNED_URL_DURATION_MINUTES = 15;
+
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+            "image/bmp"
+    );
+
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
+            ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"
+    );
 
     public CloudStorageService(Storage storage, AppProperties appProperties) {
         this.storage = storage;
@@ -43,6 +56,8 @@ public class CloudStorageService implements StorageService {
     @Override
     public StorageImage uploadImage(MultipartFile file, String userId, String collectionKey) {
         log.info("Uploading image for userId: {}, collectionKey: {}", userId, collectionKey);
+
+        validateImageFile(file);
 
         String originalFilename = file.getOriginalFilename();
         String extension = getFileExtension(originalFilename);
@@ -121,7 +136,6 @@ public class CloudStorageService implements StorageService {
      * Generates a signed URL for temporary access to an image.
      *
      * @param objectName the object name
-     * @param durationMinutes how long the URL should be valid
      * @return the signed URL
      */
     @Override
@@ -135,6 +149,22 @@ public class CloudStorageService implements StorageService {
         if (filename == null || !filename.contains(".")) {
             return "";
         }
-        return filename.substring(filename.lastIndexOf("."));
+        return filename.substring(filename.lastIndexOf(".")).toLowerCase();
+    }
+
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new CloudStorageException("File is required");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
+            throw new CloudStorageException("Invalid file type. Allowed types: JPEG, PNG, GIF, WebP, BMP");
+        }
+
+        String extension = getFileExtension(file.getOriginalFilename());
+        if (!extension.isEmpty() && !ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new CloudStorageException("Invalid file extension. Allowed: .jpg, .jpeg, .png, .gif, .webp, .bmp");
+        }
     }
 }
