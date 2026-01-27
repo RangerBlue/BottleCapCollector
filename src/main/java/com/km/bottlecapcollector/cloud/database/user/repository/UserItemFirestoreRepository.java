@@ -4,6 +4,7 @@ import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.km.bottlecapcollector.cloud.database.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,23 @@ public class UserItemFirestoreRepository implements UserEntityRepository {
         );
 
         return document.exists();
+    }
+
+    @Override
+    public Optional<UserEntity> findByEmail(String email) {
+        log.trace("Finding user by email: {}", email);
+
+        QuerySnapshot querySnapshot = execute(
+                getCollection().whereEqualTo("email", email).limit(1).get(),
+                "find user by email: " + email
+        );
+
+        if (querySnapshot.isEmpty()) {
+            return Optional.empty();
+        }
+
+        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+        return Optional.of(document.toObject(UserEntity.class));
     }
 
     private CollectionReference getCollection() {

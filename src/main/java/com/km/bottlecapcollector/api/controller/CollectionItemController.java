@@ -86,6 +86,23 @@ public class CollectionItemController {
                 .body(collectionFacadeService.createItem(principal, collectionKey, request, file));
     }
 
+    @Operation(summary = "Get a collection item",
+            description = "Gets a specific item from a collection. Works for both owned collections and collections shared with the user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Item retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = CollectionItemResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied - user does not own the collection and it is not shared with them",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "timestamp": "2026-01-25T12:00:00Z",
+                                      "status": 403,
+                                      "error": "You do not have access to this collection"
+                                    }
+                                    """))),
+            @ApiResponse(responseCode = "404", description = "Item not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/{collectionKey}/items/{id}")
     public ResponseEntity<@NotNull CollectionItemResponse> getItem(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
@@ -94,6 +111,20 @@ public class CollectionItemController {
         return ResponseEntity.ok(collectionFacadeService.getItem(principal, collectionKey, id));
     }
 
+    @Operation(summary = "Get collection items",
+            description = "Gets paginated items from a collection with optional search. Works for both owned collections and collections shared with the user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Items retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - user does not own the collection and it is not shared with them",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "timestamp": "2026-01-25T12:00:00Z",
+                                      "status": 403,
+                                      "error": "You do not have access to this collection"
+                                    }
+                                    """)))
+    })
     @GetMapping("/{collectionKey}/items")
     public ResponseEntity<@NotNull Page<@NotNull CollectionItemSummary>> getItems(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,

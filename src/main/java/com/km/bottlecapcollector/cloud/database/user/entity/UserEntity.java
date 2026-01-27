@@ -33,6 +33,18 @@ public class UserEntity {
     @Builder.Default
     private List<UserCollectionEntity> collections = new ArrayList<>();
 
+    /**
+     * Shares this user has granted to others (owner side of sharing).
+     */
+    @Builder.Default
+    private List<CollectionShareEntity> sharesGranted = new ArrayList<>();
+
+    /**
+     * Collections that have been shared with this user (recipient side of sharing).
+     */
+    @Builder.Default
+    private List<SharedCollectionEntity> sharedWithMe = new ArrayList<>();
+
     private Instant createdAt;
 
     private Instant updatedAt;

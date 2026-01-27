@@ -1,11 +1,15 @@
 package com.km.bottlecapcollector.service;
 
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
+import com.km.bottlecapcollector.api.model.request.ShareCollectionRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
+import com.km.bottlecapcollector.api.model.response.CollectionShareResponse;
 import com.km.bottlecapcollector.api.model.response.ItemIdentificationResponse;
 import com.km.bottlecapcollector.api.model.response.RateLimitInfo;
+import com.km.bottlecapcollector.api.model.response.ShareCollectionResponse;
+import com.km.bottlecapcollector.api.model.response.SharedCollectionResponse;
 import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
 import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,7 @@ public class CollectionFacadeService {
     private final UserService userService;
     private final CollectionService collectionService;
     private final RateLimitService rateLimitService;
+    private final CollectionShareService collectionShareService;
 
     /**
      * Gets all collections for the authenticated user.
@@ -60,27 +65,31 @@ public class CollectionFacadeService {
     }
 
     /**
-     * Gets a specific collection item for the authenticated user.
+     * Gets a specific collection item.
+     * Works for both owned collections and collections shared with the user.
      */
     public CollectionItemResponse getItem(OAuth2AuthenticatedPrincipal principal,
                                           String collectionKey,
                                           String id) {
         String userId = userService.getUserId(principal);
-        log.trace("User {} getting item {} from collection {}", userId, id, collectionKey);
-        return collectionService.getCollectionItem(collectionKey, id, userId);
+        String ownerUserId = collectionShareService.resolveCollectionOwner(userId, collectionKey);
+        log.trace("User {} getting item {} from collection {} (owner: {})", userId, id, collectionKey, ownerUserId);
+        return collectionService.getCollectionItem(collectionKey, id, ownerUserId);
     }
 
     /**
-     * Searches items in a collection for the authenticated user.
+     * Searches items in a collection.
+     * Works for both owned collections and collections shared with the user.
      */
     public Page<@NotNull CollectionItemSummary> getItems(OAuth2AuthenticatedPrincipal principal,
                                                          String collectionKey,
                                                          String query,
                                                          Pageable pageable) {
         String userId = userService.getUserId(principal);
-        log.info("User {} getting items from collection {} with query '{}', page: {}, size: {}",
-                userId, collectionKey, query, pageable.getPageNumber(), pageable.getPageSize());
-        return collectionService.searchItemsPaginated(collectionKey, query, userId, pageable);
+        String ownerUserId = collectionShareService.resolveCollectionOwner(userId, collectionKey);
+        log.info("User {} getting items from collection {} (owner: {}) with query '{}', page: {}, size: {}",
+                userId, collectionKey, ownerUserId, query, pageable.getPageNumber(), pageable.getPageSize());
+        return collectionService.searchItemsPaginated(collectionKey, query, ownerUserId, pageable);
     }
 
     /**
@@ -164,5 +173,46 @@ public class CollectionFacadeService {
         response.setRateLimit(rateLimitInfo);
 
         return response;
+    }
+
+    /**
+     * Shares a collection with another user.
+     */
+    public ShareCollectionResponse shareCollection(OAuth2AuthenticatedPrincipal principal,
+                                                   String collectionKey,
+                                                   ShareCollectionRequest request) {
+        String userId = userService.getUserId(principal);
+        log.info("User {} sharing collection {} with {}", userId, collectionKey, request.getEmail());
+        return collectionShareService.shareCollection(userId, collectionKey, request.getEmail());
+    }
+
+    /**
+     * Revokes a share from a user.
+     */
+    public void revokeShare(OAuth2AuthenticatedPrincipal principal,
+                            String collectionKey,
+                            String targetUserId) {
+        String userId = userService.getUserId(principal);
+        log.info("User {} revoking share of collection {} from user {}", userId, collectionKey, targetUserId);
+        collectionShareService.revokeShare(userId, collectionKey, targetUserId);
+    }
+
+    /**
+     * Gets all shares for a collection.
+     */
+    public List<CollectionShareResponse> getCollectionShares(OAuth2AuthenticatedPrincipal principal,
+                                                              String collectionKey) {
+        String userId = userService.getUserId(principal);
+        log.trace("User {} getting shares for collection {}", userId, collectionKey);
+        return collectionShareService.getSharesForCollection(userId, collectionKey);
+    }
+
+    /**
+     * Gets collections shared with the current user.
+     */
+    public List<SharedCollectionResponse> getSharedWithMeCollections(OAuth2AuthenticatedPrincipal principal) {
+        String userId = userService.getUserId(principal);
+        log.trace("User {} getting collections shared with them", userId);
+        return collectionShareService.getCollectionsSharedWithUser(userId);
     }
 }

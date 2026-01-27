@@ -34,4 +34,12 @@ public interface UserEntityRepository {
      */
     boolean existsById(String id);
 
+    /**
+     * Finds a user by their email address.
+     *
+     * @param email the user's email
+     * @return an Optional containing the user if found
+     */
+    Optional<UserEntity> findByEmail(String email);
+
 }
