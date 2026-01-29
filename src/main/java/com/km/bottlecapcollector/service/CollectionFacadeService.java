@@ -1,6 +1,9 @@
 package com.km.bottlecapcollector.service;
 
+import com.km.bottlecapcollector.api.handler.exception.AppBadRequestException;
+import com.km.bottlecapcollector.api.handler.exception.AppForbiddenException;
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
+import com.km.bottlecapcollector.property.AppProperties;
 import com.km.bottlecapcollector.api.model.request.ShareCollectionRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
@@ -37,6 +40,7 @@ public class CollectionFacadeService {
     private final CollectionService collectionService;
     private final RateLimitService rateLimitService;
     private final CollectionShareService collectionShareService;
+    private final AppProperties appProperties;
 
     /**
      * Gets all collections for the authenticated user.
@@ -214,5 +218,40 @@ public class CollectionFacadeService {
         String userId = userService.getUserId(principal);
         log.trace("User {} getting collections shared with them", userId);
         return collectionShareService.getCollectionsSharedWithUser(userId);
+    }
+
+    /**
+     * Deletes a collection and all its items asynchronously.
+     * Also revokes all shares for this collection.
+     * Items are deleted in the background to handle large collections.
+     *
+     * @param principal the authenticated user
+     * @param collectionKey the collection to delete
+     */
+    public void deleteCollection(OAuth2AuthenticatedPrincipal principal, String collectionKey) {
+        String userId = userService.getUserId(principal);
+        log.info("User {} initiating deletion of collection {}", userId, collectionKey);
+
+        // Prevent deletion of legacy collection
+        if (collectionKey.equals(appProperties.getLegacyCollectionKey())) {
+            log.warn("User {} attempted to delete legacy collection {}", userId, collectionKey);
+            throw new AppBadRequestException("Legacy collection cannot be deleted");
+        }
+
+        // Defense in depth: verify ownership before any action
+        if (!userService.ownsCollection(userId, collectionKey)) {
+            log.warn("User {} attempted to delete collection {} they don't own", userId, collectionKey);
+            throw new AppForbiddenException("You do not own this collection");
+        }
+
+        // Remove collection from user and revoke all shares first
+        // This prevents new items from being added and removes access immediately
+        collectionShareService.removeCollectionAndAllShares(userId, collectionKey);
+
+        // Delete all items in the collection asynchronously (including images)
+        // Ownership already verified above, collection removed from user's list
+        collectionService.deleteAllItemsInCollectionAsync(collectionKey, userId);
+
+        log.info("User {} initiated async deletion of collection {}", userId, collectionKey);
     }
 }

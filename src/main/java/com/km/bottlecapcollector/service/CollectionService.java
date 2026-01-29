@@ -33,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,6 +64,7 @@ public class CollectionService {
     private final AppProperties appProperties;
     private static final ApiMapper apiMapper = ApiMapper.INSTANCE;
     private static final EntityDocumentMapper documentMapper = EntityDocumentMapper.INSTANCE;
+    private static final int MAX_TAG_LENGTH = 15;
 
     public CollectionItemResponse createCollectionItem(String collectionKey, String userId,
                                                        CreateCollectionItemRequest request, MultipartFile file) {
@@ -74,7 +76,7 @@ public class CollectionService {
         ItemEntity item = ItemEntity.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .tags(request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>())
+                .tags(new ArrayList<>(truncateTags(request.getTags())))
                 .customTags(request.getCustomTags())
                 .userId(userId)
                 .collectionKey(collectionKey)
@@ -175,7 +177,7 @@ public class CollectionService {
             item.setDescription(request.getDescription());
         }
         if (request.getTags() != null) {
-            item.setTags(request.getTags());
+            item.setTags(new ArrayList<>(truncateTags(request.getTags())));
         }
         if (request.getCustomTags() != null) {
             item.setCustomTags(request.getCustomTags());
@@ -247,6 +249,73 @@ public class CollectionService {
 
     public ValidateItemResponse validateItem(String collectionKey, String userId, MultipartFile file) {
         return similarityService.findSimilarItems(collectionKey, userId, file);
+    }
+
+    private static final int DELETE_BATCH_SIZE = 500;
+
+    /**
+     * Deletes all items in a collection asynchronously using Firestore batch operations.
+     * Each batch of up to 500 items is deleted atomically.
+     * Images are deleted from Cloud Storage before the batch delete.
+     *
+     * Note: Ownership must be validated by the caller before invoking this method.
+     * The Firestore query filters by userId as an additional safety measure.
+     *
+     * @param collectionKey the collection key
+     * @param userId the user ID (owner)
+     */
+    @Async
+    public void deleteAllItemsInCollectionAsync(String collectionKey, String userId) {
+        log.info("Starting async batch deletion of all items in collection: {} for user: {}", collectionKey, userId);
+
+        try {
+            int totalDeleted = 0;
+            int batchNumber = 0;
+            List<ItemEntity> batch;
+
+            do {
+                batch = itemEntityService.findByUserIdBatch(collectionKey, userId, DELETE_BATCH_SIZE);
+                batchNumber++;
+
+                if (!batch.isEmpty()) {
+                    log.info("Processing batch {} with {} items for collection: {}", batchNumber, batch.size(), collectionKey);
+
+                    // First, delete images from Cloud Storage (non-transactional)
+                    for (ItemEntity item : batch) {
+                        deleteImageSafely(item);
+                    }
+
+                    // Then, batch delete items from Firestore (transactional)
+                    List<String> itemIds = batch.stream()
+                            .map(ItemEntity::getId)
+                            .toList();
+
+                    try {
+                        int deleted = itemEntityService.deleteByIds(collectionKey, itemIds);
+                        totalDeleted += deleted;
+                        log.info("Batch {} completed: deleted {} items from Firestore", batchNumber, deleted);
+                    } catch (Exception e) {
+                        log.error("Batch {} failed for collection {}: {}", batchNumber, collectionKey, e.getMessage());
+                        // Continue with next batch - items in this batch will remain
+                    }
+                }
+            } while (batch.size() == DELETE_BATCH_SIZE);
+
+            log.info("Async deletion completed for collection: {}. Total items deleted: {}", collectionKey, totalDeleted);
+        } catch (Exception e) {
+            log.error("Error during async deletion of collection {}: {}", collectionKey, e.getMessage(), e);
+        }
+    }
+
+    private void deleteImageSafely(ItemEntity item) {
+        if (item.getImage() != null && item.getImage().getObjectName() != null) {
+            try {
+                cloudStorageService.deleteImage(item.getImage().getObjectName());
+            } catch (Exception e) {
+                log.warn("Failed to delete image {} for item {}: {}",
+                        item.getImage().getObjectName(), item.getId(), e.getMessage());
+            }
+        }
     }
 
     /**
@@ -361,5 +430,15 @@ public class CollectionService {
             log.info("User {} not found, using global default", userId);
         }
         return appProperties.getMaxItemsPerUser();
+    }
+
+    private List<String> truncateTags(List<String> tags) {
+        if (tags == null) {
+            return new ArrayList<>();
+        }
+        return tags.stream()
+                .filter(tag -> tag != null && !tag.isBlank())
+                .map(tag -> tag.length() > MAX_TAG_LENGTH ? tag.substring(0, MAX_TAG_LENGTH) : tag)
+                .toList();
     }
 }

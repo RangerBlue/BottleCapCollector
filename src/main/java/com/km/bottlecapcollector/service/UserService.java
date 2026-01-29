@@ -53,4 +53,15 @@ public class UserService {
     public List<String> getCollectionAvailableTags(String userId, String collectionKey) {
         return userEntityService.getCollectionAvailableTags(userId, collectionKey);
     }
+
+    public boolean ownsCollection(String userId, String collectionKey) {
+        try {
+            List<UserCollectionEntity> collections = getCollections(userId);
+            return collections.stream()
+                    .anyMatch(c -> c.getCollectionKey().equals(collectionKey));
+        } catch (Exception e) {
+            log.warn("Failed to check ownership for user {} collection {}: {}", userId, collectionKey, e.getMessage());
+            return false;
+        }
+    }
 }

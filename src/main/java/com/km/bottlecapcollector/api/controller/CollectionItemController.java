@@ -1,11 +1,12 @@
 package com.km.bottlecapcollector.api.controller;
 
-import com.km.bottlecapcollector.api.model.response.ErrorResponse;
-import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
-import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemResponse;
 import com.km.bottlecapcollector.api.model.response.CollectionItemSummary;
+import com.km.bottlecapcollector.api.model.response.DeleteCollectionResponse;
+import com.km.bottlecapcollector.api.model.response.ErrorResponse;
 import com.km.bottlecapcollector.api.model.response.ItemIdentificationResponse;
+import com.km.bottlecapcollector.api.model.response.UserCollectionResponse;
+import com.km.bottlecapcollector.api.model.response.ValidateItemResponse;
 import com.km.bottlecapcollector.api.model.request.CreateCollectionItemRequest;
 import com.km.bottlecapcollector.api.model.request.UpdateCollectionItem;
 import com.km.bottlecapcollector.service.CollectionFacadeService;
@@ -54,6 +55,33 @@ public class CollectionItemController {
     public ResponseEntity<@NotNull List<UserCollectionResponse>> getUserCollections(
             @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         return ResponseEntity.ok(collectionFacadeService.getUserCollections(principal));
+    }
+
+    @Operation(summary = "Delete a collection",
+            description = "Deletes a collection and all its items asynchronously. Also revokes all shares for this collection. " +
+                    "The collection is immediately removed from the user's list and shares are revoked. " +
+                    "Items are deleted in the background.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Collection deletion initiated",
+                    content = @Content(schema = @Schema(implementation = DeleteCollectionResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied - user does not own the collection",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "timestamp": "2026-01-25T12:00:00Z",
+                                      "status": 403,
+                                      "error": "You do not own this collection"
+                                    }
+                                    """)))
+    })
+    @DeleteMapping("/{collectionKey}")
+    public ResponseEntity<@NotNull DeleteCollectionResponse> deleteCollection(
+            @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal,
+            @PathVariable String collectionKey) {
+        collectionFacadeService.deleteCollection(principal, collectionKey);
+        return ResponseEntity.accepted().body(DeleteCollectionResponse.builder()
+                .message("Collection deletion initiated. Items are being deleted in the background.")
+                .build());
     }
 
     @Operation(summary = "Create a new collection item", description = "Creates a new item in the specified collection with an image file")

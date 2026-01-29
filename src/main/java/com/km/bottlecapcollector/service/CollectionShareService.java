@@ -294,4 +294,66 @@ public class CollectionShareService {
                 .anyMatch(share -> share.getCollectionKey().equals(collectionKey)
                         && share.getSharedWithUserId().equals(targetUserId));
     }
+
+    /**
+     * Revokes all shares for a collection and removes the collection from the owner.
+     * Used when deleting a collection.
+     *
+     * @param ownerUserId the owner's user ID
+     * @param collectionKey the collection to delete
+     */
+    public void removeCollectionAndAllShares(String ownerUserId, String collectionKey) {
+        log.info("Removing collection {} and all its shares for user {}", collectionKey, ownerUserId);
+
+        UserEntity owner = userRepository.findById(ownerUserId)
+                .orElseThrow(() -> new AppResourceNotFoundException("User not found"));
+
+        validateOwnership(owner, collectionKey);
+
+        // Get all users this collection is shared with
+        List<String> sharedWithUserIds = new ArrayList<>();
+        if (owner.getSharesGranted() != null) {
+            sharedWithUserIds = owner.getSharesGranted().stream()
+                    .filter(share -> share.getCollectionKey().equals(collectionKey))
+                    .map(CollectionShareEntity::getSharedWithUserId)
+                    .toList();
+        }
+
+        // Remove shares from owner's sharesGranted list
+        if (owner.getSharesGranted() != null) {
+            owner.getSharesGranted().removeIf(
+                    share -> share.getCollectionKey().equals(collectionKey)
+            );
+        }
+
+        // Remove collection from owner's collections list
+        if (owner.getCollections() != null) {
+            owner.getCollections().removeIf(
+                    c -> c.getCollectionKey().equals(collectionKey)
+            );
+        }
+
+        owner.setUpdatedAt(Instant.now());
+        userRepository.save(owner);
+        log.info("Removed collection and shares from owner");
+
+        // Remove from each shared user's sharedWithMe list
+        for (String targetUserId : sharedWithUserIds) {
+            userRepository.findById(targetUserId).ifPresent(targetUser -> {
+                if (targetUser.getSharedWithMe() != null) {
+                    boolean removed = targetUser.getSharedWithMe().removeIf(
+                            shared -> shared.getCollectionKey().equals(collectionKey)
+                                    && shared.getOwnerUserId().equals(ownerUserId)
+                    );
+                    if (removed) {
+                        targetUser.setUpdatedAt(Instant.now());
+                        userRepository.save(targetUser);
+                        log.info("Removed collection from user {}'s sharedWithMe list", targetUserId);
+                    }
+                }
+            });
+        }
+
+        log.info("Successfully removed collection {} and all {} shares", collectionKey, sharedWithUserIds.size());
+    }
 }

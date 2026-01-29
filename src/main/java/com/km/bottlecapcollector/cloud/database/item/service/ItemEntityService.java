@@ -91,4 +91,19 @@ public class ItemEntityService {
         }
         repository.deleteById(collectionKey, id);
     }
+
+    public List<ItemEntity> findAllByUserId(String collectionKey, String userId) {
+        log.debug("Finding all items by userId: {} in collection: {}", userId, collectionKey);
+        return repository.findByUserId(collectionKey, userId);
+    }
+
+    public List<ItemEntity> findByUserIdBatch(String collectionKey, String userId, int batchSize) {
+        log.debug("Finding batch of {} items by userId: {} in collection: {}", batchSize, userId, collectionKey);
+        return repository.findByUserId(collectionKey, userId, batchSize, 0, Query.Direction.ASCENDING);
+    }
+
+    public int deleteByIds(String collectionKey, List<String> ids) {
+        log.debug("Batch deleting {} items from collection: {}", ids.size(), collectionKey);
+        return repository.deleteByIds(collectionKey, ids);
+    }
 }

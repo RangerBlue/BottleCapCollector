@@ -152,4 +152,14 @@ public interface CollectionItemEntityRepository {
      * @return the total count of items belonging to the user across all collections
      */
     long countAllByUserId(String userId);
+
+    /**
+     * Deletes multiple items by their IDs in a single batch operation.
+     * Firestore supports up to 500 operations per batch.
+     *
+     * @param collectionName the Firestore collection name
+     * @param ids the list of document IDs to delete (max 500)
+     * @return the number of items deleted
+     */
+    int deleteByIds(String collectionName, List<String> ids);
 }

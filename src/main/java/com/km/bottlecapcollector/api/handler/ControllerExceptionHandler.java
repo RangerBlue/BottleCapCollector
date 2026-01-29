@@ -12,8 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 @ControllerAdvice
@@ -42,6 +47,26 @@ public class ControllerExceptionHandler {
     public ResponseEntity<@NotNull ErrorResponse> handleAppValidationException(AppValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.create(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<@NotNull ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            fieldErrors.put(error.getField(), error.getDefaultMessage());
+        }
+
+        Map<String, Object> errorDetails = new LinkedHashMap<>();
+        errorDetails.put("message", "Validation failed");
+        errorDetails.put("fieldErrors", fieldErrors);
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(java.time.Instant.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(errorDetails)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(RateLimitExceededException.class)

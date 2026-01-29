@@ -8,6 +8,7 @@ import com.google.cloud.firestore.FieldPath;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteBatch;
 import com.google.common.collect.Lists;
 import com.km.bottlecapcollector.cloud.database.item.entity.ItemEntity;
 import com.km.bottlecapcollector.color.HSBColorService;
@@ -263,6 +264,31 @@ public class CollectionItemEntityFirestoreRepository implements CollectionItemEn
             );
             return 0;
         }
+    }
+
+    @Override
+    public int deleteByIds(String collectionName, List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+
+        if (ids.size() > 500) {
+            throw new IllegalArgumentException("Firestore batch operations support max 500 items, got: " + ids.size());
+        }
+
+        log.info("Batch deleting {} items from collection '{}'", ids.size(), collectionName);
+
+        WriteBatch batch = firestore.batch();
+        CollectionReference collection = getCollection(collectionName);
+
+        for (String id : ids) {
+            batch.delete(collection.document(id));
+        }
+
+        execute(batch.commit(), "batch delete " + ids.size() + " items");
+        log.info("Successfully batch deleted {} items from collection '{}'", ids.size(), collectionName);
+
+        return ids.size();
     }
 
 
